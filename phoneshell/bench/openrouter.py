@@ -140,12 +140,18 @@ class PhoneTools:
         self.phone = phone
         self.vision = vision
         self.last_image: str | None = None
+        self.last_media: str = "image/jpeg"
         self.done: str | None = None
 
     # -- helpers ----------------------------------------------------------
     def _screen(self, header: str = "") -> str:
         obs = self.phone.observe(step=0, force_som=self.vision, include_image=self.vision)
         self.last_image = obs.image_b64 if self.vision else None
+        # Carry the REAL media type. observe() returns JPEG, and declaring it as
+        # png made Anthropic reject the whole request with a bare 400: OpenAI,
+        # Gemini and Kimi sniff the bytes and forgive the mismatch, Anthropic
+        # validates the declared type against them.
+        self.last_media = getattr(obs, "image_media_type", "image/jpeg")
         text = obs.as_text()
         return f"{header}\n{text}" if header else text
 
@@ -275,9 +281,14 @@ def run_task(phone, instruction: str, model: str, max_steps: int = 25,
                 gen_ids.append(data["id"])
             choice = (data.get("choices") or [{}])[0]
             msg = choice.get("message") or {}
-            messages.append({k: v for k, v in msg.items()
-                             if k in ("role", "content", "tool_calls")})
+            assistant = {k: v for k, v in msg.items()
+                         if k in ("role", "content", "tool_calls")}
+            if assistant.get("content") is None:
+                assistant["content"] = ""      # Anthropic rejects a null here
+            messages.append(assistant)
             calls = msg.get("tool_calls") or []
+            pending_image: str | None = None
+            pending_media = "image/jpeg"
             if not calls:
                 # No tool call and no phone_done: treat the text as the answer.
                 tools.done = tools.done or (msg.get("content") or "")
@@ -301,18 +312,20 @@ def run_task(phone, instruction: str, model: str, max_steps: int = 25,
                         out = f"{name} failed: {exc}"
                 if on_step:
                     on_step(f"{name}({json.dumps(args)[:70]})")
-                content: Any = out
-                if tools.vision and tools.last_image and name != "phone_done":
-                    # Attach the screenshot to the tool result so a vision model
-                    # can see what its own action produced.
-                    content = [
-                        {"type": "text", "text": out},
-                        {"type": "image_url",
-                         "image_url": {"url": f"data:image/png;base64,{tools.last_image}"}},
-                    ]
-                    tools.last_image = None
                 messages.append({"role": "tool", "tool_call_id": call.get("id"),
-                                 "content": content})
+                                 "content": out})
+                pending_image = tools.last_image if name != "phone_done" else None
+                pending_media = tools.last_media
+                tools.last_image = None
+            if tools.vision and pending_image:
+                # The screenshot goes in its OWN user message, not inside the tool
+                # result. OpenAI, Gemini and Kimi accept an image in a tool result;
+                # Anthropic rejects the whole request with a 400, so the portable
+                # shape is a separate user turn carrying just the picture.
+                messages.append({"role": "user", "content": [
+                    {"type": "text", "text": "the screen now:"},
+                    {"type": "image_url",
+                     "image_url": {"url": f"data:{pending_media};base64,{pending_image}"}}]})
             if tools.done is not None:
                 break
     finally:

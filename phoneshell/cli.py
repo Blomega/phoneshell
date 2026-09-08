@@ -491,6 +491,7 @@ def install_agent(remove: bool = typer.Option(False, help="remove it again")) ->
 @app.command()
 def bench(
     task: str = typer.Option(None, help="run one task by id (default: all)"),
+    only: str = typer.Option(None, help="run just these task ids, comma separated"),
     model: str = typer.Option("claude-sonnet-5", help="the model under test"),
     run_name: str = typer.Option("latest", help="name for this results file"),
     list_only: bool = typer.Option(False, "--list", help="just list the tasks"),
@@ -498,6 +499,7 @@ def bench(
     limit: int = typer.Option(0, help="run at most N tasks, to spend quota in controlled batches"),
     prepare: bool = typer.Option(True, help="set Auto-Lock to Never before running"),
     scaffold: bool = typer.Option(False, help="give the model harness guidance on using the tools"),
+    vision: bool = typer.Option(True, help="show the model the screenshot (--no-vision runs on the accessibility tree alone)"),
 ) -> None:
     """Run the iOS agent benchmark against a model, on the real phone."""
     from pathlib import Path as _Path
@@ -533,6 +535,14 @@ def bench(
         if already:
             tasks = [t for t in tasks if t.id not in already]
             console.print(f"[dim]resuming: {len(already)} already passed, {len(tasks)} to run[/dim]")
+
+    if only:
+        wanted = {t.strip() for t in only.split(",") if t.strip()}
+        missing = wanted - {t.id for t in tasks}
+        if missing:
+            console.print(f"[red]no such task(s): {', '.join(sorted(missing))}[/red]")
+            raise typer.Exit(1)
+        tasks = [t for t in tasks if t.id in wanted]
 
     if limit:
         tasks = tasks[:limit]
@@ -580,7 +590,7 @@ def bench(
     for t in tasks:
         console.print(f"  [cyan]{t.id}[/cyan] {t.instruction[:60]}")
         try:
-            result = runner.run(t, model=model, scaffold=scaffold)
+            result = runner.run(t, model=model, scaffold=scaffold, vision=vision)
         except (UsageLimitReached, RigUnavailable) as exc:
             stopped_early = str(exc)
             Runner.record(TaskResult(task_id=t.id, model=model, passed=False, skipped=True,

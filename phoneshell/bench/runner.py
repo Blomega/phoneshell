@@ -215,7 +215,7 @@ class Runner:
     # ------------------------------------------------------------------ agent
 
     def run_agent(self, task: Task, model: str, claude: str = "claude",
-                  scaffold: bool = False) -> dict:
+                  scaffold: bool = False, vision: bool | None = None) -> dict:
         """Hand the instruction to the model under test and let it work.
 
         A slug with a vendor prefix ("openai/gpt-5.1") goes through OpenRouter, so
@@ -224,9 +224,9 @@ class Runner:
         """
         if "/" in model:
             from .openrouter import run_task
-            vision = model not in VISIONLESS
+            can_see = model not in VISIONLESS if vision is None else bool(vision)
             return run_task(self.phone, task.instruction, model,
-                            max_steps=task.max_steps, vision=vision,
+                            max_steps=task.max_steps, vision=can_see,
                             timeout=task.timeout_seconds)
         cmd = [
             claude, "-p", task.instruction,
@@ -302,7 +302,7 @@ class Runner:
         return bool(outcome.ok)
 
     def run(self, task: Task, model: str = "claude-sonnet-5",
-            scaffold: bool = False) -> TaskResult:
+            scaffold: bool = False, vision: bool | None = None) -> TaskResult:
         started = time.time()
         result = TaskResult(task_id=task.id, model=model, passed=False, started_at=started,
                             scaffold=scaffold)
@@ -330,7 +330,7 @@ class Runner:
 
         timed_out = False
         try:
-            payload = self.run_agent(task, model, scaffold=scaffold)
+            payload = self.run_agent(task, model, scaffold=scaffold, vision=vision)
         except subprocess.TimeoutExpired:
             # A model that runs out of time has FAILED the task. It has not been
             # prevented from attempting it, which is the distinction that decides
