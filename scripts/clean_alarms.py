@@ -117,6 +117,16 @@ def main() -> int:
                   f"{(time.time()-started)/60:.1f} min", flush=True)
             return 0
         if not targets:
+            # Losing the screen is not the same as reaching the end of the list.
+            # If something else took the phone (a person, or another script), keep
+            # scrolling an unrelated app forever achieves nothing: check we are
+            # still on the alarm list and walk back to it if not.
+            if phone.wda.active_app_info().get("bundleId") != "com.apple.mobiletimer":
+                print("lost the alarm list, navigating back", flush=True)
+                if not open_alarm_list(phone):
+                    print("STOP: cannot get back to the alarm list", flush=True)
+                    return 1
+                continue
             phone.wda.drag(geo.point_w / 2, geo.point_h * 0.75,
                            geo.point_w / 2, geo.point_h * 0.30, duration=0.25)
             time.sleep(0.8)

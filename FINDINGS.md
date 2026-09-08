@@ -673,3 +673,33 @@ solved at all are that one and `clock.timer.set`. This is what a capability-isol
 **Twelve of the twenty-four tasks were passed by every single model.** They no longer separate
 anything and are dead weight in a leaderboard, which is a finding about the benchmark rather than
 about the models: the suite needs harder tasks more than it needs more tasks.
+
+---
+
+## 24. A reboot is not an unattended remedy
+
+A wedged device-side test session (`DTX capability handshake timed out`, zero runner processes)
+clears with a reboot and does not clear any other way. But the reboot has a cost that matters more
+than the wedge did:
+
+**After a cold boot iOS is in Before First Unlock, and developer services do not come up until
+somebody unlocks the phone by hand.**
+
+```
+lockdown:   answering, "PasswordProtected": true
+devicectl:  unavailable        <- CoreDevice / developer services withheld
+WebDriverAgent: cannot start, so it cannot type the passcode it has
+```
+
+The stored passcode does not help, and cannot: unlocking is what WebDriverAgent does, and
+WebDriverAgent is what will not start. It is a genuine chicken and egg, and it is a security
+property rather than a bug.
+
+So the operational rule for anything unattended: **a reboot ends the session.** Schedule it at the
+start of a run with a person present, never as mid-run recovery. Everything else in this stack can
+be recovered from over the wire; this cannot.
+
+The corollary is that the things which *cause* a wedge deserve more attention than the recovery
+does. The one seen here was memory pressure on the Mac killing a half-open test session, which is
+worth guarding against directly: do not run a long device job alongside anything that can exhaust
+memory, because losing the Mac-side process leaves the device-side session dangling.
