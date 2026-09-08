@@ -239,7 +239,10 @@ def phone_status() -> str:
     description=(
         "Look at the phone screen. Returns a table of the elements currently on screen "
         "(id, type, text, centre point, size, flags) plus a picture of the screen. "
-        "Call this before acting, and read the result after every action. "
+        "USE THIS SPARINGLY. Every action tool already hands back the screen as it is "
+        "afterwards, with fresh element ids, so calling observe after a tap or a swipe buys "
+        "nothing and costs a whole round trip. Call it to look before your first action, or "
+        "when you are genuinely lost. "
         "Set force_marks=true to get numbered boxes drawn on the picture when you need to "
         "see exactly where an element is."
     )
@@ -253,6 +256,7 @@ def phone_observe(force_marks: bool = False) -> list[ContentBlock]:
     structured_output=False,
     description=(
         "Tap an element by its id from the last observation. "
+        "Returns the screen as it is afterwards, with fresh ids, so do not call phone_observe next. "
         "Anything that looks irreversible (pay, order, send, delete) is refused the first "
         "time: tell the user what you are about to do, then call again with confirmed=true."
     )
@@ -285,7 +289,7 @@ def phone_tap(id: int, confirmed: bool = False) -> list[ContentBlock]:
     return _act_and_report(f"tapped [{id}] {element.type} {element.text!r}")
 
 
-@mcp.tool(structured_output=False, description="Press and hold an element by id, for context menus and drag handles.")
+@mcp.tool(structured_output=False, description="Press and hold an element by id, for context menus and drag handles. Returns the screen as it is afterwards, with fresh ids, so do not call phone_observe next. ")
 def phone_long_press(id: int, seconds: float = 1.0) -> list[ContentBlock]:
     blocked = _unlocked_or_message() or _turn_or_message()
     if blocked:
@@ -300,6 +304,7 @@ def phone_long_press(id: int, seconds: float = 1.0) -> list[ContentBlock]:
     structured_output=False,
     description=(
         "Type text. Give the id of the field to type into (it will be focused first). "
+        "Returns the screen as it is afterwards, with fresh ids, so do not call phone_observe next. "
         "Omit the id only to append to a field that already has the keyboard. "
         "submit=true presses return afterwards."
     )
@@ -444,7 +449,7 @@ def phone_set_picker(value: str, wheel: int = 0) -> list[ContentBlock]:
     return _act_and_report(result.detail or f"set wheel {wheel} to {value!r}")
 
 
-@mcp.tool(structured_output=False, description="Press a hardware or system button: home, or back (which is a nav-bar tap or an edge swipe).")
+@mcp.tool(structured_output=False, description="Press a hardware or system button: home, or back (which is a nav-bar tap or an edge swipe). Returns the screen as it is afterwards, with fresh ids, so do not call phone_observe next. ")
 def phone_press(button: Literal["home", "back"]) -> list[ContentBlock]:
     if button == "home":
         BRIDGE.phone.home()

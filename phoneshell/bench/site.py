@@ -76,6 +76,33 @@ li{margin-bottom:7px}
 """
 
 
+CAPABILITY_NOTES = {
+    "app-resolve": "turning a spoken app name into the right bundle id",
+    "back": "leaving a screen when the way out has no label",
+    "context-menu": "holding a link until its preview menu opens",
+    "date-navigate": "moving around a calendar rather than a list",
+    "edge-gesture": "a swipe that must start at y=0, off the drawn screen",
+    "hierarchy": "going up, not just down, through nested screens",
+    "icon-only-control": "a control with a glyph and no text to match on",
+    "lifecycle": "launching, backgrounding and returning to an app",
+    "long-press": "a press held long enough to be a different gesture",
+    "picker": "reaching a spinning wheel",
+    "picker-multi": "addressing the right column when several are side by side",
+    "picker-set": "turning a wheel to a value, which a swipe cannot do",
+    "precise-taps": "hitting small targets laid out in a grid",
+    "read-field": "reading a value back off the screen, not guessing it",
+    "recover": "noticing the wrong app is open and fixing it",
+    "scroll-end": "reaching something below the fold",
+    "search-then-act": "using an app's own search instead of navigating",
+    "slider": "reaching a continuous control",
+    "switch": "reading and setting a toggle",
+    "tabbar": "moving between tabs in an unfamiliar app",
+    "text-exact": "typing a string that must match character for character",
+    "text-long": "typing something long enough for autocorrect to interfere",
+    "text-select": "selecting text that is already on screen",
+}
+
+
 def _esc(text: str) -> str:
     return html.escape(str(text))
 
@@ -115,23 +142,58 @@ def build(run_name: str = "v1") -> Path:
         leaderboard = "<p class='dim'>No scored run yet.</p>"
 
     # ---------------------------------------------------------- task table
+    # Newest attempt wins: a task re-run after a broken check was corrected must
+    # not be reported by the result that broken check produced.
     results_by_task = {r["task_id"]: r for r in rows}
     tt = ["<table><thead><tr><th>Task</th><th>App</th><th>Difficulty</th>"
-          "<th>Checks</th><th class='num'>Result</th></tr></thead><tbody>"]
+          "<th class='num'>Checks</th><th class='num'>Steps</th><th class='num'>Time</th>"
+          "<th class='num'>Result</th></tr></thead><tbody>"]
     for t in tasks:
         r = results_by_task.get(t.id)
+        steps = took = "<span class='dim'>-</span>"
         if r is None:
             verdict = "<span class='dim'>not run</span>"
+        elif r.get("skipped"):
+            # Never scored: the model was not asked, or the app is not on the
+            # phone. Reporting these as failures would blame the model for the
+            # device, which is how a benchmark starts lying.
+            verdict = f"<span class='dim' title='{_esc(str(r.get('skip_reason',''))[:120])}'>not scored</span>"
         else:
             verdict = "<span class='pass'>pass</span>" if r["passed"] else "<span class='fail'>fail</span>"
+            steps = str(r.get("turns") or "-")
+            took = f"{r.get('seconds', 0):.0f}s"
         app = (t.app or "").rsplit(".", 1)[-1] or "system"
         tt.append(
             f"<tr><td><code>{_esc(t.id)}</code><br><span class='dim'>{_esc(t.instruction[:88])}</span></td>"
             f"<td>{_esc(app)}</td><td>{_esc(t.difficulty)}</td>"
-            f"<td class='num'>{len(t.checks)}</td><td class='num'>{verdict}</td></tr>"
+            f"<td class='num'>{len(t.checks)}</td><td class='num'>{steps}</td>"
+            f"<td class='num'>{took}</td><td class='num'>{verdict}</td></tr>"
         )
     tt.append("</tbody></table>")
     task_table = "\n".join(tt)
+
+    # ------------------------------------------------------- capability table
+    # What the suite is FOR. A pass rate says how often a model succeeded; this
+    # says at what. Each capability is isolated by at least one task, so a
+    # failure points at a missing skill rather than at a long task going wrong
+    # somewhere in the middle.
+    caps: dict[str, list] = {}
+    for t in tasks:
+        for tag in t.tags:
+            if tag.startswith("capability:"):
+                caps.setdefault(tag.split(":", 1)[1], []).append(t)
+    ct = ["<table><thead><tr><th>Capability</th><th>What it takes</th>"
+          "<th class='num'>Tasks</th><th class='num'>Passed</th></tr></thead><tbody>"]
+    for name, ts in sorted(caps.items()):
+        scored = [results_by_task.get(t.id) for t in ts]
+        scored = [r for r in scored if r and not r.get("skipped")]
+        got = sum(1 for r in scored if r["passed"])
+        cell = (f"{got}/{len(scored)}" if scored else "<span class='dim'>-</span>")
+        ct.append(f"<tr><td><code>{_esc(name)}</code></td>"
+                  f"<td class='dim'>{_esc(CAPABILITY_NOTES.get(name, ''))}</td>"
+                  f"<td class='num'>{len(ts)}</td><td class='num'>{cell}</td></tr>")
+    ct.append("</tbody></table>")
+    capability_table = "\n".join(ct)
 
     # ---------------------------------------------------------- example task
     example = by_id.get("calculator.arithmetic") or tasks[0]
@@ -154,7 +216,7 @@ def build(run_name: str = "v1") -> Path:
   <div class="logo">blo<span>label</span></div>
   <nav>
     <a href="#leaderboard">Leaderboard</a><a href="#how">How it works</a>
-    <a href="#tasks">Tasks</a><a href="#run">Run it</a><a href="#labs">For labs</a>
+    <a href="#tasks">Tasks</a><a href="#capabilities">Capabilities</a><a href="#run">Run it</a><a href="#labs">For labs</a>
   </nav>
 </div></header>
 
@@ -203,9 +265,15 @@ def build(run_name: str = "v1") -> Path:
   <h2 id="tasks">The tasks</h2>
   <p>{counts.get('easy',0)} easy, {counts.get('medium',0)} medium, {counts.get('hard',0)} hard.
      All of them run against Apple's own applications: Settings, Safari, Notes, Reminders, Clock,
-     Calculator, Weather, Contacts and the home screen itself. No third-party app is automated,
-     so no third party's terms are involved.</p>
+     Calculator, Contacts, Maps, Calendar, Files, Books, Compass, Shortcuts, Voice Memos and the
+     home screen itself. No third-party app is automated, so no third party's terms are involved.</p>
   {task_table}
+
+  <h2 id="capabilities">What it measures</h2>
+  <p>A pass rate says how often a model succeeded. This says at what. Every capability below is
+     isolated by at least one short task, so a failure names a missing skill instead of pointing
+     vaguely at a long task that went wrong somewhere in the middle.</p>
+  {capability_table}
 
   <h2 id="run">Run it yourself</h2>
   <p>You need a Mac, an iPhone, a cable and an Apple developer account. The harness builds and

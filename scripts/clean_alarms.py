@@ -21,19 +21,27 @@ from phoneshell.perception.tree import flatten
 ARTIFACT = re.compile(r"^\d{1,2}:\d{2}(AM|PM), Alarm$")
 
 
-def survey(phone):
-    """Every alarm row: label, whether its switch is on, and where it is."""
-    raw = flatten(phone.wda.source())
-    switch_on = {}
-    for e in raw:
-        if e.type == "Switch" and e.label:
-            switch_on[e.label.strip()] = e.value in ("1", "true", "True")
-    rows = []
-    for e in raw:
-        if e.type == "Cell" and e.h > 60 and e.text.strip():
-            label = e.text.strip()
-            rows.append((label, switch_on.get(label, True), e))  # unknown switch -> assume on -> keep
-    return rows
+def survey(phone, tries: int = 5):
+    """Every alarm row: label, whether its switch is on, and where it is.
+
+    Reads taken while the list is still animating a deletion come back SHORT and
+    say nothing about it: one returned 631 cells with only 413 switches, another
+    returned nothing at all, and the loop concluded it was finished. Settled, the
+    same screen returns 631 and 631 every time. There is exactly one switch per
+    alarm row, so demanding the two counts agree is a cheap, exact test of
+    whether this read can be trusted.
+    """
+    for attempt in range(tries):
+        # An empty read is not "no alarms", it is "the Clock app is not in front"
+        # -- the owner picking the phone up looks exactly like a finished job.
+        raw = flatten(phone.wda.source())
+        switches = [e for e in raw if e.type == "Switch" and e.label]
+        cells = [e for e in raw if e.type == "Cell" and e.h > 60 and e.text.strip()]
+        if cells and len(cells) == len(switches):
+            on = {e.label.strip(): e.value in ("1", "true", "True") for e in switches}
+            return [(c.text.strip(), on.get(c.text.strip(), True), c) for c in cells]
+        time.sleep(0.8)
+    return []                      # caller treats an unreadable screen as "do nothing"
 
 
 def is_artifact(label: str, on: bool) -> bool:
@@ -50,32 +58,33 @@ def main() -> int:
     for k in sorted(keepers):
         print(f"  keep {k[:60]}", flush=True)
 
+    budget = total - len(keepers)
     deleted = 0
     stalls = 0
     started = time.time()
+    print(f"ceiling: this run will not delete more than {budget} alarms", flush=True)
     while True:
         rows = survey(phone)
-        # At this list length /source comes back INCOMPLETE: one read returned
-        # 631 cells but only 413 switches. So a keeper "missing" from a single
-        # read means the read was short, not that the alarm is gone -- the first
-        # version of this guard reported all twenty keepers vanishing at once.
-        # Only believe it when three reads in a row agree.
-        present = {l for l, _, _ in rows}
-        missing = keepers - present
-        if missing:
-            confirmed = missing
-            for _ in range(2):
-                time.sleep(1.5)
-                confirmed &= (keepers - {l for l, _, _ in survey(phone)})
-                if not confirmed:
-                    break
-            if confirmed:
-                print(f"STOP: a kept alarm really is gone: {sorted(confirmed)}", flush=True)
-                return 1
+        # No global "are the keepers still there" check. /source truncates
+        # POSITIONALLY at this list length -- it returns the rows near the
+        # current scroll offset and drops the rest -- so a keeper far from the
+        # viewport is absent from every read, and three reads agreeing means
+        # nothing. What protects the owner's alarms is the per-row rule below,
+        # which needs only the rows actually on screen: delete a row solely if
+        # its label is exactly "H:MM(AM|PM), Alarm" and its switch reads off,
+        # where an unknown switch counts as on and is kept. Plus a hard ceiling
+        # on how many deletions this run may ever perform.
+        if deleted >= budget:
+            print(f"STOP: hit the {budget}-delete ceiling", flush=True)
+            return 1
         # y below 110 sits under the nav bar and a swipe there does nothing at
         # all, silently: four "deletes" at y=80 changed not one row.
         targets = [e for l, on, e in rows
                    if is_artifact(l, on) and 110 <= e.cy <= geo.point_h - 140]
+        if not rows:
+            print("unreadable screen, waiting", flush=True)
+            time.sleep(2.0)
+            continue
         remaining = [l for l, on, _ in rows if is_artifact(l, on)]
         if not remaining:
             print(f"done: {deleted} deleted, {len(rows)} alarms left, "
@@ -98,9 +107,16 @@ def main() -> int:
         # lands on a row nobody verified. That cost one of the owner's alarms.
         # A read per delete is slow and it is the only version that is correct.
         row = min(targets, key=lambda e: e.cy)
-        phone.wda.drag(geo.point_w * 0.92, row.cy,
-                       geo.point_w * 0.08, row.cy, duration=0.22)
-        time.sleep(0.35)
+        # Start the swipe at 65% across, NOT 92%. The alarm's toggle sits at
+        # about 88% and a swipe beginning on top of it is taken as a tap on the
+        # switch: forty "deletes" removed nothing and turned nine alarms ON,
+        # several of them in the small hours. The row's own frame says the
+        # switch is at x=0 width=63, which is nowhere near where it is drawn, so
+        # the tree cannot be used to find it. 65% is clear of the toggle and
+        # still leaves enough travel for the swipe to register.
+        phone.wda.drag(geo.point_w * 0.65, row.cy,
+                       geo.point_w * 0.05, row.cy, duration=0.22)
+        time.sleep(0.9)            # let the row-removal animation finish, or the next read is short
         deleted += 1
         if deleted % 20 == 0:
             print(f"  {deleted} deleted, {len(remaining) - 1} artifacts left, "
