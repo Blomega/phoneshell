@@ -12,6 +12,7 @@ repeatable ten thousand times without a human watching.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import time
 from dataclasses import asdict, dataclass, field
@@ -42,6 +43,10 @@ the screen there, so a wrong guess is cheap.
 Observe when you are genuinely exploring, or after something unexpected. Do not
 observe to confirm a step you have already been told succeeded.
 
+To set a spinning wheel (a time, a date, a duration, a unit) use phone_set_picker
+with the value you want. Do not swipe at a wheel: it steps by whole rows, so a
+swipe overshoots and never settles.
+
 If a popup or promo sheet is in the way, call phone_dismiss_popup rather than
 hunting for its close button. If a screen does not change after an action, that
 action did not work: try a different route instead of repeating it.
@@ -54,7 +59,7 @@ AGENT_TOOLS = [
     "mcp__phoneshell__phone_press", "mcp__phoneshell__phone_alert",
     "mcp__phoneshell__phone_gesture", "mcp__phoneshell__phone_dismiss_popup",
     "mcp__phoneshell__phone_long_press", "mcp__phoneshell__phone_wait_for",
-    "mcp__phoneshell__phone_do",
+    "mcp__phoneshell__phone_do", "mcp__phoneshell__phone_set_picker",
 ]
 
 
@@ -153,8 +158,50 @@ class Runner:
                 self.phone.swipe(step.value or "down")
             elif action == "wait":
                 time.sleep(step.seconds or 1.0)
+            elif action == "clean_alarms":
+                self.remove_artifact_alarms()
             else:
                 raise ValueError(f"unknown setup action {action!r}")
+
+    ARTIFACT_ALARM = re.compile(r"^\d{1,2}:\d{2}(AM|PM), Alarm$")
+
+    def remove_artifact_alarms(self, limit: int = 8) -> int:
+        """Delete alarms this task saved, and only those.
+
+        The alarm tasks say "do not save it" and agents save anyway, so every run
+        left one behind. They reached 640, and at that length a single
+        accessibility read of the Clock app cost 2.6s, or 24s with the Add Alarm
+        sheet open: the benchmark had made the phone slow enough to fail its own
+        timer task. A suite that mutates the device has to undo it, or the
+        environment decays under measurement.
+
+        An alarm counts as ours only if its label is exactly "H:MM(AM|PM), Alarm"
+        with no name and no repeat schedule, and its switch is off. Anything the
+        owner named, scheduled or switched on is left alone.
+        """
+        from ..perception.tree import flatten
+        removed = 0
+        geo = self.phone.wda.geometry()
+        for _ in range(limit):
+            try:
+                raw = flatten(self.phone.wda.source())
+            except WDAError:
+                break
+            on = {e.label.strip(): e.value in ("1", "true", "True")
+                  for e in raw if e.type == "Switch" and e.label}
+            rows = [e for e in raw
+                    if e.type == "Cell" and e.h > 60 and e.text.strip()
+                    and self.ARTIFACT_ALARM.match(e.text.strip())
+                    and not on.get(e.text.strip(), True)
+                    and 60 <= e.cy <= geo.point_h - 130]
+            if not rows:
+                break
+            # A full-width swipe deletes an alarm outright, no confirm tap.
+            self.phone.wda.drag(geo.point_w * 0.92, rows[0].cy,
+                                geo.point_w * 0.08, rows[0].cy, duration=0.25)
+            time.sleep(0.45)
+            removed += 1
+        return removed
 
     # ------------------------------------------------------------------ agent
 
@@ -293,7 +340,12 @@ class Runner:
             pass
 
         passed, checks = run_all(self.phone, task.checks)
-        result.passed = passed
+        # A model that ran out of time did not complete the task, whatever the
+        # phone happens to look like afterwards. Measured: clock.alarm.set_time
+        # timed out with ZERO completed turns and $0.00 spent, and still
+        # satisfied both of its checks from whatever was left on screen. Scoring
+        # that as a pass credits a model for work it was cut off before doing.
+        result.passed = passed and not timed_out
         result.checks = [asdict(c) for c in checks]
         result.seconds = time.time() - started
 

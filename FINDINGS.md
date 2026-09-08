@@ -417,3 +417,80 @@ what the agent does. Replaced with a pattern that matches Notification Centre in
 This is the fourth check of this shape found by auditing failures, after the three in section 12.
 The rule that keeps holding: **when a task fails, read what the agent said before believing the
 check.**
+
+---
+
+## 18. The benchmark decayed the thing it was measuring
+
+The alarm tasks say "do not save it". Agents saved it anyway, every run, for weeks. By today the
+phone held **640 alarms**, 621 of them identical unlabelled artifacts.
+
+That is not cosmetic. Everything the harness does on that screen got slower in proportion:
+
+| operation | Clock timer screen | Clock alarms, 640 rows | with the Add Alarm sheet open |
+| --- | --- | --- | --- |
+| `/source` (full tree) | 154 ms | 2 612 ms | 24 195 ms (6.1 MB) |
+| `tap` | 550 ms | 2 290 ms | |
+| `drag` | 1 400 ms | 4 200 ms | |
+
+`clock.alarm.set_time` has a 240-second budget. At 24 seconds per observation it could not have
+finished, and it did not: zero completed turns. **The task failed because of the residue of
+earlier runs of the same task.** A suite that mutates the device has to undo it, or its own
+numbers drift out from under it. There is now a `clean_alarms` teardown action, and the three
+Clock tasks run it.
+
+The general form is worth stating plainly: **WebDriverAgent's per-action latency scales with the
+size of the accessibility tree**, because the runner walks it to resolve every request. So a
+screen that an agent made big is a screen the agent will be slow on afterwards. Cleanup is not
+tidiness, it is throughput.
+
+## 19. At scale, `/source` returns an incomplete tree and says nothing
+
+One read of the 640-alarm screen returned **631 cells and 413 switches**. There is one switch per
+alarm, so 218 of them were simply absent, with no error, no truncation marker and HTTP 200.
+
+This breaks any logic that reasons about what is *not* in the tree. A cleanup guard that stopped
+when a protected alarm was missing from the tree fired on all twenty protected alarms at once,
+because the read was short, not because anything had been deleted. Anything checking for absence
+at this scale has to require several reads to agree before believing it.
+
+Checks for *presence* are still sound. That asymmetry is the useful rule: **a truncated tree can
+make something look gone; it cannot invent something that is not there.**
+
+## 20. Deleting rows renormalises the scroll offset, and it cost a real alarm
+
+Deleting 640 rows one read at a time is about 10 seconds each, so batching was tempting and
+looked provably safe: removing a row shifts only the rows *below* it, so if you delete
+bottom-to-top, every target above the one just deleted keeps the position the read measured.
+
+That reasoning is wrong on iOS. When the content shrinks, the list re-anchors its scroll offset,
+so the whole visible window moves and the remaining "verified" positions point at different rows.
+A batch of seven deletes removed one alarm that was not an artifact: a labelled, weekday-repeating
+7:00 AM alarm belonging to the phone's owner.
+
+It was rebuilt from what the tree had recorded (time, label, repeat), and the incident is the
+reason the cleanup now does exactly one delete per read, verified immediately before the gesture.
+Two things generalise:
+
+* **A position measured before a mutation is not valid after it**, even when the mutation is
+  "below" it. Re-read, or do not act.
+* A cheap safety rule beats an expensive one when reads are unreliable. Deciding from the row's
+  own label and switch state needs only the rows on screen, and an unknown switch defaults to
+  "on", which keeps the alarm. That rule stays correct even when the tree comes back short. The
+  rule that failed was the one needing a complete tree.
+
+## 21. A task that ran out of time could still be scored as a pass
+
+`result.passed` came from the checks alone. `clock.alarm.set_time` hit its 240-second budget with
+**zero completed turns and $0.00 spent**, and then passed both of its checks from whatever
+happened to be on screen: its `(?<![0-9])30(?![0-9])` pattern matched `10:30AM, Alarm` in the
+list sitting behind the sheet.
+
+Two separate faults, both now fixed. A timed-out task cannot pass, whatever the phone looks like
+afterwards. And the checks now match the wheel's own value (`30 minutes`, `7 o.clock`) rather than
+any digits anywhere on the screen.
+
+This is the fifth distinct way this benchmark has found to report a number that was not true. The
+others: fabricating scores for tasks that never ran, verification that destroyed its own
+measurement, counting results from retired tasks, and scoring a task whose app was not installed.
+Every one of them made the number look *better*.

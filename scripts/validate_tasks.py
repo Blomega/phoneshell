@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from phoneshell.bench.schema import load_all  # noqa: E402
 
-SETUP_VERBS = {"home", "open_app", "terminate", "open_url", "tap", "type", "swipe", "wait"}
+SETUP_VERBS = {"home", "open_app", "terminate", "open_url", "tap", "type", "swipe", "wait",
+               "clean_alarms"}
 CHECK_KINDS = {"foreground_app", "element_exists", "element_exists_anywhere",
                "text_on_screen", "element_value",
                "switch_on", "switch_off", "screen_matches", "ocr_contains",

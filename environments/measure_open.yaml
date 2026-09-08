@@ -1,0 +1,18 @@
+id: measure.open
+name: Open Measure
+app: com.apple.measure
+difficulty: easy
+tags:
+- measure
+- lifecycle
+- capability:app-resolve
+instruction: Open the Measure app.
+setup:
+- terminate: com.apple.measure
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.measure
+teardown:
+- terminate: com.apple.measure
+notes: Measure asks for camera permission on first launch, so the run may have to clear a system dialog to finish.

@@ -1,0 +1,20 @@
+id: files.browse_tab
+name: Reach the Browse tab in Files
+app: com.apple.DocumentsApp
+difficulty: easy
+tags:
+- files
+- tabbar
+- capability:tabbar
+instruction: Open the Files app and go to its Browse tab.
+setup:
+- terminate: com.apple.DocumentsApp
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.DocumentsApp
+- kind: regex_on_screen
+  text: Browse|Locations|On My iPhone
+teardown:
+- terminate: com.apple.DocumentsApp
+notes: A tab bar in an app the agent has no prior knowledge of.

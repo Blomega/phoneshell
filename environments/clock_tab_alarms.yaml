@@ -16,4 +16,7 @@ checks:
 - kind: element_exists
   text: Alarms
 teardown:
+# Agents save the alarm despite being told not to, and 640 of them
+# made a Clock tree read cost 2.6s. The suite undoes its own damage.
+- clean_alarms
 - terminate: com.apple.mobiletimer

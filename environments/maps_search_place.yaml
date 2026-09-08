@@ -1,0 +1,20 @@
+id: maps.search_place
+name: Search Maps for a landmark
+app: com.apple.Maps
+difficulty: medium
+tags:
+- maps
+- search
+- capability:search-then-act
+instruction: Open Maps and search for the Eiffel Tower. Stop once the search results show it.
+setup:
+- terminate: com.apple.Maps
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Maps
+- kind: element_exists_anywhere
+  text: Eiffel Tower
+teardown:
+- terminate: com.apple.Maps
+notes: A search field inside a sheet that starts collapsed, so the field has to be raised before it can be typed into.

@@ -1,0 +1,22 @@
+id: clock.timer.set_hours_minutes
+name: Dial the timer to 1 hour 30 minutes
+app: com.apple.mobiletimer
+difficulty: hard
+tags:
+- clock
+- picker
+- capability:picker-multi
+instruction: Open the Clock app, go to Timers, and set the timer to 1 hour and 30 minutes. Do not start it.
+setup:
+- terminate: com.apple.mobiletimer
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobiletimer
+- kind: regex_on_screen
+  text: (?<![0-9])1 hour
+- kind: regex_on_screen
+  text: (?<![0-9])30 min
+teardown:
+- terminate: com.apple.mobiletimer
+notes: Two wheels on one screen, so the agent has to address the right column rather than the first one it finds.

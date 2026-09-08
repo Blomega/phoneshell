@@ -423,7 +423,10 @@ def install_wda(udid: str, app: Path) -> Check:
 
 def installed_bundle_ids(udid: str) -> set[str] | None:
     """Every app bundle id the phone currently has, or None if we cannot ask."""
-    res = run(["xcrun", "devicectl", "device", "info", "apps", "--device", udid], timeout=180)
+    # Without --include-all-apps this lists only sideloaded apps, so every
+    # first-party bundle looks missing.
+    res = run(["xcrun", "devicectl", "device", "info", "apps", "--device", udid,
+               "--include-all-apps"], timeout=180)
     if res.returncode != 0:
         return None
     ids = set()

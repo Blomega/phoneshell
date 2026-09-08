@@ -549,6 +549,26 @@ def bench(
             # numbers that measure the phone's wedge, not the model.
             console.print("[red]refusing to run: the phone cannot be driven right now[/red]")
             raise typer.Exit(1)
+    # A task whose app is not on the phone cannot be passed by any agent, and
+    # scoring it as a failure blames the model for the device. iOS offloads apps
+    # on its own, so this is not hypothetical: it removed Weather part-way
+    # through a run and two tasks went from passing to impossible.
+    wanted = {t.app for t in tasks if t.app}
+    if wanted:
+        target = _cfg().device.udid or dev.device_check().data.get("udid") or ""
+        present = dev.installed_bundle_ids(target) if target else None
+        if present:
+            missing = {b for b in wanted if b not in present}
+            if missing:
+                blocked = [t for t in tasks if t.app in missing]
+                tasks = [t for t in tasks if t.app not in missing]
+                for t in blocked:
+                    Runner.record(TaskResult(
+                        task_id=t.id, model=model, passed=False, skipped=True,
+                        skip_reason=f"{t.app} is not installed on this phone"), run_name)
+                console.print(f"[yellow]not scored: {len(blocked)} task(s) need apps this "
+                              f"phone does not have ({', '.join(sorted(missing))})[/yellow]")
+
     console.print(f"[bold]running {len(tasks)} task(s) against {model}"
                   f"{' with scaffold guidance' if scaffold else ' with tools only'}[/bold]\n")
     stopped_early = ""

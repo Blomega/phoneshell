@@ -1,0 +1,20 @@
+id: calendar.today
+name: Reach today in Calendar
+app: com.apple.mobilecal
+difficulty: easy
+tags:
+- calendar
+- navigation
+- capability:date-navigate
+instruction: Open the Calendar app and make sure it is showing today.
+setup:
+- terminate: com.apple.mobilecal
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilecal
+- kind: regex_on_screen
+  text: Today
+teardown:
+- terminate: com.apple.mobilecal
+notes: Calendar reopens wherever it was left, so this is a recovery task disguised as a navigation one.

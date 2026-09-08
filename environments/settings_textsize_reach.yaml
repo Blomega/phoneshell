@@ -1,0 +1,20 @@
+id: settings.textsize.reach
+name: Reach the text size slider
+app: com.apple.Preferences
+difficulty: hard
+tags:
+- settings
+- slider
+- capability:slider
+instruction: In Settings, reach the screen with the slider that makes text larger. Do not change it.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: regex_on_screen
+  text: Larger Text|Larger Accessibility Sizes|Text Size
+teardown:
+- terminate: com.apple.Preferences
+notes: Three levels down and the target has no top-level entry, so this needs either search or a correct guess about which section owns it.

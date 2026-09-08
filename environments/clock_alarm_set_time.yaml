@@ -1,0 +1,29 @@
+id: clock.alarm.set_time
+name: Dial a new alarm to 7:30
+app: com.apple.mobiletimer
+difficulty: hard
+tags:
+- clock
+- picker
+- capability:picker-set
+instruction: Open the Clock app, go to Alarms, start adding a new alarm and set its time to 7:30 in the morning. Do not save it.
+setup:
+- terminate: com.apple.mobiletimer
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobiletimer
+# Match the WHEEL's own value, not any 7 or 30 on the screen: the alarm list
+# sits behind this sheet and "10:30AM, Alarm" satisfied a bare 30.
+- kind: regex_on_screen
+  text: (?<![0-9])7 o.clock
+- kind: regex_on_screen
+  text: (?<![0-9])30 minutes
+- kind: regex_on_screen
+  text: \bAM\b
+teardown:
+# Agents save the alarm despite being told not to, and 640 of them
+# made a Clock tree read cost 2.6s. The suite undoes its own damage.
+- clean_alarms
+- terminate: com.apple.mobiletimer
+notes: Three wheels including AM/PM, which has two rows and does not wrap, so a step in the wrong direction is a dead end rather than a lap.

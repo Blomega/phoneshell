@@ -414,19 +414,27 @@ class Phone:
         # ---- calibrate: find the offset that moves this wheel exactly one row.
         step = None
         taps = 0
+        found_down = True
         for probe in (0.10, 0.16, 0.24, 0.34):
-            tap(probe, True)
-            taps += 1
-            moved = read()
-            if moved == current:
-                continue                      # too small to leave the current row
-            jump = rows_between(current, moved)
-            current = moved
-            if jump is None or not 1 <= abs(jump) <= 8:
-                step = probe                  # unlabelled or wrapped: take it as one row
-            else:
-                step = probe / abs(jump)
-            break
+            # Probe BOTH ways at each offset. A wheel already sitting on its last
+            # row cannot move further that way, so probing only downward makes it
+            # look immovable: AM/PM is exactly that shape, a two-row list with PM
+            # at the end, and it reported "would not move" every time.
+            for downward in (True, False):
+                tap(probe, downward)
+                taps += 1
+                moved = read()
+                if moved == current:
+                    continue
+                jump = rows_between(current, moved)
+                current, found_down = moved, downward
+                if jump is None or not 1 <= abs(jump) <= 8:
+                    step = probe              # unlabelled or wrapped: call it one row
+                else:
+                    step = probe / abs(jump)
+                break
+            if step is not None:
+                break
         if step is None:
             return ActionResult(ok=False, action="set_picker", changed=False,
                                 detail=f"wheel {wheel} would not move; taps are missing it")
@@ -437,17 +445,17 @@ class Phone:
 
         # ---- which way is down? one calibrated tap answers it and moves us on.
         was = current
-        tap(step, True)
+        tap(step, found_down)
         taps += 1
         current = read()
         per_tap = rows_between(was, current)
-        down = True
+        down = found_down
         if current == was:
-            tap(step, False)
+            down = not found_down
+            tap(step, down)
             taps += 1
             current = read()
             per_tap = rows_between(was, current)
-            down = False
             if current == was:
                 return ActionResult(ok=False, action="set_picker", changed=False,
                                     detail=f"wheel {wheel} is stuck on {current!r}")

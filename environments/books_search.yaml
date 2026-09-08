@@ -1,0 +1,20 @@
+id: books.search
+name: Search the Books store
+app: com.apple.iBooks
+difficulty: medium
+tags:
+- books
+- search
+- capability:search-then-act
+instruction: Open the Books app and search for 'Moby Dick'.
+setup:
+- terminate: com.apple.iBooks
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.iBooks
+- kind: element_exists_anywhere
+  text: Moby
+teardown:
+- terminate: com.apple.iBooks
+notes: Search lives behind a tab in Books, so finding the field is itself a navigation step.

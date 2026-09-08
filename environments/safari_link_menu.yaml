@@ -1,0 +1,20 @@
+id: safari.link_menu
+name: Preview a link with a long press
+app: com.apple.mobilesafari
+difficulty: hard
+tags:
+- safari
+- long-press
+- capability:context-menu
+instruction: Open Safari, go to example.com, and long press the 'More information...' link until its preview menu appears.
+setup:
+- terminate: com.apple.mobilesafari
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilesafari
+- kind: regex_on_screen
+  text: Open in New Tab|Add to Reading List|Copy Link|Share
+teardown:
+- terminate: com.apple.mobilesafari
+notes: Web content, so the element comes from the page rather than from UIKit. Long press on a link is a different gesture path from long press on a native control.

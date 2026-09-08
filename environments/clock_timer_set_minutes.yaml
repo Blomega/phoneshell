@@ -1,0 +1,20 @@
+id: clock.timer.set_minutes
+name: Dial the timer to 5 minutes
+app: com.apple.mobiletimer
+difficulty: medium
+tags:
+- clock
+- picker
+- capability:picker-set
+instruction: Open the Clock app, go to Timers, and set the timer duration to 5 minutes. Do not start it.
+setup:
+- terminate: com.apple.mobiletimer
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobiletimer
+- kind: regex_on_screen
+  text: (?<![0-9])5 min
+teardown:
+- terminate: com.apple.mobiletimer
+notes: Isolates turning a wheel to a value from starting the timer. A wheel steps by whole rows per tap, so swiping at it overshoots forever.

@@ -1,0 +1,20 @@
+id: calendar.month_view
+name: Switch Calendar to month view
+app: com.apple.mobilecal
+difficulty: medium
+tags:
+- calendar
+- navigation
+- capability:hierarchy
+instruction: Open the Calendar app and switch it to the month view, showing a whole month at once.
+setup:
+- terminate: com.apple.mobilecal
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilecal
+- kind: regex_on_screen
+  text: Mon|Tue|Wed|Thu|Fri|Sat|Sun
+teardown:
+- terminate: com.apple.mobilecal
+notes: The way up a Calendar hierarchy is the back chevron rather than a named button, so the label gives no clue.

@@ -1,0 +1,20 @@
+id: compass.read_heading
+name: Read the compass heading
+app: com.apple.compass
+difficulty: medium
+tags:
+- compass
+- read
+- capability:read-field
+instruction: Open the Compass app and tell me which direction the phone is pointing.
+setup:
+- terminate: com.apple.compass
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.compass
+- kind: regex_on_screen
+  text: N|S|E|W
+teardown:
+- terminate: com.apple.compass
+notes: The value is rendered rather than labelled, so this is a reading task where the accessibility tree carries the answer and the screenshot does not.

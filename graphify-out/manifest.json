@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "phoneshell/actions.py": {
-    "mtime": 1788799110.702452,
-    "seen": 1788832968.232434,
-    "ast_hash": "bacd7dc1b9c81aa12ad0475cade592e9",
+    "mtime": 1788843171.3421052,
+    "seen": 1788843771.893164,
+    "ast_hash": "a2185608f8760ff33154f1ad70723a69",
     "semantic_hash": ""
   },
   "phoneshell/agent/__init__.py": {
@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "phoneshell/bench/runner.py": {
-    "mtime": 1788837773.299025,
-    "seen": 1788837822.095875,
-    "ast_hash": "4b86c52e616f5c66b3fef3644ccc810e",
+    "mtime": 1788843486.2563584,
+    "seen": 1788843771.8931708,
+    "ast_hash": "6c4f883fd36d32169580ec2d6c5c0fa4",
     "semantic_hash": ""
   },
   "phoneshell/bench/schema.py": {
@@ -84,9 +84,9 @@
     "semantic_hash": ""
   },
   "phoneshell/cli.py": {
-    "mtime": 1788832034.446203,
-    "seen": 1788832968.2324412,
-    "ast_hash": "131545eeed658a29b95f749fc2fed7fe",
+    "mtime": 1788843734.1323488,
+    "seen": 1788843771.893174,
+    "ast_hash": "15607828500261d9cc1ede23f3e5e04e",
     "semantic_hash": ""
   },
   "phoneshell/coexist.py": {
@@ -102,9 +102,9 @@
     "semantic_hash": ""
   },
   "phoneshell/device.py": {
-    "mtime": 1788801920.3768268,
-    "seen": 1788832968.2324429,
-    "ast_hash": "286d4665b9a174ffdb7d07acb2df68bb",
+    "mtime": 1788843388.1287012,
+    "seen": 1788843771.893176,
+    "ast_hash": "f637a41dd2f73f525b1068ae67aedc24",
     "semantic_hash": ""
   },
   "phoneshell/gestures.py": {
@@ -114,9 +114,9 @@
     "semantic_hash": ""
   },
   "phoneshell/mcp_server.py": {
-    "mtime": 1788802823.431663,
-    "seen": 1788832968.2324438,
-    "ast_hash": "6d0926df79c27973f7b1e506f080777e",
+    "mtime": 1788840373.7285912,
+    "seen": 1788843771.893177,
+    "ast_hash": "0dbafb384a487ff5cfa43bc852f8f42c",
     "semantic_hash": ""
   },
   "phoneshell/memory.py": {
@@ -150,9 +150,9 @@
     "semantic_hash": ""
   },
   "phoneshell/prep.py": {
-    "mtime": 1788802752.76862,
-    "seen": 1788832968.232447,
-    "ast_hash": "3f2e405672be43f407e96a9e83c397bd",
+    "mtime": 1788840251.1332998,
+    "seen": 1788843771.8931808,
+    "ast_hash": "6ac76b1d9d659eb4de025f9d91cbf4ef",
     "semantic_hash": ""
   },
   "phoneshell/safety.py": {
@@ -198,9 +198,9 @@
     "semantic_hash": ""
   },
   "FINDINGS.md": {
-    "mtime": 1788835327.2125986,
-    "seen": 1788835395.162184,
-    "ast_hash": "09eeed810c2d0b52b62831f3aeba219b",
+    "mtime": 1788840420.8499298,
+    "seen": 1788843771.893187,
+    "ast_hash": "2342fe4abc2922bad62ed275c4be3c8f",
     "semantic_hash": ""
   },
   "README.md": {
@@ -528,9 +528,9 @@
     "semantic_hash": ""
   },
   "environments/system_notifications_open.yaml": {
-    "mtime": 1788802907.636118,
-    "seen": 1788832968.232484,
-    "ast_hash": "7c016b6c388d6953d272f86b26ab6c10",
+    "mtime": 1788840309.8840024,
+    "seen": 1788843771.89324,
+    "ast_hash": "cb7360a3bf36db2085156baa26c074fc",
     "semantic_hash": ""
   },
   "environments/system_spotlight_find_app.yaml": {
@@ -567,6 +567,114 @@
     "mtime": 1788774116.5045123,
     "seen": 1788832968.232487,
     "ast_hash": "5ac8cd1b78baffe2017573db457f765b",
+    "semantic_hash": ""
+  },
+  "environments/books_search.yaml": {
+    "mtime": 1788843359.4442267,
+    "seen": 1788843771.8931892,
+    "ast_hash": "730a3cf0072f1e3a6748427cfb0d162a",
+    "semantic_hash": ""
+  },
+  "environments/calendar_month_view.yaml": {
+    "mtime": 1788843359.4440482,
+    "seen": 1788843771.893194,
+    "ast_hash": "4235b7a866ada7e4a2670dde5e8da6c5",
+    "semantic_hash": ""
+  },
+  "environments/calendar_today.yaml": {
+    "mtime": 1788843359.4439707,
+    "seen": 1788843771.893194,
+    "ast_hash": "2e71609b77a221c3d683f62379caea13",
+    "semantic_hash": ""
+  },
+  "environments/clock_alarm_set_time.yaml": {
+    "mtime": 1788843330.4142127,
+    "seen": 1788843771.893196,
+    "ast_hash": "dc3cc742ae6adc77fad5e0cc39d5f697",
+    "semantic_hash": ""
+  },
+  "environments/clock_timer_set_hm.yaml": {
+    "mtime": 1788843330.4140751,
+    "seen": 1788843771.8932,
+    "ast_hash": "99276c9c07ec5e6f2bb5d835842748e8",
+    "semantic_hash": ""
+  },
+  "environments/clock_timer_set_minutes.yaml": {
+    "mtime": 1788843330.4139857,
+    "seen": 1788843771.8932,
+    "ast_hash": "e007bbad99bda190a5f1fa4cbe2c181c",
+    "semantic_hash": ""
+  },
+  "environments/clock_timer_set_seconds.yaml": {
+    "mtime": 1788843330.4141476,
+    "seen": 1788843771.8932009,
+    "ast_hash": "f1614bb73f1f60bac6ea57269997164f",
+    "semantic_hash": ""
+  },
+  "environments/compass_read.yaml": {
+    "mtime": 1788843359.4441707,
+    "seen": 1788843771.893203,
+    "ast_hash": "856169359e8acdac03ac3fd9db2545df",
+    "semantic_hash": ""
+  },
+  "environments/files_browse_tab.yaml": {
+    "mtime": 1788843359.4441178,
+    "seen": 1788843771.893204,
+    "ast_hash": "3c1ec6b3e345663f6d600619876c7b1f",
+    "semantic_hash": ""
+  },
+  "environments/maps_search_place.yaml": {
+    "mtime": 1788843359.4438806,
+    "seen": 1788843771.893205,
+    "ast_hash": "69dc427e709a34649ec1f9809720877b",
+    "semantic_hash": ""
+  },
+  "environments/measure_open.yaml": {
+    "mtime": 1788843359.4444532,
+    "seen": 1788843771.893205,
+    "ast_hash": "1f8f296d44ff82a048c7f674e681934d",
+    "semantic_hash": ""
+  },
+  "environments/notes_text_select.yaml": {
+    "mtime": 1788843330.4142647,
+    "seen": 1788843771.893211,
+    "ast_hash": "a75772e589dbd218eab0b16e3436c540",
+    "semantic_hash": ""
+  },
+  "environments/safari_link_menu.yaml": {
+    "mtime": 1788843330.4143193,
+    "seen": 1788843771.893218,
+    "ast_hash": "cfc83a8107249abc2a6039e40540c4cd",
+    "semantic_hash": ""
+  },
+  "environments/settings_sounds_reach.yaml": {
+    "mtime": 1788843359.4445677,
+    "seen": 1788843771.893234,
+    "ast_hash": "5b0566e4639241200496c39df98b4c48",
+    "semantic_hash": ""
+  },
+  "environments/settings_textsize_reach.yaml": {
+    "mtime": 1788843359.4445114,
+    "seen": 1788843771.893236,
+    "ast_hash": "2e01c2d7e3e5b91046b099b525e3022d",
+    "semantic_hash": ""
+  },
+  "environments/shortcuts_gallery.yaml": {
+    "mtime": 1788843359.4443395,
+    "seen": 1788843771.893238,
+    "ast_hash": "dd4a8ec80c82d7e42a650a284cd71531",
+    "semantic_hash": ""
+  },
+  "environments/tips_open.yaml": {
+    "mtime": 1788843359.4444015,
+    "seen": 1788843771.8932428,
+    "ast_hash": "bb6fe5170e3ec0a0a2bb1b1b55fb518f",
+    "semantic_hash": ""
+  },
+  "environments/voicememos_open.yaml": {
+    "mtime": 1788843359.4442892,
+    "seen": 1788843771.8932428,
+    "ast_hash": "feec45e8e15d208813f9d3f71c32d136",
     "semantic_hash": ""
   }
 }

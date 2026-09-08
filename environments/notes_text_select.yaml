@@ -1,0 +1,20 @@
+id: notes.text_select
+name: Select typed text
+app: com.apple.mobilenotes
+difficulty: hard
+tags:
+- notes
+- long-press
+- capability:text-select
+instruction: Open Notes, create a new note, type the word 'anchor', then long press that word so the text selection menu appears.
+setup:
+- terminate: com.apple.mobilenotes
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilenotes
+- kind: regex_on_screen
+  text: Select All|Look Up|Paste|Cut
+teardown:
+- terminate: com.apple.mobilenotes
+notes: A tap dismisses the menu, so this only passes if the press is held. Tap-only agents cannot reach it.
