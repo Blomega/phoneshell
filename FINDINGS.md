@@ -479,6 +479,20 @@ Two things generalise:
   "on", which keeps the alarm. That rule stays correct even when the tree comes back short. The
   rule that failed was the one needing a complete tree.
 
+### An element's frame is only meaningful when the element is on screen
+
+Correcting something asserted earlier in this file. An alarm's switch reports
+`x=0, y=116, width=63` and it is tempting to call that frame wrong, because the switch is plainly
+drawn near the right-hand edge. It is not wrong, it is a placeholder: iOS clamps the frame of a row
+it has not rendered. Read the same switch while its row is actually visible and it reports
+`x=359, width=63` on a 440-point screen, which is exactly where it is drawn.
+
+So `x > 0` is a usable test for "this control can be tapped right now", and a visible control's own
+frame is trustworthy. What is not trustworthy is the *row's* centre as a stand-in for the control's:
+the toggle is aligned with the alarm's time, about 24 points above the middle of a 107-point row, so
+tapping the row centre misses a 29-point-tall switch entirely. That produced a tap that reported
+success, changed nothing, and looked identical to a dropped event.
+
 ## 21. A task that ran out of time could still be scored as a pass
 
 `result.passed` came from the checks alone. `clock.alarm.set_time` hit its 240-second budget with

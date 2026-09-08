@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "phoneshell/actions.py": {
-    "mtime": 1788843171.3421052,
-    "seen": 1788843771.893164,
-    "ast_hash": "a2185608f8760ff33154f1ad70723a69",
+    "mtime": 1788845421.6331043,
+    "seen": 1788860002.950963,
+    "ast_hash": "21bf2ba44c6ce497c03a679d311e62ae",
     "semantic_hash": ""
   },
   "phoneshell/agent/__init__.py": {
@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "phoneshell/bench/runner.py": {
-    "mtime": 1788843486.2563584,
-    "seen": 1788843771.8931708,
-    "ast_hash": "6c4f883fd36d32169580ec2d6c5c0fa4",
+    "mtime": 1788846024.6781228,
+    "seen": 1788860002.950969,
+    "ast_hash": "0fbd23b3a4c5b9c9a09b698ed62a2f38",
     "semantic_hash": ""
   },
   "phoneshell/bench/schema.py": {
@@ -72,9 +72,9 @@
     "semantic_hash": ""
   },
   "phoneshell/bench/site.py": {
-    "mtime": 1788802163.065948,
-    "seen": 1788832968.23244,
-    "ast_hash": "2952dfd3d0cd8be3d42afe5ca970331f",
+    "mtime": 1788848108.4350486,
+    "seen": 1788860002.950971,
+    "ast_hash": "c73f56c3cf06981bb20758f31a2435d4",
     "semantic_hash": ""
   },
   "phoneshell/bench/verify.py": {
@@ -114,9 +114,9 @@
     "semantic_hash": ""
   },
   "phoneshell/mcp_server.py": {
-    "mtime": 1788840373.7285912,
-    "seen": 1788843771.893177,
-    "ast_hash": "0dbafb384a487ff5cfa43bc852f8f42c",
+    "mtime": 1788848189.4750404,
+    "seen": 1788860002.950976,
+    "ast_hash": "ff7507a4c34b0710581af20b712ad389",
     "semantic_hash": ""
   },
   "phoneshell/memory.py": {
@@ -192,15 +192,15 @@
     "semantic_hash": ""
   },
   "scripts/validate_tasks.py": {
-    "mtime": 1788835308.4618664,
-    "seen": 1788835395.162184,
-    "ast_hash": "513fc14a19deb0ab137b50f4f8893a3a",
+    "mtime": 1788846042.3508513,
+    "seen": 1788860002.950986,
+    "ast_hash": "83c4fa9adffb9832959b85aa5292db48",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
-    "mtime": 1788840420.8499298,
-    "seen": 1788843771.893187,
-    "ast_hash": "2342fe4abc2922bad62ed275c4be3c8f",
+    "mtime": 1788860225.6457548,
+    "seen": 1788860244.416296,
+    "ast_hash": "0a9ae9e910229014e9ca934fbe6a71ac",
     "semantic_hash": ""
   },
   "README.md": {
@@ -234,9 +234,9 @@
     "semantic_hash": ""
   },
   "environments/clock_alarm_reach_picker.yaml": {
-    "mtime": 1788802907.630075,
-    "seen": 1788832968.232455,
-    "ast_hash": "0c8a10820bd086923d3e18832ed058d5",
+    "mtime": 1788846034.4056938,
+    "seen": 1788860002.950994,
+    "ast_hash": "bf13e63d36ba3191fa46dc1fe7291929",
     "semantic_hash": ""
   },
   "environments/clock_stopwatch_start.yaml": {
@@ -246,9 +246,9 @@
     "semantic_hash": ""
   },
   "environments/clock_tab_alarms.yaml": {
-    "mtime": 1788802907.6350653,
-    "seen": 1788832968.232457,
-    "ast_hash": "947aa7bc01ab0ad788ac02991f23793a",
+    "mtime": 1788846034.4066114,
+    "seen": 1788860002.950996,
+    "ast_hash": "faa7e6a92472522836956119cd120162",
     "semantic_hash": ""
   },
   "environments/clock_tab_timers.yaml": {
@@ -588,9 +588,9 @@
     "semantic_hash": ""
   },
   "environments/clock_alarm_set_time.yaml": {
-    "mtime": 1788843330.4142127,
-    "seen": 1788843771.893196,
-    "ast_hash": "dc3cc742ae6adc77fad5e0cc39d5f697",
+    "mtime": 1788846034.40607,
+    "seen": 1788860002.950995,
+    "ast_hash": "8e23db1c3635992fa44f1a35cdaefc42",
     "semantic_hash": ""
   },
   "environments/clock_timer_set_hm.yaml": {
@@ -675,6 +675,12 @@
     "mtime": 1788843359.4442892,
     "seen": 1788843771.8932428,
     "ast_hash": "feec45e8e15d208813f9d3f71c32d136",
+    "semantic_hash": ""
+  },
+  "scripts/clean_alarms.py": {
+    "mtime": 1788848465.7895505,
+    "seen": 1788860002.950985,
+    "ast_hash": "1f973a977fc83e83632eb66f2e9c1e87",
     "semantic_hash": ""
   }
 }

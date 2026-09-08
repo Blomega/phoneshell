@@ -243,7 +243,7 @@
       "label": ".press_key()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L532",
+      "source_location": "L540",
       "_callable": true,
       "_origin": "ast"
     },
@@ -252,7 +252,7 @@
       "label": "._scrollable_area()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L539",
+      "source_location": "L547",
       "_callable": true,
       "_origin": "ast"
     },
@@ -261,7 +261,7 @@
       "label": ".swipe()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L583",
+      "source_location": "L591",
       "_callable": true,
       "_origin": "ast"
     },
@@ -278,7 +278,7 @@
       "label": ".scroll_to_text()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L638",
+      "source_location": "L646",
       "_callable": true,
       "_origin": "ast"
     },
@@ -287,7 +287,7 @@
       "label": ".back()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L687",
+      "source_location": "L695",
       "_callable": true,
       "_origin": "ast"
     },
@@ -296,7 +296,7 @@
       "label": ".home()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L698",
+      "source_location": "L706",
       "_callable": true,
       "_origin": "ast"
     },
@@ -305,7 +305,7 @@
       "label": ".open_app()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L709",
+      "source_location": "L717",
       "_callable": true,
       "_origin": "ast"
     },
@@ -314,7 +314,7 @@
       "label": ".open_url()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L769",
+      "source_location": "L777",
       "_callable": true,
       "_origin": "ast"
     },
@@ -323,7 +323,7 @@
       "label": ".accept_alert()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L800",
+      "source_location": "L808",
       "_callable": true,
       "_origin": "ast"
     },
@@ -332,7 +332,7 @@
       "label": ".dismiss_alert()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L804",
+      "source_location": "L812",
       "_callable": true,
       "_origin": "ast"
     },
@@ -341,7 +341,7 @@
       "label": ".wait_for_text()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L808",
+      "source_location": "L816",
       "_callable": true,
       "_origin": "ast"
     },
@@ -350,7 +350,7 @@
       "label": ".find_handle()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L819",
+      "source_location": "L827",
       "_callable": true,
       "_origin": "ast"
     },
@@ -359,7 +359,7 @@
       "label": ".passcode()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L847",
+      "source_location": "L855",
       "_callable": true,
       "_origin": "ast"
     },
@@ -368,7 +368,7 @@
       "label": ".ensure_unlocked()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L853",
+      "source_location": "L861",
       "_callable": true,
       "_origin": "ast"
     },
@@ -377,7 +377,7 @@
       "label": ".observe()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L902",
+      "source_location": "L910",
       "_callable": true,
       "_origin": "ast"
     },
@@ -386,7 +386,7 @@
       "label": ".name_for_bundle()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L981",
+      "source_location": "L989",
       "_callable": true,
       "_origin": "ast"
     },
@@ -395,7 +395,7 @@
       "label": ".resolve_app()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L997",
+      "source_location": "L1005",
       "_callable": true,
       "_origin": "ast"
     },
@@ -404,7 +404,7 @@
       "label": ".load_catalog()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L1022",
+      "source_location": "L1030",
       "_callable": true,
       "_origin": "ast"
     },
@@ -413,7 +413,7 @@
       "label": ".to_image()",
       "file_type": "code",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L1033",
+      "source_location": "L1041",
       "_callable": true,
       "_origin": "ast"
     },
@@ -522,99 +522,99 @@
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_540",
+      "id": "phoneshell_actions_rationale_548",
       "label": "The largest scrollable container that is not the whole screen. A sheet over a…",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L540",
+      "source_location": "L548",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_591",
+      "id": "phoneshell_actions_rationale_599",
       "label": "Content-scrolling swipe through the middle of the screen. Note the inversion:…",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L591",
+      "source_location": "L599",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_640",
+      "id": "phoneshell_actions_rationale_648",
       "label": "Swipe until the text shows up, looking BOTH ways. Searching one direction only…",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L640",
+      "source_location": "L648",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_688",
+      "id": "phoneshell_actions_rationale_696",
       "label": "iOS has no back button. Try the nav bar, then the edge swipe.",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L688",
+      "source_location": "L696",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_699",
+      "id": "phoneshell_actions_rationale_707",
       "label": "Verified: the plain press does nothing often enough to strand an agent.",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L699",
+      "source_location": "L707",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_710",
+      "id": "phoneshell_actions_rationale_718",
       "label": "Accepts a bundle id or a human app name. Verified, not assumed. WebDriverAgent…",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L710",
+      "source_location": "L718",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_770",
+      "id": "phoneshell_actions_rationale_778",
       "label": "Deep links are the fastest, least fragile way into a known screen. Also…",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L770",
+      "source_location": "L778",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_820",
+      "id": "phoneshell_actions_rationale_828",
       "label": "Resolve a snapshot element to a live WDA element handle. Handles go stale the…",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L820",
+      "source_location": "L828",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_848",
+      "id": "phoneshell_actions_rationale_856",
       "label": "Keychain first, config second. Nothing else reads this.",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L848",
+      "source_location": "L856",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_854",
+      "id": "phoneshell_actions_rationale_862",
       "label": "Wake the phone and get past the lock screen if we are allowed to. A locked…",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L854",
+      "source_location": "L862",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_982",
+      "id": "phoneshell_actions_rationale_990",
       "label": "Human name for a bundle id, so observations never say app=?.",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L982",
+      "source_location": "L990",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_actions_rationale_998",
+      "id": "phoneshell_actions_rationale_1006",
       "label": "Human name to bundle id. Curated aliases win over display names, because iOS…",
       "file_type": "rationale",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L998",
+      "source_location": "L1006",
       "_origin": "ast"
     },
     {
@@ -1278,7 +1278,7 @@
       "label": "RigUnavailable",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L65",
+      "source_location": "L66",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1296,7 +1296,7 @@
       "label": "UsageLimitReached",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L75",
+      "source_location": "L76",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1306,7 +1306,7 @@
       "label": "looks_rate_limited()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L93",
+      "source_location": "L94",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1315,7 +1315,7 @@
       "label": "TaskResult",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L99",
+      "source_location": "L100",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1325,7 +1325,7 @@
       "label": "Runner",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L115",
+      "source_location": "L116",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -1335,7 +1335,7 @@
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L116",
+      "source_location": "L117",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1344,7 +1344,16 @@
       "label": ".apply()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L135",
+      "source_location": "L136",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "phoneshell_bench_runner_runner_remove_artifact_alarms",
+      "label": ".remove_artifact_alarms()",
+      "file_type": "code",
+      "source_file": "phoneshell/bench/runner.py",
+      "source_location": "L168",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1353,7 +1362,7 @@
       "label": ".run_agent()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L165",
+      "source_location": "L208",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1362,7 +1371,7 @@
       "label": ".healthy()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L194",
+      "source_location": "L237",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1371,7 +1380,7 @@
       "label": ".heal()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L204",
+      "source_location": "L247",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1380,7 +1389,7 @@
       "label": ".ensure_awake()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L227",
+      "source_location": "L270",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1389,7 +1398,7 @@
       "label": ".run()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L241",
+      "source_location": "L284",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1398,7 +1407,7 @@
       "label": ".record()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L313",
+      "source_location": "L361",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1407,7 +1416,7 @@
       "label": "score()",
       "file_type": "code",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L320",
+      "source_location": "L368",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1420,59 +1429,67 @@
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_bench_runner_rationale_66",
+      "id": "phoneshell_bench_runner_rationale_67",
       "label": "The phone could not be driven, so the task was never really attempted. A locked…",
       "file_type": "rationale",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L66",
+      "source_location": "L67",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_bench_runner_rationale_76",
+      "id": "phoneshell_bench_runner_rationale_77",
       "label": "The model refused to answer because the account is rate limited. This must…",
       "file_type": "rationale",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L76",
+      "source_location": "L77",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_bench_runner_rationale_136",
+      "id": "phoneshell_bench_runner_rationale_137",
       "label": "Deterministic phone manipulation, no model in the loop.",
       "file_type": "rationale",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L136",
+      "source_location": "L137",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_bench_runner_rationale_167",
+      "id": "phoneshell_bench_runner_rationale_169",
+      "label": "Delete alarms this task saved, and only those. The alarm tasks say \"do not save…",
+      "file_type": "rationale",
+      "source_file": "phoneshell/bench/runner.py",
+      "source_location": "L169",
+      "_origin": "ast"
+    },
+    {
+      "id": "phoneshell_bench_runner_rationale_210",
       "label": "Hand the instruction to the model under test and let it work.",
       "file_type": "rationale",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L167",
+      "source_location": "L210",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_bench_runner_rationale_195",
+      "id": "phoneshell_bench_runner_rationale_238",
       "label": "Cheap probe before each task: a wedged phone fails every task after it and the…",
       "file_type": "rationale",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L195",
+      "source_location": "L238",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_bench_runner_rationale_228",
+      "id": "phoneshell_bench_runner_rationale_271",
       "label": "A locked phone invalidates everything after it, so check before each task and…",
       "file_type": "rationale",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L228",
+      "source_location": "L271",
       "_origin": "ast"
     },
     {
-      "id": "phoneshell_bench_runner_rationale_321",
+      "id": "phoneshell_bench_runner_rationale_369",
       "label": "Aggregate a run into the numbers that go on the leaderboard. Skipped tasks are…",
       "file_type": "rationale",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L321",
+      "source_location": "L369",
       "_origin": "ast"
     },
     {
@@ -1594,7 +1611,7 @@
       "label": "_esc()",
       "file_type": "code",
       "source_file": "phoneshell/bench/site.py",
-      "source_location": "L79",
+      "source_location": "L106",
       "_callable": true,
       "_origin": "ast"
     },
@@ -1603,7 +1620,7 @@
       "label": "build()",
       "file_type": "code",
       "source_file": "phoneshell/bench/site.py",
-      "source_location": "L83",
+      "source_location": "L110",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3632,7 +3649,7 @@
       "label": "phone_observe()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L247",
+      "source_location": "L250",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3641,7 +3658,7 @@
       "label": "phone_tap()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L260",
+      "source_location": "L264",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3650,7 +3667,7 @@
       "label": "phone_long_press()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L289",
+      "source_location": "L293",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3659,7 +3676,7 @@
       "label": "phone_type()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L307",
+      "source_location": "L312",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3668,7 +3685,7 @@
       "label": "phone_swipe()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L333",
+      "source_location": "L338",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3677,7 +3694,7 @@
       "label": "phone_scroll_to()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L353",
+      "source_location": "L358",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3686,7 +3703,7 @@
       "label": "phone_open_app()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L366",
+      "source_location": "L371",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3695,7 +3712,7 @@
       "label": "phone_open_url()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L413",
+      "source_location": "L418",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3704,7 +3721,7 @@
       "label": "phone_set_picker()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L436",
+      "source_location": "L441",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3713,7 +3730,7 @@
       "label": "phone_press()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L448",
+      "source_location": "L453",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3722,7 +3739,7 @@
       "label": "phone_alert()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L463",
+      "source_location": "L468",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3731,7 +3748,7 @@
       "label": "phone_list_apps()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L476",
+      "source_location": "L481",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3740,7 +3757,7 @@
       "label": "phone_wait_for()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L486",
+      "source_location": "L491",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3749,7 +3766,7 @@
       "label": "phone_do()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L544",
+      "source_location": "L549",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3758,7 +3775,7 @@
       "label": "phone_gesture()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L645",
+      "source_location": "L650",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3767,7 +3784,7 @@
       "label": "phone_popup_help()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L707",
+      "source_location": "L712",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3776,7 +3793,7 @@
       "label": "phone_memory()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L720",
+      "source_location": "L725",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3785,7 +3802,7 @@
       "label": "phone_dismiss_popup()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L749",
+      "source_location": "L754",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3794,7 +3811,7 @@
       "label": "phone_macro_list()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L770",
+      "source_location": "L775",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3803,7 +3820,7 @@
       "label": "phone_macro_run()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L789",
+      "source_location": "L794",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3812,7 +3829,7 @@
       "label": "phone_macro_save()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L812",
+      "source_location": "L817",
       "_callable": true,
       "_origin": "ast"
     },
@@ -3821,7 +3838,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L825",
+      "source_location": "L830",
       "_callable": true,
       "_origin": "ast"
     },
@@ -6324,6 +6341,57 @@
       "_origin": "ast"
     },
     {
+      "id": "scripts_clean_alarms",
+      "label": "clean_alarms.py",
+      "file_type": "code",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "scripts_clean_alarms_survey",
+      "label": "survey()",
+      "file_type": "code",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L24",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "scripts_clean_alarms_is_artifact",
+      "label": "is_artifact()",
+      "file_type": "code",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L47",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "scripts_clean_alarms_main",
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L51",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "scripts_clean_alarms_rationale_1",
+      "label": "Remove the alarms the benchmark left behind, and nothing else. Runs saved an…",
+      "file_type": "rationale",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "scripts_clean_alarms_rationale_25",
+      "label": "Every alarm row: label, whether its switch is on, and where it is. Reads taken…",
+      "file_type": "rationale",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L25",
+      "_origin": "ast"
+    },
+    {
       "id": "scripts_validate_tasks",
       "label": "validate_tasks.py",
       "file_type": "code",
@@ -6336,7 +6404,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "scripts/validate_tasks.py",
-      "source_location": "L24",
+      "source_location": "L25",
       "_callable": true,
       "_origin": "ast"
     },
@@ -6652,6 +6720,51 @@
       "node_kind": "heading",
       "source_file": "FINDINGS.md",
       "source_location": "L411",
+      "_origin": "ast"
+    },
+    {
+      "id": "findings_18_the_benchmark_decayed_the_thing_it_was_measuring",
+      "label": "18. The benchmark decayed the thing it was measuring",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "FINDINGS.md",
+      "source_location": "L423",
+      "_origin": "ast"
+    },
+    {
+      "id": "findings_19_at_scale_source_returns_an_incomplete_tree_and_says_nothing",
+      "label": "19. At scale, `/source` returns an incomplete tree and says nothing",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "FINDINGS.md",
+      "source_location": "L447",
+      "_origin": "ast"
+    },
+    {
+      "id": "findings_20_deleting_rows_renormalises_the_scroll_offset_and_it_cost_a_real_alarm",
+      "label": "20. Deleting rows renormalises the scroll offset, and it cost a real alarm",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "FINDINGS.md",
+      "source_location": "L460",
+      "_origin": "ast"
+    },
+    {
+      "id": "findings_an_element_s_frame_is_only_meaningful_when_the_element_is_on_screen",
+      "label": "An element's frame is only meaningful when the element is on screen",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "FINDINGS.md",
+      "source_location": "L482",
+      "_origin": "ast"
+    },
+    {
+      "id": "findings_21_a_task_that_ran_out_of_time_could_still_be_scored_as_a_pass",
+      "label": "21. A task that ran out of time could still be scored as a pass",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "FINDINGS.md",
+      "source_location": "L496",
       "_origin": "ast"
     },
     {
@@ -7386,7 +7499,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L532",
+      "source_location": "L540",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7397,7 +7510,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L532",
+      "source_location": "L540",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7408,7 +7521,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L532",
+      "source_location": "L540",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7418,7 +7531,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L539",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7429,7 +7542,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L539",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7439,7 +7552,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L583",
+      "source_location": "L591",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7450,7 +7563,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L583",
+      "source_location": "L591",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7461,7 +7574,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L583",
+      "source_location": "L591",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7472,7 +7585,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L583",
+      "source_location": "L591",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7483,7 +7596,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L583",
+      "source_location": "L591",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7493,7 +7606,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L638",
+      "source_location": "L646",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7504,7 +7617,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L638",
+      "source_location": "L646",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7515,7 +7628,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L638",
+      "source_location": "L646",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7525,7 +7638,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L687",
+      "source_location": "L695",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7536,7 +7649,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L687",
+      "source_location": "L695",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7547,7 +7660,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L687",
+      "source_location": "L695",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7557,7 +7670,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L698",
+      "source_location": "L706",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7568,7 +7681,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L698",
+      "source_location": "L706",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7579,7 +7692,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L698",
+      "source_location": "L706",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7589,7 +7702,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L709",
+      "source_location": "L717",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7600,7 +7713,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L709",
+      "source_location": "L717",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7611,7 +7724,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L709",
+      "source_location": "L717",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7621,7 +7734,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L769",
+      "source_location": "L777",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7632,7 +7745,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L769",
+      "source_location": "L777",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7643,7 +7756,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L769",
+      "source_location": "L777",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7653,7 +7766,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L800",
+      "source_location": "L808",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7664,7 +7777,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L800",
+      "source_location": "L808",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7675,7 +7788,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L800",
+      "source_location": "L808",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7685,7 +7798,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L804",
+      "source_location": "L812",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7696,7 +7809,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L804",
+      "source_location": "L812",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7707,7 +7820,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L804",
+      "source_location": "L812",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7717,7 +7830,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L808",
+      "source_location": "L816",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7728,7 +7841,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L808",
+      "source_location": "L816",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7738,7 +7851,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L819",
+      "source_location": "L827",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7749,7 +7862,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L819",
+      "source_location": "L827",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7759,7 +7872,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L847",
+      "source_location": "L855",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7769,7 +7882,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L853",
+      "source_location": "L861",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7780,7 +7893,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L853",
+      "source_location": "L861",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7790,7 +7903,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L902",
+      "source_location": "L910",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7801,7 +7914,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L902",
+      "source_location": "L910",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7811,7 +7924,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L981",
+      "source_location": "L989",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7821,7 +7934,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L997",
+      "source_location": "L1005",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7831,7 +7944,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L1022",
+      "source_location": "L1030",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7841,7 +7954,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L1033",
+      "source_location": "L1041",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -7852,7 +7965,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L1033",
+      "source_location": "L1041",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8039,7 +8152,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L535",
+      "source_location": "L543",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8050,7 +8163,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L602",
+      "source_location": "L610",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8061,7 +8174,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L619",
+      "source_location": "L627",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8072,7 +8185,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L636",
+      "source_location": "L644",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8083,7 +8196,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L658",
+      "source_location": "L666",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8094,7 +8207,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L670",
+      "source_location": "L678",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8105,23 +8218,12 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L689",
+      "source_location": "L697",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "phoneshell_actions_phone_back",
-      "target": "phoneshell_actions_phone_after",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "phoneshell/actions.py",
-      "source_location": "L693",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "phoneshell_actions_phone_home",
       "target": "phoneshell_actions_phone_after",
       "relation": "calls",
       "context": "call",
@@ -8132,13 +8234,24 @@
       "_origin": "ast"
     },
     {
+      "source": "phoneshell_actions_phone_home",
+      "target": "phoneshell_actions_phone_after",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/actions.py",
+      "source_location": "L709",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "phoneshell_actions_phone_open_app",
       "target": "phoneshell_actions_phone_resolve_app",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L718",
+      "source_location": "L726",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8149,7 +8262,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L720",
+      "source_location": "L728",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8160,7 +8273,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L738",
+      "source_location": "L746",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8171,7 +8284,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L791",
+      "source_location": "L799",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8182,7 +8295,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L802",
+      "source_location": "L810",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8193,7 +8306,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L806",
+      "source_location": "L814",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8204,7 +8317,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L811",
+      "source_location": "L819",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8215,7 +8328,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L814",
+      "source_location": "L822",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8226,7 +8339,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L833",
+      "source_location": "L841",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8237,7 +8350,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L861",
+      "source_location": "L869",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8248,7 +8361,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L870",
+      "source_location": "L878",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8259,7 +8372,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L880",
+      "source_location": "L888",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8270,7 +8383,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L912",
+      "source_location": "L920",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8281,7 +8394,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L989",
+      "source_location": "L997",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8292,7 +8405,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L1010",
+      "source_location": "L1018",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -8417,122 +8530,122 @@
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_540",
+      "source": "phoneshell_actions_rationale_548",
       "target": "phoneshell_actions_phone_scrollable_area",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L540",
+      "source_location": "L548",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_591",
+      "source": "phoneshell_actions_rationale_599",
       "target": "phoneshell_actions_phone_swipe",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L591",
+      "source_location": "L599",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_640",
+      "source": "phoneshell_actions_rationale_648",
       "target": "phoneshell_actions_phone_scroll_to_text",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L640",
+      "source_location": "L648",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_688",
+      "source": "phoneshell_actions_rationale_696",
       "target": "phoneshell_actions_phone_back",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L688",
+      "source_location": "L696",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_699",
+      "source": "phoneshell_actions_rationale_707",
       "target": "phoneshell_actions_phone_home",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L699",
+      "source_location": "L707",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_710",
+      "source": "phoneshell_actions_rationale_718",
       "target": "phoneshell_actions_phone_open_app",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L710",
+      "source_location": "L718",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_770",
+      "source": "phoneshell_actions_rationale_778",
       "target": "phoneshell_actions_phone_open_url",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L770",
+      "source_location": "L778",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_820",
+      "source": "phoneshell_actions_rationale_828",
       "target": "phoneshell_actions_phone_find_handle",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L820",
+      "source_location": "L828",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_848",
+      "source": "phoneshell_actions_rationale_856",
       "target": "phoneshell_actions_phone_passcode",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L848",
+      "source_location": "L856",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_854",
+      "source": "phoneshell_actions_rationale_862",
       "target": "phoneshell_actions_phone_ensure_unlocked",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L854",
+      "source_location": "L862",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_982",
+      "source": "phoneshell_actions_rationale_990",
       "target": "phoneshell_actions_phone_name_for_bundle",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L982",
+      "source_location": "L990",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_actions_rationale_998",
+      "source": "phoneshell_actions_rationale_1006",
       "target": "phoneshell_actions_phone_resolve_app",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L998",
+      "source_location": "L1006",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10089,7 +10202,7 @@
     },
     {
       "source": "phoneshell_bench_runner",
-      "target": "subprocess",
+      "target": "re",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -10100,7 +10213,7 @@
     },
     {
       "source": "phoneshell_bench_runner",
-      "target": "time",
+      "target": "subprocess",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -10111,8 +10224,8 @@
     },
     {
       "source": "phoneshell_bench_runner",
-      "target": "dataclasses",
-      "relation": "imports_from",
+      "target": "time",
+      "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
@@ -10122,7 +10235,7 @@
     },
     {
       "source": "phoneshell_bench_runner",
-      "target": "pathlib",
+      "target": "dataclasses",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -10133,18 +10246,18 @@
     },
     {
       "source": "phoneshell_bench_runner",
-      "target": "phoneshell_config",
+      "target": "pathlib",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L20",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "phoneshell_bench_runner",
-      "target": "phoneshell_wda_client",
+      "target": "phoneshell_config",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -10155,7 +10268,7 @@
     },
     {
       "source": "phoneshell_bench_runner",
-      "target": "phoneshell_bench_schema",
+      "target": "phoneshell_wda_client",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -10166,7 +10279,7 @@
     },
     {
       "source": "phoneshell_bench_runner",
-      "target": "phoneshell_bench_verify",
+      "target": "phoneshell_bench_schema",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -10177,11 +10290,22 @@
     },
     {
       "source": "phoneshell_bench_runner",
+      "target": "phoneshell_bench_verify",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/bench/runner.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_bench_runner",
       "target": "phoneshell_bench_runner_rigunavailable",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L65",
+      "source_location": "L66",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10191,7 +10315,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L65",
+      "source_location": "L66",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10201,7 +10325,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L75",
+      "source_location": "L76",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10211,7 +10335,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L75",
+      "source_location": "L76",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10221,7 +10345,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L93",
+      "source_location": "L94",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10231,7 +10355,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L99",
+      "source_location": "L100",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10241,7 +10365,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L115",
+      "source_location": "L116",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10251,7 +10375,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L116",
+      "source_location": "L117",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10262,7 +10386,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L116",
+      "source_location": "L117",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10272,7 +10396,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L135",
+      "source_location": "L136",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10283,7 +10407,17 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L135",
+      "source_location": "L136",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_bench_runner_runner",
+      "target": "phoneshell_bench_runner_runner_remove_artifact_alarms",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/bench/runner.py",
+      "source_location": "L168",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10293,7 +10427,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L165",
+      "source_location": "L208",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10304,7 +10438,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L165",
+      "source_location": "L208",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10314,7 +10448,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L194",
+      "source_location": "L237",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10324,7 +10458,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L204",
+      "source_location": "L247",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10334,7 +10468,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L227",
+      "source_location": "L270",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10344,7 +10478,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L241",
+      "source_location": "L284",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10355,7 +10489,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L241",
+      "source_location": "L284",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10366,7 +10500,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L241",
+      "source_location": "L284",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10376,7 +10510,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L313",
+      "source_location": "L361",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10387,7 +10521,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L313",
+      "source_location": "L361",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10398,7 +10532,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L313",
+      "source_location": "L361",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10408,7 +10542,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L320",
+      "source_location": "L368",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_bench_runner_runner_apply",
+      "target": "phoneshell_bench_runner_runner_remove_artifact_alarms",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/bench/runner.py",
+      "source_location": "L162",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10419,7 +10564,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L180",
+      "source_location": "L223",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10430,7 +10575,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L244",
+      "source_location": "L287",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10441,7 +10586,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L246",
+      "source_location": "L289",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10452,7 +10597,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L250",
+      "source_location": "L293",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10463,7 +10608,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L251",
+      "source_location": "L294",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10474,7 +10619,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L252",
+      "source_location": "L295",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10485,7 +10630,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L257",
+      "source_location": "L300",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10496,7 +10641,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L264",
+      "source_location": "L307",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10507,7 +10652,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L282",
+      "source_location": "L325",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10518,7 +10663,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L286",
+      "source_location": "L329",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10529,7 +10674,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L337",
+      "source_location": "L385",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10544,72 +10689,82 @@
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_bench_runner_rationale_66",
+      "source": "phoneshell_bench_runner_rationale_67",
       "target": "phoneshell_bench_runner_rigunavailable",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L66",
+      "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_bench_runner_rationale_76",
+      "source": "phoneshell_bench_runner_rationale_77",
       "target": "phoneshell_bench_runner_usagelimitreached",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L76",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_bench_runner_rationale_136",
+      "source": "phoneshell_bench_runner_rationale_137",
       "target": "phoneshell_bench_runner_runner_apply",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L136",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_bench_runner_rationale_167",
+      "source": "phoneshell_bench_runner_rationale_169",
+      "target": "phoneshell_bench_runner_runner_remove_artifact_alarms",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/bench/runner.py",
+      "source_location": "L169",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_bench_runner_rationale_210",
       "target": "phoneshell_bench_runner_runner_run_agent",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L167",
+      "source_location": "L210",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_bench_runner_rationale_195",
+      "source": "phoneshell_bench_runner_rationale_238",
       "target": "phoneshell_bench_runner_runner_healthy",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L195",
+      "source_location": "L238",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_bench_runner_rationale_228",
+      "source": "phoneshell_bench_runner_rationale_271",
       "target": "phoneshell_bench_runner_runner_ensure_awake",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L228",
+      "source_location": "L271",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
-      "source": "phoneshell_bench_runner_rationale_321",
+      "source": "phoneshell_bench_runner_rationale_369",
       "target": "phoneshell_bench_runner_score",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L321",
+      "source_location": "L369",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10884,7 +11039,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/site.py",
-      "source_location": "L79",
+      "source_location": "L106",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10894,7 +11049,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/site.py",
-      "source_location": "L83",
+      "source_location": "L110",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10905,7 +11060,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/site.py",
-      "source_location": "L83",
+      "source_location": "L110",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -10916,7 +11071,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/site.py",
-      "source_location": "L104",
+      "source_location": "L131",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -15890,7 +16045,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L247",
+      "source_location": "L250",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -15901,7 +16056,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L247",
+      "source_location": "L250",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -15911,7 +16066,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L252",
+      "source_location": "L255",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -15922,7 +16077,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L260",
+      "source_location": "L264",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -15933,7 +16088,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L260",
+      "source_location": "L264",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -15943,7 +16098,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L288",
+      "source_location": "L292",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -15954,7 +16109,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L289",
+      "source_location": "L293",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -15965,7 +16120,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L289",
+      "source_location": "L293",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -15975,7 +16130,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L299",
+      "source_location": "L303",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -15986,7 +16141,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L307",
+      "source_location": "L312",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -15997,7 +16152,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L307",
+      "source_location": "L312",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16007,7 +16162,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L326",
+      "source_location": "L331",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16018,7 +16173,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L333",
+      "source_location": "L338",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16029,7 +16184,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L333",
+      "source_location": "L338",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16039,7 +16194,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L346",
+      "source_location": "L351",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16050,7 +16205,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L353",
+      "source_location": "L358",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16061,7 +16216,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L353",
+      "source_location": "L358",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16071,7 +16226,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L359",
+      "source_location": "L364",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16082,7 +16237,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L366",
+      "source_location": "L371",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16093,7 +16248,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L366",
+      "source_location": "L371",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16103,7 +16258,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L406",
+      "source_location": "L411",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16114,7 +16269,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L413",
+      "source_location": "L418",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16125,7 +16280,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L413",
+      "source_location": "L418",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16135,7 +16290,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L425",
+      "source_location": "L430",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16146,7 +16301,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L436",
+      "source_location": "L441",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16157,7 +16312,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L436",
+      "source_location": "L441",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16167,7 +16322,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L447",
+      "source_location": "L452",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16178,7 +16333,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L448",
+      "source_location": "L453",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16189,7 +16344,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L448",
+      "source_location": "L453",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16199,7 +16354,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L456",
+      "source_location": "L461",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16210,7 +16365,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L463",
+      "source_location": "L468",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16221,7 +16376,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L463",
+      "source_location": "L468",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16231,7 +16386,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L475",
+      "source_location": "L480",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16242,7 +16397,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L476",
+      "source_location": "L481",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16252,7 +16407,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L485",
+      "source_location": "L490",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16263,7 +16418,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L486",
+      "source_location": "L491",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16274,7 +16429,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L486",
+      "source_location": "L491",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16284,7 +16439,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L527",
+      "source_location": "L532",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16295,7 +16450,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L544",
+      "source_location": "L549",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16306,7 +16461,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L544",
+      "source_location": "L549",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16316,7 +16471,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L637",
+      "source_location": "L642",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16327,7 +16482,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L645",
+      "source_location": "L650",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16338,7 +16493,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L645",
+      "source_location": "L650",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16348,7 +16503,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L699",
+      "source_location": "L704",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16359,7 +16514,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L707",
+      "source_location": "L712",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16370,7 +16525,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L707",
+      "source_location": "L712",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16380,7 +16535,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L711",
+      "source_location": "L716",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16391,7 +16546,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L720",
+      "source_location": "L725",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16402,7 +16557,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L720",
+      "source_location": "L725",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16412,7 +16567,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L739",
+      "source_location": "L744",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16423,7 +16578,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L749",
+      "source_location": "L754",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16434,7 +16589,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L749",
+      "source_location": "L754",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16444,7 +16599,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L763",
+      "source_location": "L768",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16455,7 +16610,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L770",
+      "source_location": "L775",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16466,7 +16621,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L770",
+      "source_location": "L775",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16476,7 +16631,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L781",
+      "source_location": "L786",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16487,7 +16642,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L789",
+      "source_location": "L794",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16498,7 +16653,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L789",
+      "source_location": "L794",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16508,7 +16663,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L804",
+      "source_location": "L809",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -16519,7 +16674,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L812",
+      "source_location": "L817",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16530,7 +16685,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L812",
+      "source_location": "L817",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16540,7 +16695,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L825",
+      "source_location": "L830",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16606,7 +16761,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L249",
+      "source_location": "L252",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16617,7 +16772,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L261",
+      "source_location": "L265",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16628,7 +16783,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L261",
+      "source_location": "L265",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16639,7 +16794,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L268",
+      "source_location": "L272",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16650,7 +16805,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L280",
+      "source_location": "L284",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16661,7 +16816,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L285",
+      "source_location": "L289",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16672,7 +16827,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L290",
+      "source_location": "L294",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16683,7 +16838,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L290",
+      "source_location": "L294",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16694,35 +16849,13 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L296",
+      "source_location": "L300",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "phoneshell_mcp_server_phone_type",
       "target": "phoneshell_mcp_server_unlocked_or_message",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L308",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "phoneshell_mcp_server_phone_type",
-      "target": "phoneshell_mcp_server_turn_or_message",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L308",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "phoneshell_mcp_server_phone_type",
-      "target": "phoneshell_mcp_server_anchor_text",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -16733,12 +16866,34 @@
     },
     {
       "source": "phoneshell_mcp_server_phone_type",
+      "target": "phoneshell_mcp_server_turn_or_message",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/mcp_server.py",
+      "source_location": "L313",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_mcp_server_phone_type",
+      "target": "phoneshell_mcp_server_anchor_text",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/mcp_server.py",
+      "source_location": "L318",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_mcp_server_phone_type",
       "target": "phoneshell_mcp_server_act_and_report",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L323",
+      "source_location": "L328",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16749,7 +16904,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L338",
+      "source_location": "L343",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16760,7 +16915,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L338",
+      "source_location": "L343",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16771,7 +16926,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L343",
+      "source_location": "L348",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16782,35 +16937,13 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L356",
+      "source_location": "L361",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "phoneshell_mcp_server_phone_open_app",
       "target": "phoneshell_mcp_server_unlocked_or_message",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L367",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "phoneshell_mcp_server_phone_open_app",
-      "target": "phoneshell_mcp_server_turn_or_message",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L367",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "phoneshell_mcp_server_phone_open_app",
-      "target": "phoneshell_mcp_server_text",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -16821,12 +16954,34 @@
     },
     {
       "source": "phoneshell_mcp_server_phone_open_app",
+      "target": "phoneshell_mcp_server_turn_or_message",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/mcp_server.py",
+      "source_location": "L372",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_mcp_server_phone_open_app",
+      "target": "phoneshell_mcp_server_text",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/mcp_server.py",
+      "source_location": "L377",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_mcp_server_phone_open_app",
       "target": "phoneshell_mcp_server_act_and_report",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L403",
+      "source_location": "L408",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16837,7 +16992,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L414",
+      "source_location": "L419",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16848,7 +17003,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L414",
+      "source_location": "L419",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16859,7 +17014,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L420",
+      "source_location": "L425",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16870,7 +17025,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L422",
+      "source_location": "L427",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16881,7 +17036,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L437",
+      "source_location": "L442",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16892,7 +17047,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L437",
+      "source_location": "L442",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16903,7 +17058,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L441",
+      "source_location": "L446",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16914,7 +17069,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L444",
+      "source_location": "L449",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16925,7 +17080,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L453",
+      "source_location": "L458",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16936,7 +17091,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L466",
+      "source_location": "L471",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16947,7 +17102,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L472",
+      "source_location": "L477",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16958,7 +17113,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L488",
+      "source_location": "L493",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16969,7 +17124,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L545",
+      "source_location": "L550",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16980,7 +17135,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L545",
+      "source_location": "L550",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -16991,7 +17146,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L634",
+      "source_location": "L639",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17002,7 +17157,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L646",
+      "source_location": "L651",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17013,7 +17168,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L646",
+      "source_location": "L651",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17024,7 +17179,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L650",
+      "source_location": "L655",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17035,7 +17190,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L696",
+      "source_location": "L701",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17046,7 +17201,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L708",
+      "source_location": "L713",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17057,7 +17212,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L724",
+      "source_location": "L729",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17068,7 +17223,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L753",
+      "source_location": "L758",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17079,7 +17234,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L773",
+      "source_location": "L778",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17090,7 +17245,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L792",
+      "source_location": "L797",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17101,7 +17256,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L801",
+      "source_location": "L806",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -17112,7 +17267,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L814",
+      "source_location": "L819",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23088,6 +23243,133 @@
       "_origin": "ast"
     },
     {
+      "source": "scripts_clean_alarms",
+      "target": "re",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms",
+      "target": "sys",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms",
+      "target": "time",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms",
+      "target": "phoneshell_actions",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms",
+      "target": "phoneshell_perception_tree",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms",
+      "target": "scripts_clean_alarms_survey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms",
+      "target": "scripts_clean_alarms_is_artifact",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms",
+      "target": "scripts_clean_alarms_main",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms_main",
+      "target": "scripts_clean_alarms_survey",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms_main",
+      "target": "scripts_clean_alarms_is_artifact",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms_rationale_1",
+      "target": "scripts_clean_alarms",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms_rationale_25",
+      "target": "scripts_clean_alarms_survey",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "scripts_validate_tasks",
       "target": "sys",
       "relation": "imports",
@@ -23126,7 +23408,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_tasks.py",
-      "source_location": "L24",
+      "source_location": "L25",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23471,6 +23753,56 @@
       "_origin": "ast"
     },
     {
+      "source": "findings_findings",
+      "target": "findings_18_the_benchmark_decayed_the_thing_it_was_measuring",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FINDINGS.md",
+      "source_location": "L423",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "findings_findings",
+      "target": "findings_19_at_scale_source_returns_an_incomplete_tree_and_says_nothing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FINDINGS.md",
+      "source_location": "L447",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "findings_findings",
+      "target": "findings_20_deleting_rows_renormalises_the_scroll_offset_and_it_cost_a_real_alarm",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FINDINGS.md",
+      "source_location": "L460",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "findings_20_deleting_rows_renormalises_the_scroll_offset_and_it_cost_a_real_alarm",
+      "target": "findings_an_element_s_frame_is_only_meaningful_when_the_element_is_on_screen",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FINDINGS.md",
+      "source_location": "L482",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "findings_findings",
+      "target": "findings_21_a_task_that_ran_out_of_time_could_still_be_scored_as_a_pass",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FINDINGS.md",
+      "source_location": "L496",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "readme",
       "target": "readme_phoneshell",
       "relation": "contains",
@@ -23785,7 +24117,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L849",
+      "source_location": "L857",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23796,7 +24128,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L1026",
+      "source_location": "L1034",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23884,7 +24216,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23895,7 +24227,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L21",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23906,7 +24238,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23917,7 +24249,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23928,7 +24260,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23939,7 +24271,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23950,7 +24282,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23961,7 +24293,18 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L150",
+      "source_location": "L151",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_bench_runner",
+      "target": "phoneshell_perception_tree_flatten",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "phoneshell/bench/runner.py",
+      "source_location": "L182",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -23972,7 +24315,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L336",
+      "source_location": "L384",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -24489,7 +24832,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L274",
+      "source_location": "L278",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -24659,6 +25002,28 @@
       "_origin": "ast"
     },
     {
+      "source": "scripts_clean_alarms",
+      "target": "phoneshell_actions_phone",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms",
+      "target": "phoneshell_perception_tree_flatten",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "scripts_validate_tasks",
       "target": "phoneshell_bench_schema_load_all",
       "relation": "imports",
@@ -24687,7 +25052,7 @@
       "context": "submodule_import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/actions.py",
-      "source_location": "L953",
+      "source_location": "L961",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -24731,7 +25096,7 @@
       "context": "submodule_import",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L205",
+      "source_location": "L248",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -24819,7 +25184,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L337",
+      "source_location": "L385",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -24830,7 +25195,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/site.py",
-      "source_location": "L84",
+      "source_location": "L111",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -24841,7 +25206,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "phoneshell/bench/site.py",
-      "source_location": "L85",
+      "source_location": "L112",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -24967,13 +25332,35 @@
       "_origin": "ast"
     },
     {
+      "source": "scripts_clean_alarms_survey",
+      "target": "phoneshell_perception_tree_flatten",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "scripts_clean_alarms_main",
+      "target": "phoneshell_actions_phone",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "scripts_validate_tasks_main",
       "target": "phoneshell_bench_schema_load_all",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_tasks.py",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -24995,7 +25382,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "phoneshell/actions.py",
-      "source_location": "L902",
+      "source_location": "L910",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -25259,7 +25646,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L258",
+      "source_location": "L188",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -25270,7 +25657,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L135",
+      "source_location": "L136",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -25281,7 +25668,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L165",
+      "source_location": "L208",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -25847,6 +26234,17 @@
       "_origin": "ast"
     },
     {
+      "source": "scripts_clean_alarms_main",
+      "target": "phoneshell_actions_phone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "scripts/clean_alarms.py",
+      "source_location": "L52",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
       "source": "phoneshell_actions_snapshot_text",
       "target": "phoneshell_perception_tree_to_prompt",
       "relation": "calls",
@@ -25986,7 +26384,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/actions.py",
-      "source_location": "L418",
+      "source_location": "L424",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -25998,7 +26396,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/actions.py",
-      "source_location": "L548",
+      "source_location": "L556",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26010,7 +26408,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/actions.py",
-      "source_location": "L787",
+      "source_location": "L795",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26022,7 +26420,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/actions.py",
-      "source_location": "L812",
+      "source_location": "L820",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26034,7 +26432,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/actions.py",
-      "source_location": "L851",
+      "source_location": "L859",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26046,7 +26444,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/actions.py",
-      "source_location": "L1027",
+      "source_location": "L1035",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26070,7 +26468,19 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L151",
+      "source_location": "L152",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "phoneshell_bench_runner_runner_remove_artifact_alarms",
+      "target": "phoneshell_perception_tree_flatten",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "phoneshell/bench/runner.py",
+      "source_location": "L187",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26082,7 +26492,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/bench/runner.py",
-      "source_location": "L299",
+      "source_location": "L342",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26214,7 +26624,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L276",
+      "source_location": "L280",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26226,7 +26636,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.85,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L794",
+      "source_location": "L799",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26274,7 +26684,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.85,
       "source_file": "scripts/validate_tasks.py",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26826,7 +27236,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L248",
+      "source_location": "L251",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26838,7 +27248,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L264",
+      "source_location": "L268",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26850,7 +27260,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L293",
+      "source_location": "L297",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26862,7 +27272,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L311",
+      "source_location": "L316",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26874,7 +27284,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L394",
+      "source_location": "L399",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26886,7 +27296,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L397",
+      "source_location": "L402",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26898,7 +27308,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L652",
+      "source_location": "L657",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26910,7 +27320,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L708",
+      "source_location": "L713",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26922,7 +27332,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L728",
+      "source_location": "L733",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26934,7 +27344,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L750",
+      "source_location": "L755",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26946,7 +27356,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L771",
+      "source_location": "L776",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26958,7 +27368,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L790",
+      "source_location": "L795",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -26970,7 +27380,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "phoneshell/mcp_server.py",
-      "source_location": "L794",
+      "source_location": "L799",
       "weight": 1.0,
       "_origin": "ast"
     },
