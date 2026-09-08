@@ -703,3 +703,69 @@ The corollary is that the things which *cause* a wedge deserve more attention th
 does. The one seen here was memory pressure on the Mac killing a half-open test session, which is
 worth guarding against directly: do not run a long device job alongside anything that can exhaust
 memory, because losing the Mac-side process leaves the device-side session dangling.
+
+---
+
+## 25. On iOS, the only thing vision can see that the tree cannot is text baked into an image
+
+Experiment 1 concluded that the screenshot was worth nothing. That conclusion was reached with an
+invalid instrument (a 235x512 thumbnail) on a task set that could not have shown a difference. Before
+running it again, the question worth asking first is whether the experiment is **constructible**: is
+there anything on an iOS screen that a model could only learn by looking?
+
+That is measurable rather than a matter of opinion. Read the same screen twice, once through the
+accessibility tree and once through Vision OCR on the screenshot, and diff the words. What OCR reads
+and the tree lacks is render-only content by definition.
+
+### The tool has to be built carefully or it manufactures its own answer
+
+The first survey reported render-only content on all seven screens. Nearly all of it was noise:
+
+| what it flagged | what it actually was |
+| --- | --- |
+| `ecuri`, `rivacy`, `oca` | OCR fragments of Security, Privacy, Location, which the tree *has* |
+| `29h`, `39m`, `29h41m` | a Live Activity in the Dynamic Island |
+| `ac` | the Calculator key the tree labels "All Clear" |
+| `115kb`, `217kb` | file sizes the tree *does* carry, split differently by OCR |
+
+Left unfiltered that would have produced a "vision stratum" made entirely of artifacts, which is
+experiment 1's mistake wearing a different hat. Three filters fix it: drop tokens under four
+characters, drop anything matching a live-activity pattern, and drop any word that is a substring of
+a word the tree already has.
+
+### The filtered result, across thirteen first-party screens
+
+| screen | tree covers | genuine render-only |
+| --- | --- | --- |
+| Calculator | 100% | none |
+| Measure | 100% | none |
+| Notes | 83% | none |
+| Clock | 96% | none |
+| Calendar | 93% | none |
+| Safari | 95% | none |
+| Settings | 78% | none |
+| Files | 20%* | none (*OCR split labels the tree carries) |
+| Shortcuts | 79% | none |
+| **Maps** | **62%** | **map tile labels** |
+| **Books** | **35%** | **text printed on cover artwork** |
+
+Both survivors were verified directly against the tree rather than trusted from the diff. In Books,
+`author`, `bestselling` and an author's surname appear nowhere among **521 raw nodes**, because they
+are printed on cover images.
+
+### What this means
+
+**Apple's own UI is almost entirely described by its accessibility tree.** On eleven of thirteen
+screens there is nothing a screenshot could tell a model that the tree does not already say. So the
+null result from experiment 1 was probably *directionally* right, and right for a reason stronger
+than the experiment that produced it: on these screens vision is redundant **by construction**, and
+no task written against them could have shown otherwise.
+
+The two exceptions are the same phenomenon: **text rendered into a raster image**. Map tiles and
+book covers. That is the entire vision stratum available on first-party iOS, and it is what
+experiment 2's vision arm must be built from, along with third-party and web content, where labelling
+is far worse (section 20: a chat app returning `WAMessageBubbleTableViewCell` where a button name
+should be).
+
+The commercially interesting reading: if your agent only drives Apple's apps, a screenshot is mostly
+wasted tokens. The moment it touches an app someone else wrote, that stops being true.

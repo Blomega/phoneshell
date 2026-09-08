@@ -57,11 +57,26 @@ def gap_for_screen(phone: Phone, label: str) -> dict:
     for line in seen:
         ocr_words |= words(line)
 
-    missing = sorted(ocr_words - tree_words)
+    # OCR noise looks exactly like render-only content unless it is filtered, and
+    # counting it produces a "vision stratum" made of artifacts, which is the
+    # mistake that ruined experiment 1 wearing a different hat. Three filters,
+    # each for a failure seen in the first survey:
+    #   "ecuri" / "rivacy" / "oca"  -> fragments of words the tree DOES have
+    #   "29h" / "39m"               -> a Live Activity in the Dynamic Island
+    #   "ac"                        -> a glyph the tree labels differently
+    def is_fragment(w: str) -> bool:
+        return any(w in t for t in tree_words if len(t) > len(w))
+
+    LIVE_ACTIVITY = re.compile(r"^(\d+[hms])+$")   # 29h, 39m, and 29h41m
+    missing = sorted(w for w in (ocr_words - tree_words)
+                     if len(w) >= 4
+                     and not LIVE_ACTIVITY.match(w)
+                     and not is_fragment(w))
     covered = len(ocr_words & tree_words)
     total = len(ocr_words) or 1
     return {
         "screen": label,
+        "raw_gap": len(ocr_words - tree_words),
         "app": snap.app_name,
         "elements": len(snap.elements),
         "ocr_words": len(ocr_words),
@@ -87,6 +102,8 @@ def main() -> int:
         print(f"\n{app}  ({row['app']}, {row['elements']} elements)")
         print(f"  OCR reads {row['ocr_words']} words, the tree has {row['in_tree']} "
               f"of them  ->  {row['coverage']:.0%} covered")
+        print(f"  raw gap {row['raw_gap']}, of which {len(row['render_only'])} survive "
+              f"the noise filters")
         if row["render_only"]:
             print(f"  render-only ({len(row['render_only'])}): "
                   f"{', '.join(row['render_only'][:14])}")
