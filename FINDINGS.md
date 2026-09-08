@@ -769,3 +769,78 @@ should be).
 
 The commercially interesting reading: if your agent only drives Apple's apps, a screenshot is mostly
 wasted tokens. The moment it touches an app someone else wrote, that stops being true.
+
+---
+
+## 26. Vision is decisive exactly where the tree is silent, and worthless everywhere else
+
+Experiment 2, pre-registered in `docs/EXPERIMENT-2.md` before the run. Twenty tasks, three
+vision-capable models, each task run with the screenshot and without it, back to back, order
+alternating. 120 runs, 37 minutes, physical iPhone.
+
+The stimulus is controlled rather than found. Ten pages, each carrying one word written in HTML and
+a different word rendered into an image with no alt text. Verified on the device: **0 of 10 image
+words appear anywhere in the accessibility tree; 10 of 10 written words do.** Same page, same
+navigation, same question, so any difference between a pair is attributable to the image alone.
+
+| stratum | with image | tree only | b | c | McNemar exact |
+| --- | --- | --- | --- | --- | --- |
+| **render** (answer is pixels) | **30/30, 100%** | **0/30, 0%** | 30 | 0 | **p < 0.0001** |
+| **tree** (answer is labelled) | 29/30, 97% | 30/30, 100% | 0 | 1 | p = 1.0 |
+
+*b = passed only with the image; c = passed only without it.*
+
+Every model individually: **10/10 with the image, 0/10 without, p = 0.002.** GPT-5.1, Gemini 3.1 Pro
+and Kimi K3 all behave identically.
+
+### Why the interaction is the result, not the headline number
+
+A one-armed finding would be worth little. What makes this solid is that the **control stratum shows
+nothing at all** (b=0, c=1). Identical pages, identical navigation, identical question shape: only
+the location of the answer differs. So the effect cannot be an artifact of the harness, the prompt,
+the resolution or the task wording, because all of those are held constant across the two strata.
+
+Together with section 25 this closes the argument:
+
+1. Apple's own apps expose essentially everything in the accessibility tree.
+2. So on those apps a screenshot adds nothing, which is what experiment 1 measured, though with an
+   instrument too blunt to have proved it.
+3. When the answer genuinely is not in the tree, the screenshot is not a marginal help. It is the
+   difference between **100% and 0%**.
+
+The earlier null result was therefore right about Apple's apps and wrong as a general claim, and the
+distinction is not academic: it is the difference between "drop the screenshot" and "drop the
+screenshot on screens you have checked".
+
+### What it costs to carry
+
+| stratum | image | tree only | difference |
+| --- | --- | --- | --- |
+| render | $0.0023 | $0.0017 | **+35%** |
+| tree | $0.0016 | $0.0011 | **+43%** |
+
+Steps were unchanged (2.0 to 2.3 either way), so the cost is tokens, not extra work.
+
+### The engineering rule this yields
+
+**Send the screenshot when the target is rendered content, and not otherwise.** On a well-labelled
+screen it is a 35-43% tax for nothing. On a map tile, a book cover, a chart, a canvas, or any app
+whose developer did not label their controls, it is the whole task.
+
+That is a decision an agent can make per screen rather than a global setting, and `render_gap.py`
+already computes the signal it would need: the gap between what OCR reads and what the tree carries.
+
+### On the method
+
+Three design faults were caught before they cost anything, and are worth recording because each one
+would have produced a confident wrong answer:
+
+* Ten panels on one long page turned far panels into a scrolling test. Panel one passed with vision
+  in two turns while panels five and eight failed **with** it. Found in the first three runs of 120.
+* The OpenRouter tool set had no `open_url`, so a task naming a URL made the model open Safari onto
+  whatever page was already loaded. It answered `MERIDIAN` for three different panels, and an
+  earlier "pass" was spurious for the same reason.
+* The `render_gap` survey initially reported render-only content on every screen, nearly all of it
+  OCR fragments of words the tree already had.
+
+Every one of them would have been invisible in the aggregate and fatal to the conclusion.

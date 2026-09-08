@@ -143,3 +143,20 @@ survives McNemar at p<0.05 while the tree-sufficient stratum shows none. **If bo
 nothing, the honest conclusion is that a well-labelled accessibility tree makes the screenshot
 redundant on iOS**, and that conclusion is then worth publishing because it was properly powered
 and properly scoped.
+
+
+---
+
+# Outcome (added after the run)
+
+Run on a physical iPhone: 120 runs, 37 minutes, 3 models, order alternating.
+
+* **render stratum**: 30/30 with the image, 0/30 without. b=30, c=0, McNemar exact **p < 0.0001**.
+  Each model individually 10/10 vs 0/10, p = 0.002.
+* **tree stratum**: 29/30 with the image, 30/30 without. b=0, c=1, **p = 1.0**.
+* Cost of carrying the image: **+35% to +43%** per task, with no change in step count.
+
+The pre-registered falsification condition was that a positive effect in the render stratum must
+coincide with no effect in the tree stratum. That is what happened, so the result stands as stated:
+**vision is decisive exactly where the accessibility tree is silent, and worth nothing where it is
+not.**
