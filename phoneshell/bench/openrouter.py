@@ -136,16 +136,25 @@ def _key() -> str:
 class PhoneTools:
     """The tool implementations, over a live Phone."""
 
-    def __init__(self, phone, vision: bool = True):
+    def __init__(self, phone, vision: bool = True, max_edge: int = 1536):
         self.phone = phone
         self.vision = vision
+        self.max_edge = max_edge
+        self.delivered: tuple[int, int] | None = None   # what the model really got
         self.last_image: str | None = None
         self.last_media: str = "image/jpeg"
         self.done: str | None = None
 
     # -- helpers ----------------------------------------------------------
     def _screen(self, header: str = "") -> str:
-        obs = self.phone.observe(step=0, force_som=self.vision, include_image=self.vision)
+        previous = self.phone.cfg.brain.screenshot_max_edge
+        self.phone.cfg.brain.screenshot_max_edge = self.max_edge
+        try:
+            obs = self.phone.observe(step=0, force_som=self.vision, include_image=self.vision)
+        finally:
+            self.phone.cfg.brain.screenshot_max_edge = previous
+        if self.vision and getattr(obs, "image_size", None):
+            self.delivered = obs.image_size
         self.last_image = obs.image_b64 if self.vision else None
         # Carry the REAL media type. observe() returns JPEG, and declaring it as
         # png made Anthropic reject the whole request with a bare 400: OpenAI,
@@ -242,11 +251,32 @@ class PhoneTools:
         return "noted"
 
 
+def _trim_images(messages: list[dict], keep: int) -> None:
+    """Keep only the last `keep` screenshots in the history.
+
+    Every turn re-sends the whole conversation, so an image left in history is
+    paid for again on every subsequent turn: a 25-step task with an image per
+    step costs quadratically and can silently exceed the context window. Older
+    images become a one-line placeholder, which keeps the transcript coherent
+    without keeping the pixels.
+    """
+    seen = 0
+    for m in reversed(messages):
+        if m.get("role") != "user" or not isinstance(m.get("content"), list):
+            continue
+        if not any(part.get("type") == "image_url" for part in m["content"]):
+            continue
+        seen += 1
+        if seen > keep:
+            m["content"] = "[earlier screenshot omitted]"
+
+
 def run_task(phone, instruction: str, model: str, max_steps: int = 25,
              vision: bool = True, timeout: float = 240.0,
+             image_max_edge: int = 1536, keep_images: int = 3,
              on_step: Callable[[str], None] | None = None) -> dict:
     """Drive one task with `model` and return a claude-CLI-shaped payload."""
-    tools = PhoneTools(phone, vision=vision)
+    tools = PhoneTools(phone, vision=vision, max_edge=image_max_edge)
     key = _key()
     started = time.time()
     messages: list[dict[str, Any]] = [
@@ -326,6 +356,7 @@ def run_task(phone, instruction: str, model: str, max_steps: int = 25,
                     {"type": "text", "text": "the screen now:"},
                     {"type": "image_url",
                      "image_url": {"url": f"data:{pending_media};base64,{pending_image}"}}]})
+                _trim_images(messages, keep_images)
             if tools.done is not None:
                 break
     finally:
@@ -335,6 +366,7 @@ def run_task(phone, instruction: str, model: str, max_steps: int = 25,
         "result": tools.done or "",
         "num_turns": turns,
         "total_cost_usd": _cost(gen_ids, key),
+        "image_size": list(tools.delivered) if tools.delivered else None,
     }
     if turns >= max_steps and tools.done is None:
         payload |= {"is_error": True, "subtype": "error_max_turns"}
