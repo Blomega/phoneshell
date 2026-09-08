@@ -13,8 +13,14 @@ setup:
 checks:
 - kind: foreground_app
   text: com.apple.mobiletimer
+# A running timer is a MOVING value, so the check needs a window, not a point.
+# The old pattern accepted only 4:50-4:59, a ten-second target: the agent
+# reported "04:59 and counting down" and the check read the screen a few
+# seconds later at 4:4x. Anything from 3:00 to 5:00 is a five-minute timer that
+# has started; a ten-minute one reads 9:xx and a one-minute one 0:xx, so this
+# still fails the wrong duration.
 - kind: regex_on_screen
-  text: 0?4:5\d|05:00|4:5\d
+  text: 0?[34]:\d\d|0?5:00
 teardown:
 - terminate: com.apple.mobiletimer
 notes: Requires picking a value on a picker wheel, which is a distinct interaction from tapping.

@@ -5,16 +5,18 @@ difficulty: hard
 tags:
 - multi-app
 - capability:lifecycle
-instruction: Open the Calculator, then check the Weather app, then come back to the Calculator.
+instruction: Open the Calculator, then open Notes, then come back to the Calculator.
 setup:
 - home
 - terminate: com.apple.calculator
-- terminate: com.apple.weather
+- terminate: com.apple.mobilenotes
 checks:
 - kind: foreground_app
   text: com.apple.calculator
 teardown:
 - terminate: com.apple.calculator
-- terminate: com.apple.weather
+- terminate: com.apple.mobilenotes
 - home
-notes: 'The detour is the point: agents routinely forget the original destination.'
+notes: 'The detour is the point: agents routinely forget the original destination. The
+  detour app must be one iOS will not offload, or the task fails for reasons the model
+  cannot do anything about.'
