@@ -287,6 +287,13 @@ class Runner:
         """Cheap probe before each task: a wedged phone fails every task after it
         and the results look like a model regression rather than a broken rig."""
         try:
+            # A locked phone answers both of these perfectly: the screenshot is
+            # the lock screen and the foreground app is SpringBoard. So checking
+            # only that they respond lets the task start, waste its budget, and
+            # fail on the check afterwards. Ask about the lock FIRST, so heal()
+            # runs before the work rather than after it is thrown away.
+            if self.phone.wda.is_locked():
+                return False
             self.phone.wda.screenshot()
             self.phone.wda.active_app_info()
             return True
@@ -294,11 +301,51 @@ class Runner:
             return not any(p in str(exc).lower() for p in self.UNHEALTHY)
 
     def heal(self) -> bool:
+        """Put the rig back together without a person, and without a reboot.
+
+        A long run is interrupted by exactly three things, and none of them needs
+        a human once the passcode is stored: the phone locks, the runner dies, or
+        the forward drops. Healing lives here rather than in a separate watchdog
+        process on purpose. Two processes reaching for one phone is what stalled
+        the alarm cleaner for twenty minutes tonight, so the repair is serialised
+        with the work that needs it.
+
+        What it will NOT do is reboot. A reboot leaves iOS refusing developer
+        services until somebody unlocks the phone by hand, which ends an
+        unattended run rather than saving it (FINDINGS.md section 24).
+        """
         from .. import device as dev
         cfg = self.phone.cfg
         udid = cfg.device.udid or (dev.device_check().data.get("udid") or "")
         if not udid:
             return False
+
+        # 1. A locked phone is the commonest cause and the cheapest to fix.
+        try:
+            if self.phone.wda.is_locked():
+                if self.phone.ensure_unlocked().ok:
+                    print("    [heal] phone was locked, unlocked it", flush=True)
+                    return True
+        except WDAError:
+            pass
+
+        # 2. The forward can drop while the runner is perfectly healthy.
+        try:
+            import socket
+            with socket.create_connection((cfg.wda.host, cfg.wda.port), timeout=2):
+                pass
+        except OSError:
+            print("    [heal] port forward is down, restarting it", flush=True)
+            try:
+                dev.PortForward(udid).start()
+                time.sleep(2)
+                if self.phone.wda.is_alive():
+                    self.phone.wda.invalidate_liveness()
+                    return True
+            except Exception:
+                pass
+
+        print("    [heal] restarting WebDriverAgent", flush=True)
         outcome = dev.recycle_runner(udid, cfg.wda.runner_bundle_id,
                                      cfg.wda.port, cfg.wda.mjpeg_port)
         if outcome.ok:
