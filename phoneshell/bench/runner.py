@@ -52,6 +52,10 @@ hunting for its close button. If a screen does not change after an action, that
 action did not work: try a different route instead of repeating it.
 """
 
+# Models that cannot accept an image. They work from the accessibility tree
+# alone, which makes them the control group for what vision is actually worth.
+VISIONLESS = {"qwen/qwen3-max", "deepseek/deepseek-v3.2"}
+
 AGENT_TOOLS = [
     "mcp__phoneshell__phone_observe", "mcp__phoneshell__phone_tap",
     "mcp__phoneshell__phone_type", "mcp__phoneshell__phone_swipe",
@@ -212,7 +216,18 @@ class Runner:
 
     def run_agent(self, task: Task, model: str, claude: str = "claude",
                   scaffold: bool = False) -> dict:
-        """Hand the instruction to the model under test and let it work."""
+        """Hand the instruction to the model under test and let it work.
+
+        A slug with a vendor prefix ("openai/gpt-5.1") goes through OpenRouter, so
+        the leaderboard is not limited to the models one CLI happens to support.
+        Both paths return the same payload shape and are scored identically.
+        """
+        if "/" in model:
+            from .openrouter import run_task
+            vision = model not in VISIONLESS
+            return run_task(self.phone, task.instruction, model,
+                            max_steps=task.max_steps, vision=vision,
+                            timeout=task.timeout_seconds)
         cmd = [
             claude, "-p", task.instruction,
             "--mcp-config", str(self.mcp_config),
