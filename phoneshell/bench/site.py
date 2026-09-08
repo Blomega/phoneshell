@@ -399,11 +399,15 @@ def build(run_name: str = "v1") -> Path:
 </section>
 
 <section id="tasks">
-  <div class="sh"><h2>The {len(tasks)} tasks</h2>
+  <div class="sh"><h2>The {len(tasks)} public tasks</h2>
   <p>{counts.get('easy',0)} easy, {counts.get('medium',0)} medium, {counts.get('hard',0)} hard, all
      against Apple&rsquo;s own applications: Settings, Safari, Notes, Reminders, Clock, Calculator,
      Contacts, Maps, Calendar, Files, Books, Compass, Shortcuts, Voice Memos and the home screen
-     itself. No third-party app is automated, so no third party&rsquo;s terms are involved.</p></div>
+     itself. No third-party app is automated, so no third party&rsquo;s terms are involved.</p>
+  <p class="note">These are 60 of 76. Sixteen are held back and are not in the public repository or
+     its history: a benchmark whose entire answer key is public becomes training data, and the score
+     then measures memorisation rather than capability. The public 60 cover all 22 capabilities, so
+     a score over them is comparable between models and you can run the whole thing today.</p></div>
   <div class="scroll">{task_table}</div>
 </section>
 
@@ -411,7 +415,7 @@ def build(run_name: str = "v1") -> Path:
   <div class="sh"><h2>Run it yourself</h2>
   <p>A Mac, an iPhone, a cable and an Apple developer account. The harness builds and installs the
      automation runner onto the phone for you.</p></div>
-  <pre><code>git clone https://github.com/blomega/phoneshell
+  <pre><code>git clone https://github.com/Blomega/phoneshell
 cd phoneshell
 bin/phoneshell doctor      # tells you exactly what is missing
 bin/phoneshell setup       # builds and installs the runner on your iPhone
