@@ -135,6 +135,35 @@ class Runner:
             except Exception:
                 pass
 
+    def wait_for_unlock(self, patience: float = 900.0) -> bool:
+        """Try to unlock, and failing that, WAIT rather than throw the run away.
+
+        A lock has aborted four runs. With no passcode stored there is nothing
+        clever to do about the lock itself, but abandoning hours of completed
+        work over a screen that a person could clear in two seconds is a choice,
+        not a necessity. So: try the stored passcode if there is one, then say
+        plainly what is wrong and wait, checking every few seconds. Only give up
+        when the phone has stayed locked for a quarter of an hour.
+        """
+        try:
+            if self.phone.ensure_unlocked().ok:
+                return True
+        except Exception:
+            pass
+        print("\n  the phone is LOCKED and no passcode is stored.", flush=True)
+        print("  unlock it and the run continues by itself; waiting up to "
+              f"{patience/60:.0f} minutes.", flush=True)
+        deadline = time.time() + patience
+        while time.time() < deadline:
+            time.sleep(5)
+            try:
+                if not self.phone.wda.is_locked():
+                    print("  unlocked, carrying on\n", flush=True)
+                    return True
+            except WDAError:
+                pass
+        return False
+
     # ------------------------------------------------------------------ setup
 
     def apply(self, steps: list[Step]) -> None:
@@ -365,7 +394,7 @@ class Runner:
             raise UsageLimitReached(result.skip_reason)
 
         try:
-            if self.phone.wda.is_locked():
+            if self.phone.wda.is_locked() and not self.wait_for_unlock():
                 result.skipped = True
                 result.skip_reason = "the phone locked during the task, so the result is not valid"
                 result.seconds = time.time() - started

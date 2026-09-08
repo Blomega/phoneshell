@@ -48,9 +48,35 @@ def is_artifact(label: str, on: bool) -> bool:
     return bool(ARTIFACT.match(label)) and not on
 
 
+def open_alarm_list(phone) -> bool:
+    """Get to Clock > Alarms, and say so honestly if we could not.
+
+    The script used to assume the list was already open and silently found zero
+    alarms when it was not, then reported "0 artifacts, 0 to keep" and stopped,
+    which looks exactly like a clean phone. A cleaner that cannot see the thing
+    it cleans must refuse to start, not report success.
+    """
+    if phone.wda.active_app_info().get("bundleId") != "com.apple.mobiletimer":
+        phone.open_app("Clock")
+        time.sleep(2.2)
+    tab = [e for e in flatten(phone.wda.source())
+           if e.type == "Button" and (e.text or "").strip() == "Alarms"]
+    if tab:
+        phone.wda.tap_w3c(tab[0].cx, tab[0].cy)
+        time.sleep(2.0)
+    for _ in range(6):
+        if survey(phone):
+            return True
+        time.sleep(1.2)
+    return False
+
+
 def main() -> int:
     phone = Phone()
     geo = phone.wda.geometry()
+    if not open_alarm_list(phone):
+        print("STOP: could not reach the alarm list; refusing to run blind", flush=True)
+        return 1
     rows = survey(phone)
     keepers = {l for l, on, _ in rows if not is_artifact(l, on)}
     total = len(rows)
