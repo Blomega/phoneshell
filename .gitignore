@@ -17,3 +17,7 @@ __pycache__/
 site/results.json
 site/index.html
 .wrangler/
+
+# Local code-graph cache from the graphify tool. Generated, machine-specific,
+# and 3MB of AST JSON: useful here, noise in a published repo.
+graphify-out/
