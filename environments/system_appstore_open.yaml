@@ -1,0 +1,18 @@
+id: system.appstore.open
+name: Open the App Store
+app: com.apple.AppStore
+difficulty: easy
+tags:
+- springboard
+- navigation
+- first-party
+instruction: Open the App Store app. Do not download anything.
+setup:
+- home
+- terminate: com.apple.AppStore
+checks:
+- kind: foreground_app
+  text: com.apple.AppStore
+teardown:
+- terminate: com.apple.AppStore
+- home

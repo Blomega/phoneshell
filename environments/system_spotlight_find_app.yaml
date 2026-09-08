@@ -1,0 +1,20 @@
+id: system.spotlight.find_app
+name: Find an app using Spotlight
+app: com.apple.springboard
+difficulty: medium
+tags:
+- springboard
+- search
+- gesture
+- first-party
+instruction: Using the iPhone's own search (Spotlight), find the Calculator app and open it.
+setup:
+- home
+- terminate: com.apple.calculator
+checks:
+- kind: foreground_app
+  text: com.apple.calculator
+teardown:
+- terminate: com.apple.calculator
+- home
+notes: Requires a swipe gesture to summon search, not just taps.

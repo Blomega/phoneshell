@@ -1,0 +1,19 @@
+id: settings.scroll.to_bottom
+name: Scroll a long list to its end
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- scrolling
+- capability:scroll-end
+instruction: Open Settings and scroll all the way to the very bottom of the main settings list.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: Developer
+teardown:
+- terminate: com.apple.Preferences
+notes: Tests knowing when a list has ended rather than swiping a fixed number of times.

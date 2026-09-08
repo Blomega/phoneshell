@@ -1,0 +1,20 @@
+id: multi.return_after_detour
+name: Return to where you started
+app: com.apple.calculator
+difficulty: hard
+tags:
+- multi-app
+- capability:lifecycle
+instruction: Open the Calculator, then check the Weather app, then come back to the Calculator.
+setup:
+- home
+- terminate: com.apple.calculator
+- terminate: com.apple.weather
+checks:
+- kind: foreground_app
+  text: com.apple.calculator
+teardown:
+- terminate: com.apple.calculator
+- terminate: com.apple.weather
+- home
+notes: 'The detour is the point: agents routinely forget the original destination.'

@@ -1,0 +1,21 @@
+id: settings.storage.reach
+name: Find iPhone Storage
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- settings
+- navigation
+- deep
+- first-party
+instruction: Open Settings and navigate to the iPhone Storage screen that shows how much space is used.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: iPhone Storage
+teardown:
+- terminate: com.apple.Preferences
+notes: Three levels deep and below the fold, so it needs scrolling as well as navigation.

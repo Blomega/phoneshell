@@ -1,0 +1,19 @@
+id: settings.search.wifi
+name: Use search inside Settings
+app: com.apple.Preferences
+difficulty: medium
+tags: [settings, search, typing, first-party]
+instruction: Open Settings and use its search field to search for "Wi-Fi", then open the Wi-Fi settings page.
+setup:
+  - terminate: com.apple.Preferences
+  - home
+checks:
+  - kind: foreground_app
+    text: com.apple.Preferences
+  - kind: element_exists
+    text: Wi-Fi
+teardown:
+  - terminate: com.apple.Preferences
+notes: >
+  Search fields are a distinct failure mode: the agent has to focus the field,
+  type, and then act on a result rather than on the query it just typed.

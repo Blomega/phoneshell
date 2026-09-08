@@ -1,0 +1,20 @@
+id: notes.type_long
+name: Type a long line of text
+app: com.apple.mobilenotes
+difficulty: medium
+tags:
+- typing
+- capability:text-long
+instruction: 'Open Notes, create a new note, and type: the quick brown fox jumps over the lazy dog nine
+  times'
+setup:
+- terminate: com.apple.mobilenotes
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilenotes
+- kind: element_exists
+  text: quick brown fox
+teardown:
+- terminate: com.apple.mobilenotes
+notes: Long strings expose per-character typing bugs and keyboard focus loss halfway through.

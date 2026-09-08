@@ -1,0 +1,21 @@
+id: calculator.percentage
+name: Compute a percentage
+app: com.apple.calculator
+difficulty: medium
+tags:
+- calculator
+- input
+- first-party
+instruction: Open the Calculator and work out what 15 percent of 240 is. Leave the answer on screen.
+setup:
+- terminate: com.apple.calculator
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.calculator
+- kind: regex_on_screen
+  text: \b36\b
+teardown:
+- terminate: com.apple.calculator
+notes: Needs a small amount of reasoning about HOW to express the sum, not just tapping. 15% of 240 =
+  36.

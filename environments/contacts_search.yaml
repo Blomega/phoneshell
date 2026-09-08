@@ -1,0 +1,25 @@
+id: contacts.search
+name: Search the Contacts app
+app: com.apple.MobileAddressBook
+difficulty: medium
+tags:
+- contacts
+- search
+- first-party
+instruction: Open Contacts and use its search field to search for the letter 'a'.
+  Stop once results show.
+setup:
+- home
+- terminate: com.apple.MobileAddressBook
+checks:
+- kind: foreground_app
+  text: com.apple.MobileAddressBook
+- kind: regex_on_screen
+  text: (?i)(search|cancel|results|no results)
+teardown:
+- terminate: com.apple.MobileAddressBook
+- home
+notes: 'Read-only: it searches but never opens a contact. The check looks for the
+  search surface rather than a specific button, because the button set differs by
+  iOS version and an earlier version of this check failed a run the agent had actually
+  completed.'

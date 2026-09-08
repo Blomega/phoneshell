@@ -1,0 +1,21 @@
+id: clock.alarm.reach_picker
+name: Reach the alarm time picker
+app: com.apple.mobiletimer
+difficulty: medium
+tags:
+- picker
+- navigation
+- capability:picker
+instruction: Open the Clock app, go to Alarms, and start adding a new alarm so the time picker is showing.
+  Do not save it.
+setup:
+- terminate: com.apple.mobiletimer
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobiletimer
+- kind: element_exists
+  text: Cancel
+teardown:
+- terminate: com.apple.mobiletimer
+notes: Isolates reaching a picker without requiring the harder act of setting a value on it.

@@ -1,0 +1,19 @@
+id: settings.accessibility.reach
+name: Reach Accessibility settings
+app: com.apple.Preferences
+difficulty: easy
+tags:
+- settings
+- navigation
+- first-party
+instruction: Open Settings and go to the Accessibility page.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: Accessibility
+teardown:
+- terminate: com.apple.Preferences

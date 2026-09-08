@@ -1,0 +1,20 @@
+id: weather.read_temperature
+name: Read the current temperature
+app: com.apple.weather
+difficulty: medium
+tags:
+- weather
+- reading
+- first-party
+instruction: Open the Weather app and tell me the current temperature where I am.
+setup:
+- home
+- terminate: com.apple.weather
+checks:
+- kind: foreground_app
+  text: com.apple.weather
+- kind: regex_on_screen
+  text: \d+\s?°
+teardown:
+- terminate: com.apple.weather
+- home

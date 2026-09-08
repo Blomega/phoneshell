@@ -1,0 +1,24 @@
+id: resilience.wrong_app
+name: Recover from starting in the wrong app
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- resilience
+- navigation
+- first-party
+instruction: Go to the Settings page for Display and Brightness.
+setup:
+- home
+- open_app: Calculator
+- wait:
+    seconds: 1.5
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: Display
+teardown:
+- terminate: com.apple.Preferences
+- terminate: com.apple.calculator
+- home
+notes: Starts inside the WRONG app on purpose. The agent has to notice and leave.

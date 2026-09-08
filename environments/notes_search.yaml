@@ -1,0 +1,20 @@
+id: notes.search
+name: Find an existing note by searching
+app: com.apple.mobilenotes
+difficulty: medium
+tags:
+- notes
+- search
+- first-party
+instruction: Open Notes and use search to find the note containing the words 'phoneshell benchmark'.
+setup:
+- terminate: com.apple.mobilenotes
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilenotes
+- kind: element_exists
+  text: phoneshell benchmark
+teardown:
+- terminate: com.apple.mobilenotes
+notes: Depends on notes.create_titled having run first, which is itself a useful dependency test.

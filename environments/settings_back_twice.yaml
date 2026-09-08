@@ -1,0 +1,23 @@
+id: settings.back.twice
+name: Go back up two levels
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- navigation
+- back
+- capability:back
+instruction: Open Settings, go into General, then into About, then go back to the main Settings list.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: General
+- kind: element_exists
+  text: Model Number
+  negate: true
+teardown:
+- terminate: com.apple.Preferences
+notes: iOS has no back button; this needs the nav-bar control or an edge swipe, twice.

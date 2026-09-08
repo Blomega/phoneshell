@@ -1,0 +1,20 @@
+id: settings.wifi.switch_visible
+name: Reach a screen with a switch
+app: com.apple.Preferences
+difficulty: easy
+tags:
+- switch
+- navigation
+- capability:switch
+instruction: Open Settings and go to the Wi-Fi page.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: Wi-Fi
+teardown:
+- terminate: com.apple.Preferences
+notes: Reading a switch's state is a separate capability from flipping one; this tests reaching it.

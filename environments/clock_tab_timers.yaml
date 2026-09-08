@@ -1,0 +1,19 @@
+id: clock.tab.timers
+name: Switch to the Timers tab
+app: com.apple.mobiletimer
+difficulty: easy
+tags:
+- tabs
+- navigation
+- capability:tabbar
+instruction: Open the Clock app and switch to the Timers tab.
+setup:
+- terminate: com.apple.mobiletimer
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobiletimer
+- kind: element_exists
+  text: Timers
+teardown:
+- terminate: com.apple.mobiletimer

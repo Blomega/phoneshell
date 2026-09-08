@@ -1,0 +1,23 @@
+id: safari.tabs.open_switcher
+name: Open Safari's tab switcher
+app: com.apple.mobilesafari
+difficulty: medium
+tags:
+- safari
+- navigation
+- capability:icon-only-control
+instruction: Open Safari and show the tab switcher, where all the open tabs are listed.
+setup:
+- terminate: com.apple.mobilesafari
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilesafari
+- kind: regex_on_screen
+  text: (?i)(tab|\+|done|private)
+teardown:
+- terminate: com.apple.mobilesafari
+notes: 'Replaces an earlier ''open a new tab'' task that was unfair: iOS disables
+  the new-tab control once a tab group reaches roughly 500 tabs, so the task depended
+  on the owner''s device state rather than on the agent. The tab switcher control
+  is an icon with no text label, which is the capability actually being tested.'

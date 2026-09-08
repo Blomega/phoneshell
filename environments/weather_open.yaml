@@ -1,0 +1,18 @@
+id: weather.open
+name: Open Weather
+app: com.apple.weather
+difficulty: easy
+tags:
+- weather
+- navigation
+- first-party
+instruction: Open the Weather app.
+setup:
+- home
+- terminate: com.apple.weather
+checks:
+- kind: foreground_app
+  text: com.apple.weather
+teardown:
+- terminate: com.apple.weather
+- home

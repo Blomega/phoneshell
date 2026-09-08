@@ -1,0 +1,24 @@
+id: resilience.scrolled_list
+name: Find something scrolled out of view
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- resilience
+- scrolling
+- first-party
+instruction: In Settings, open the General page.
+setup:
+- home
+- open_app: Settings
+- swipe: down
+- swipe: down
+- swipe: down
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: About
+teardown:
+- terminate: com.apple.Preferences
+- home
+notes: Starts scrolled PAST the target, so a downward-only search never finds it.

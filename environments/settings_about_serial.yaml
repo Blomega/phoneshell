@@ -1,0 +1,19 @@
+id: settings.about.serial
+name: Read a specific field among many
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- reading
+- capability:read-field
+instruction: Open Settings and find the About page, then tell me the Model Number of this iPhone.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: Model Number
+teardown:
+- terminate: com.apple.Preferences
+notes: The About screen is a dense list of similar rows; picking the right one is the test.

@@ -1,0 +1,20 @@
+id: safari.search.web
+name: Search the web for a fact
+app: com.apple.mobilesafari
+difficulty: medium
+tags:
+- safari
+- search
+- webview
+- first-party
+instruction: Open Safari and search the web for 'iso 8601 date format'. Stop once results are showing.
+setup:
+- terminate: com.apple.mobilesafari
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilesafari
+- kind: regex_on_screen
+  text: (?i)iso.?8601
+teardown:
+- terminate: com.apple.mobilesafari

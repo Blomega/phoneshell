@@ -1,0 +1,19 @@
+id: settings.battery.percentage
+name: Read the battery level from Settings
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- settings
+- reading
+- first-party
+instruction: Open Settings, go to the Battery screen, and tell me the current battery percentage.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: regex_on_screen
+  text: \d+\s?%
+teardown:
+- terminate: com.apple.Preferences

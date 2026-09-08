@@ -1,0 +1,19 @@
+id: settings.about.reach
+name: Reach the About screen
+app: com.apple.Preferences
+difficulty: easy
+tags: [settings, navigation, first-party]
+instruction: Open Settings and navigate to the About page that shows the iPhone's model number.
+setup:
+  - terminate: com.apple.Preferences
+  - home
+checks:
+  - kind: foreground_app
+    text: com.apple.Preferences
+  - kind: element_exists
+    text: Model Number
+teardown:
+  - terminate: com.apple.Preferences
+notes: >
+  Two levels of navigation with no typing. Tests whether the agent can find a
+  destination that is not visible from the first screen.

@@ -1,0 +1,22 @@
+id: resilience.deep_start
+name: Escape from deep inside another flow
+app: com.apple.mobilesafari
+difficulty: medium
+tags:
+- resilience
+- capability:recover
+instruction: Open Safari and go to example.com
+setup:
+- home
+- open_app: Settings
+- tap: General
+- wait:
+    seconds: 1.0
+checks:
+- kind: element_exists
+  text: Example Domain
+teardown:
+- terminate: com.apple.mobilesafari
+- terminate: com.apple.Preferences
+- home
+notes: Starts three levels inside Settings. The agent must leave rather than hunt there.

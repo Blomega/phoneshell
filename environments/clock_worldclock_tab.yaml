@@ -1,0 +1,19 @@
+id: clock.worldclock.tab
+name: Reach the World Clock tab
+app: com.apple.mobiletimer
+difficulty: easy
+tags:
+- clock
+- navigation
+- first-party
+instruction: Open the Clock app and switch to the World Clock tab.
+setup:
+- terminate: com.apple.mobiletimer
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobiletimer
+- kind: element_exists
+  text: World Clock
+teardown:
+- terminate: com.apple.mobiletimer

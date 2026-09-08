@@ -1,0 +1,22 @@
+id: multi.three_apps
+name: Visit three apps in order
+app: com.apple.springboard
+difficulty: medium
+tags:
+- multi-app
+- capability:lifecycle
+instruction: Open the Calculator, then the Clock, then Settings. End on Settings.
+setup:
+- home
+- terminate: com.apple.calculator
+- terminate: com.apple.mobiletimer
+- terminate: com.apple.Preferences
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+teardown:
+- terminate: com.apple.calculator
+- terminate: com.apple.mobiletimer
+- terminate: com.apple.Preferences
+- home
+notes: Three transitions in one task; tests that the agent tracks where it is.

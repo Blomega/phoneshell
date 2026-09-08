@@ -1,0 +1,20 @@
+id: clock.stopwatch.start
+name: Start the stopwatch
+app: com.apple.mobiletimer
+difficulty: easy
+tags:
+- clock
+- navigation
+- first-party
+instruction: Open the Clock app, go to the Stopwatch tab and start it.
+setup:
+- terminate: com.apple.mobiletimer
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobiletimer
+- kind: element_exists
+  text: Stop
+teardown:
+- terminate: com.apple.mobiletimer
+notes: Tab navigation plus a state change that is visible in the tree (Start becomes Stop).

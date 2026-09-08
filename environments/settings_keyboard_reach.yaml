@@ -1,0 +1,21 @@
+id: settings.keyboard.reach
+name: Reach Keyboard settings
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- settings
+- navigation
+- deep
+- capability:hierarchy
+instruction: Open Settings and navigate to the Keyboard page under General.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: Keyboard
+teardown:
+- terminate: com.apple.Preferences
+notes: Three levels deep. Tests whether the agent can hold a path in mind while scrolling.

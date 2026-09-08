@@ -1,0 +1,19 @@
+id: notes.type_punctuation
+name: Type text containing punctuation
+app: com.apple.mobilenotes
+difficulty: medium
+tags:
+- typing
+- capability:text-exact
+instruction: 'Open Notes, create a new note, and type exactly: benchmark-test (v2).'
+setup:
+- terminate: com.apple.mobilenotes
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilenotes
+- kind: element_exists
+  text: benchmark-test
+teardown:
+- terminate: com.apple.mobilenotes
+notes: Autocorrect and smart punctuation rewrite naive typing; exactness is the test.

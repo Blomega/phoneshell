@@ -1,0 +1,21 @@
+id: settings.search.battery
+name: Search Settings for Battery
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- search
+- typing
+- capability:search-then-act
+instruction: Open Settings, search for "Battery" using the search field, and open the Battery page from
+  the results.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: Battery
+teardown:
+- terminate: com.apple.Preferences
+notes: Search results are a different surface from the settings list; acting on a result is the skill.

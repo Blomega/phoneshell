@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>phoneshell</title>
+<style>
+  :root{
+    --bg:#0e1013; --panel:#15181d; --panel2:#1b1f26; --line:#262b33;
+    --text:#e7eaf0; --dim:#8b93a1; --accent:#5b8cff; --ok:#3ddc84; --warn:#ffb020; --err:#ff5c5c;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);
+       font:14px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+  header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);
+         background:var(--panel);height:52px}
+  header .dot{width:8px;height:8px;border-radius:50%;background:var(--err)}
+  header .dot.on{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  header h1{font-size:14px;margin:0;font-weight:600;letter-spacing:.2px}
+  header .meta{color:var(--dim);font-size:12px;font-family:var(--mono)}
+  header .spacer{flex:1}
+  main{display:grid;grid-template-columns:1fr 420px;height:calc(100vh - 52px)}
+  #chat{display:flex;flex-direction:column;border-right:1px solid var(--line);min-width:0;min-height:0}
+  #log{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:min(760px,92%);padding:10px 14px;border-radius:12px;white-space:pre-wrap;word-wrap:break-word}
+  #elapsed{font-family:var(--mono);font-size:12px;color:var(--warn)}
+  #mode{background:var(--panel2);color:var(--text);border:1px solid var(--line);
+        border-radius:7px;padding:3px 6px;font:inherit;font-size:12px}
+  #yielded{color:var(--warn)}
+  #spend{color:#6b727f;font-family:var(--mono);font-size:11px}
+  #lockwarn{color:var(--err);font-weight:600}
+  #memwrap label{cursor:pointer;user-select:none}
+  #memstat{color:#5c6472;font-size:11px;margin-left:4px}
+  body.paused #phone{outline:2px solid var(--warn);outline-offset:3px}
+  .msg.user{align-self:flex-end;background:var(--accent);color:#fff}
+  .msg.say{align-self:flex-start;background:var(--panel2);border:1px solid var(--line)}
+  .msg.done{align-self:flex-start;background:#132a1c;border:1px solid #1f5133}
+  .msg.err{align-self:flex-start;background:#2a1414;border:1px solid #5a2020;color:#ffb4b4}
+  .act{align-self:stretch;display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:baseline;
+       font-family:var(--mono);font-size:12px;color:var(--dim);padding:5px 10px;
+       border-left:2px solid var(--accent);background:#12151a;border-radius:0 8px 8px 0}
+  .act.running{border-left-color:var(--warn);background:#1a1710}
+  .stamp{color:#5c6472;font-size:11px}
+  .took{color:var(--dim);font-size:11px;white-space:nowrap}
+  .took.slow{color:var(--warn)}
+  .msg .stamp{display:block;margin-bottom:3px;opacity:.65}
+  .act b{color:var(--accent);font-weight:600}
+  .act .res{color:#6b727f}
+  #composer{border-top:1px solid var(--line);padding:12px 16px;background:var(--panel);display:flex;gap:10px}
+  #task{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);
+        padding:10px 12px;font:inherit;resize:none;height:44px;max-height:140px}
+  button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;
+         padding:8px 12px;font:inherit;cursor:pointer}
+  button:hover{border-color:#3a424f}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  button:disabled{opacity:.5;cursor:default}
+  #right{display:flex;flex-direction:column;background:var(--panel);min-width:0;min-height:0;overflow:hidden}
+  #screenwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:14px;position:relative}
+  #phone{position:relative;border-radius:30px;overflow:hidden;border:2px solid #2b323c;
+         box-shadow:0 20px 60px rgba(0,0,0,.55);background:#000;max-height:100%;display:flex}
+  #screen{display:block;max-height:100%;max-width:100%;width:auto;height:auto;object-fit:contain;cursor:crosshair}
+  #marks{position:absolute;inset:0;pointer-events:none}
+  #marks div{position:absolute;border:1.5px solid var(--accent);border-radius:3px}
+  #marks span{position:absolute;background:var(--accent);color:#fff;font:10px/1.4 var(--mono);
+              padding:0 3px;border-radius:2px;transform:translateY(-100%)}
+  #controls{display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+  #controls input{flex:1;min-width:120px;background:var(--panel2);border:1px solid var(--line);
+                  border-radius:8px;color:var(--text);padding:7px 10px;font:inherit}
+  .hint{color:var(--dim);font-size:11px;padding:0 16px 10px}
+</style>
+</head>
+<body>
+<header>
+  <span class="dot" id="dot"></span>
+  <h1>phoneshell</h1>
+  <span class="meta" id="meta">connecting…</span>
+  <span class="spacer"></span>
+  <span class="meta" id="modewrap">mode
+    <select id="mode" title="takeover: the agent drives. shared: it yields the moment you touch the phone.">
+      <option value="takeover">takeover</option>
+      <option value="shared">shared</option>
+    </select>
+  </span>
+  <span class="meta" id="yielded"></span>
+  <span class="meta" id="memwrap">
+    <label title="Remember screens the agent has already worked out, so repeat visits skip the picture and the reasoning."><input type="checkbox" id="memory"> memory</label>
+    <span id="memstat"></span>
+  </span>
+  <span class="meta" id="cost"></span>
+  <span id="elapsed"></span>
+  <span class="meta" id="spend"></span>
+  <button id="passcodeBtn" title="Store the phone passcode in the macOS Keychain so the bridge can unlock it">passcode</button>
+  <button id="stop" disabled>stop</button>
+</header>
+<main>
+  <section id="chat">
+    <div id="log"></div>
+    <div id="composer">
+      <textarea id="task" placeholder="Tell the phone what to do.  e.g.  open WhatsApp and show me the last message from Mum"></textarea>
+      <button class="primary" id="send">run</button>
+    </div>
+  </section>
+  <aside id="right">
+    <div id="screenwrap">
+      <div id="phone"><img id="screen" alt="phone screen"><div id="marks"></div></div>
+    </div>
+    <div id="controls">
+      <button data-g="home">home</button>
+      <button data-g="back">back</button>
+      <button data-g="up">swipe up</button>
+      <button data-g="down">swipe down</button>
+      <button id="toggleMarks">elements</button>
+      <input id="typebox" placeholder="type into the focused field, enter to send">
+    </div>
+    <div class="hint">click the screen to tap it. everything you do here is logged to runtime/logs/audit.jsonl</div>
+  </aside>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const log = $('#log'), img = $('#screen'), marks = $('#marks');
+let status = null, showMarks = false, busy = false;
+
+const clock = t => new Date((t||Date.now()/1000)*1000)
+  .toLocaleTimeString('en-GB', {hour12:false});
+const dur = s => s == null ? '' : (s < 1 ? Math.round(s*1000)+'ms' : s.toFixed(1)+'s');
+
+function add(cls, text, at){
+  const el = document.createElement('div');
+  el.className = 'msg ' + cls;
+  el.innerHTML = `<span class="stamp">${clock(at)}</span>`;
+  el.appendChild(document.createTextNode(text));
+  log.appendChild(el); log.scrollTop = log.scrollHeight; return el;
+}
+const acts = {};
+function addAction(name, input, id, at){
+  const el = document.createElement('div');
+  el.className = 'act running';
+  const args = Object.entries(input||{}).map(([k,v]) => `${k}=${JSON.stringify(v)}`).join(' ');
+  el.innerHTML = `<span class="stamp">${clock(at)}</span>` +
+                 `<span><b>${name}</b> ${args} <span class="res"></span></span>` +
+                 `<span class="took">running…</span>`;
+  log.appendChild(el); log.scrollTop = log.scrollHeight;
+  if(id) acts[id] = el;
+  return el;
+}
+
+async function refreshStatus(){
+  try{
+    const r = await fetch('/api/status'); status = await r.json();
+    $('#dot').classList.toggle('on', !!status.connected);
+    $('#meta').textContent = status.connected
+      ? `${status.device} · iOS ${status.ios} · ${status.transport} · ${status.app || ''}`
+      : (status.error || 'not connected');
+    if(status.mode && $('#mode').value !== status.mode && document.activeElement !== $('#mode'))
+      $('#mode').value = status.mode;
+    const paused = status.mode === 'shared' && status.human_active;
+    document.body.classList.toggle('paused', !!paused);
+    $('#memory').checked = !!status.memory;
+    $('#spend').textContent = status.spend_tasks
+      ? `$${(status.spend_usd||0).toFixed(3)} over ${status.spend_tasks} task${status.spend_tasks>1?'s':''}` : '';
+    $('#passcodeBtn').style.borderColor = status.passcode_stored ? 'var(--ok)' : 'var(--line)';
+    $('#passcodeBtn').textContent = status.passcode_stored ? 'passcode ✓' : 'passcode';
+    if(status.locked){
+      $('#meta').innerHTML = '<span id="lockwarn">PHONE LOCKED — unlock it or run: bin/phoneshell set-passcode</span>';
+    }
+    const ms = status.memory_stats || [];
+    $('#memstat').textContent = ms.length
+      ? `${ms.reduce((a,r)=>a+r.screens,0)} screens · ${ms.length} apps` : '';
+    $('#yielded').textContent = paused
+      ? `paused — you have the phone (${status.human_reason || 'in use'})`
+      : (status.yields ? `yielded ${status.yields}×` : '');
+    if(status.connected && !img.src) img.src = '/stream.mjpeg?ts=' + Date.now();
+  }catch(e){ $('#meta').textContent = 'server unreachable'; }
+}
+setInterval(refreshStatus, 4000); refreshStatus();
+
+img.addEventListener('click', async ev => {
+  if(!status || !status.connected) return;
+  const rect = img.getBoundingClientRect();
+  const x = (ev.clientX - rect.left) / rect.width  * status.point_size[0];
+  const y = (ev.clientY - rect.top)  / rect.height * status.point_size[1];
+  await fetch('/api/tap', {method:'POST', headers:{'content-type':'application/json'},
+                           body: JSON.stringify({x, y})});
+  if(showMarks) setTimeout(drawMarks, 700);
+});
+
+document.querySelectorAll('#controls button[data-g]').forEach(b => b.onclick = async () => {
+  const g = b.dataset.g;
+  const body = (g === 'home' || g === 'back') ? {kind:g} : {kind:'swipe', direction:g};
+  await fetch('/api/gesture', {method:'POST', headers:{'content-type':'application/json'},
+                               body: JSON.stringify(body)});
+  if(showMarks) setTimeout(drawMarks, 700);
+});
+
+$('#typebox').addEventListener('keydown', async ev => {
+  if(ev.key !== 'Enter') return;
+  const text = ev.target.value; ev.target.value = '';
+  await fetch('/api/gesture', {method:'POST', headers:{'content-type':'application/json'},
+                               body: JSON.stringify({kind:'type', text, submit:true})});
+});
+
+async function drawMarks(){
+  marks.innerHTML = '';
+  if(!showMarks) return;
+  const r = await fetch('/api/observe'); const data = await r.json();
+  const [pw, ph] = status.point_size;
+  for(const e of data.elements){
+    const box = document.createElement('div');
+    box.style.left = (e.x/pw*100)+'%'; box.style.top = (e.y/ph*100)+'%';
+    box.style.width = (e.w/pw*100)+'%'; box.style.height = (e.h/ph*100)+'%';
+    const tag = document.createElement('span');
+    tag.textContent = e.id; tag.style.left = (e.x/pw*100)+'%'; tag.style.top = (e.y/ph*100)+'%';
+    marks.appendChild(box); marks.appendChild(tag);
+  }
+}
+$('#passcodeBtn').onclick = async () => {
+  const code = window.prompt(
+    "iPhone passcode\n\nStored in the macOS Keychain on this Mac only, encrypted at rest.\n" +
+    "Used for one thing: tapping the digits on your phone's keypad after it auto-locks.\n" +
+    "Never logged, never sent anywhere. Leave empty to remove a stored one.");
+  if(code === null) return;
+  const r = await fetch('/api/passcode', {method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify(code.trim() ? {passcode: code.trim()} : {forget: true})});
+  const d = await r.json();
+  add(d.ok ? 'done' : 'err', d.ok ? ('passcode ' + (d.stored ? 'stored. ' : 'removed. ') + (d.detail||''))
+                                  : ('could not store it: ' + (d.error||'')));
+  refreshStatus();
+};
+$('#memory').onchange = async ev => {
+  await fetch('/api/memory', {method:'POST', headers:{'content-type':'application/json'},
+                              body: JSON.stringify({enabled: ev.target.checked})});
+  refreshStatus();
+};
+$('#mode').onchange = async ev => {
+  await fetch('/api/mode', {method:'POST', headers:{'content-type':'application/json'},
+                            body: JSON.stringify({mode: ev.target.value})});
+  refreshStatus();
+};
+$('#toggleMarks').onclick = () => { showMarks = !showMarks;
+  $('#toggleMarks').style.borderColor = showMarks ? 'var(--accent)' : 'var(--line)'; drawMarks(); };
+
+let ws;
+function connect(){
+  ws = new WebSocket(`ws://${location.host}/ws`);
+  ws.onmessage = ev => {
+    const m = JSON.parse(ev.data);
+    if(m.type === 'say') { add('say', m.text, m.at); window._lastAct = null; }
+    else if(m.type === 'action'){ window._lastAct = addAction(m.name, m.input, m.id, m.at); }
+    else if(m.type === 'result'){
+      const el = (m.id && acts[m.id]) || window._lastAct;
+      if(el){
+        const first = (m.text||'').split('\n').find(l => l.trim()) || '';
+        el.querySelector('.res').textContent = first.slice(0,90);
+        el.classList.remove('running');
+        const took = el.querySelector('.took');
+        took.textContent = dur(m.took);
+        if(m.took > 5) took.classList.add('slow');
+        if(m.id) delete acts[m.id];
+      }
+    }
+    else if(m.type === 'done'){
+      add('done', m.text || 'done', m.at);
+      $('#cost').textContent = `${m.turns||0} turns · ${(m.duration_ms/1000||0).toFixed(0)}s` +
+        (m.cost ? ` · $${m.cost.toFixed(3)}` : '');
+      finish();
+    }
+    else if(m.type === 'stopped'){ add('err', 'stopped by you' +
+        (m.elapsed ? ` after ${dur(m.elapsed)}` : '')); finish(); }
+    else if(m.type === 'error'){ add('err', m.text, m.at); finish(); }
+  };
+  ws.onclose = () => setTimeout(connect, 1500);
+}
+connect();
+
+let ticker = null, startedAt = 0;
+function finish(){
+  busy = false; $('#send').disabled = false; $('#stop').disabled = true;
+  clearInterval(ticker); ticker = null; $('#elapsed').textContent = '';
+  for(const k in acts){
+    acts[k].classList.remove('running');
+    acts[k].querySelector('.took').textContent = 'interrupted';
+    delete acts[k];
+  }
+}
+function send(){
+  const text = $('#task').value.trim();
+  if(!text || busy) return;
+  add('user', text); $('#task').value = '';
+  busy = true; $('#send').disabled = true; $('#stop').disabled = false;
+  startedAt = Date.now();
+  clearInterval(ticker);
+  ticker = setInterval(() => {
+    $('#elapsed').textContent = dur((Date.now() - startedAt)/1000) + ' elapsed';
+  }, 200);
+  ws.send(JSON.stringify({type:'task', text}));
+}
+$('#send').onclick = send;
+$('#stop').onclick = () => { ws.send(JSON.stringify({type:'stop'})); $('#stop').disabled = true; };
+$('#task').addEventListener('keydown', ev => {
+  if(ev.key === 'Enter' && (ev.metaKey || !ev.shiftKey)){ ev.preventDefault(); send(); }
+});
+</script>
+</body>
+</html>

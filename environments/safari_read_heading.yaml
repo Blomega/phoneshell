@@ -1,0 +1,19 @@
+id: safari.read.heading
+name: Read a heading off a web page
+app: com.apple.mobilesafari
+difficulty: medium
+tags:
+- safari
+- webview
+- reading
+- first-party
+instruction: Open Safari, go to example.com, and tell me the exact heading shown on that page.
+setup:
+- terminate: com.apple.mobilesafari
+- home
+checks:
+- kind: element_exists
+  text: Example Domain
+teardown:
+- terminate: com.apple.mobilesafari
+notes: Tests that WKWebView content reaches the agent at all, which is the crux for real apps.

@@ -1,0 +1,20 @@
+id: clock.timer.set
+name: Set a timer for a specific duration
+app: com.apple.mobiletimer
+difficulty: medium
+tags:
+- clock
+- input
+- first-party
+instruction: Open the Clock app and start a timer for 5 minutes.
+setup:
+- terminate: com.apple.mobiletimer
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobiletimer
+- kind: regex_on_screen
+  text: 0?4:5\d|05:00|4:5\d
+teardown:
+- terminate: com.apple.mobiletimer
+notes: Requires picking a value on a picker wheel, which is a distinct interaction from tapping.

@@ -1,0 +1,19 @@
+id: safari.navigate.example
+name: Open a specific website in Safari
+app: com.apple.mobilesafari
+difficulty: easy
+tags: [safari, typing, webview, first-party]
+instruction: Open Safari and go to example.com
+setup:
+  - terminate: com.apple.mobilesafari
+  - home
+checks:
+  - kind: foreground_app
+    text: com.apple.mobilesafari
+  - kind: element_exists
+    text: Example Domain
+teardown:
+  - terminate: com.apple.mobilesafari
+notes: >
+  Typing into the address bar and confirming, then reading content out of a
+  WKWebView. Non-destructive: it changes nothing on the phone.

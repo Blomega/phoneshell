@@ -1,0 +1,19 @@
+# Everything the rig produces stays local. runtime/ holds the device UDID, the
+# signing team, screenshots of a real phone, an audit log of every tap, and the
+# learned screen memory (which includes the account name shown in Settings).
+# None of it is publishable, so the whole directory is excluded rather than
+# picked over file by file.
+runtime/
+
+.venv/
+build/
+vendor/WebDriverAgent/
+__pycache__/
+*.pyc
+*.egg-info/
+.DS_Store
+
+# Published artefacts are generated, never hand-edited
+site/results.json
+site/index.html
+.wrangler/

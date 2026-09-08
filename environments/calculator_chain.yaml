@@ -1,0 +1,17 @@
+id: calculator.chain
+name: Chain two operations
+app: com.apple.calculator
+difficulty: medium
+tags:
+- calculator
+- capability:precise-taps
+instruction: Open the Calculator and compute (12 plus 8) multiplied by 5. Leave the answer on screen.
+setup:
+- terminate: com.apple.calculator
+- home
+checks:
+- kind: regex_on_screen
+  text: \b100\b
+teardown:
+- terminate: com.apple.calculator
+notes: (12+8)*5=100. Sequence matters, so an out-of-order tap is visible in the result.

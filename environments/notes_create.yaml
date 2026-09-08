@@ -1,0 +1,19 @@
+id: notes.create_titled
+name: Create a note with a specific title
+app: com.apple.mobilenotes
+difficulty: medium
+tags: [notes, typing, creation, first-party]
+instruction: Open the Notes app and create a new note whose first line is exactly "phoneshell benchmark".
+setup:
+  - terminate: com.apple.mobilenotes
+  - home
+checks:
+  - kind: foreground_app
+    text: com.apple.mobilenotes
+  - kind: element_exists
+    text: phoneshell benchmark
+teardown:
+  - terminate: com.apple.mobilenotes
+notes: >
+  Creation plus exact text entry. Catches agents that type into the wrong field
+  or let autocorrect rewrite what they typed.

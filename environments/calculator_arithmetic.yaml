@@ -1,0 +1,20 @@
+id: calculator.arithmetic
+name: Do arithmetic in the Calculator
+app: com.apple.calculator
+difficulty: easy
+tags:
+- calculator
+- input
+- first-party
+instruction: Open the Calculator app and compute 47 multiplied by 9. Leave the result on screen.
+setup:
+- terminate: com.apple.calculator
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.calculator
+- kind: regex_on_screen
+  text: \b423\b
+teardown:
+- terminate: com.apple.calculator
+notes: A precise sequence of taps where every one must land. 47x9=423.

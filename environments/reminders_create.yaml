@@ -1,0 +1,21 @@
+id: reminders.create
+name: Create a reminder with specific text
+app: com.apple.reminders
+difficulty: medium
+tags:
+- reminders
+- typing
+- first-party
+instruction: Open Reminders and add a new reminder called 'collect parcel'.
+setup:
+- terminate: com.apple.reminders
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.reminders
+- kind: element_exists_anywhere
+  text: collect parcel
+teardown:
+- terminate: com.apple.reminders
+notes: A new reminder can land below the fold, so the check scrolls to look for it.
+  The first version of this check failed a run where the reminder had been created.

@@ -1,0 +1,21 @@
+id: multi.app_switch
+name: Switch between two apps
+app: com.apple.springboard
+difficulty: medium
+tags:
+- multi-app
+- navigation
+- first-party
+instruction: Open the Calculator, then open Safari, then go back to the Calculator.
+setup:
+- home
+- terminate: com.apple.calculator
+- terminate: com.apple.mobilesafari
+checks:
+- kind: foreground_app
+  text: com.apple.calculator
+teardown:
+- terminate: com.apple.calculator
+- terminate: com.apple.mobilesafari
+- home
+notes: Tests that the agent tracks WHERE it is across app boundaries rather than losing its place.

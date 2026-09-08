@@ -1,0 +1,20 @@
+id: system.notifications.open
+name: Open Notification Centre
+app: com.apple.springboard
+difficulty: hard
+tags:
+- gesture
+- system
+- capability:edge-gesture
+instruction: Open the iPhone's Notification Centre.
+setup:
+- home
+checks:
+# "Clear" only exists when the phone happens to have notifications waiting, so
+# the old check measured the device's inbox rather than whether the agent opened
+# anything. These are the strings Notification Centre shows in either state.
+- kind: regex_on_screen
+  text: Clear|No Notifications|Notification Cent|Older Notifications
+teardown:
+- home
+notes: A top-left edge swipe from y=0. No button exists, so tap-only agents cannot pass.

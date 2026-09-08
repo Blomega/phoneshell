@@ -1,0 +1,10 @@
+phoneshell
+Copyright 2026
+
+This product includes software developed by the Appium project:
+  appium/WebDriverAgent (BSD-3-Clause) — vendored at build time, not redistributed
+  https://github.com/appium/WebDriverAgent
+
+WebDriverAgent is fetched and built locally against your own Apple developer
+account. Nothing in this repository is signed with, or ships, anyone else's
+signing identity.

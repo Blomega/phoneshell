@@ -1,0 +1,21 @@
+id: settings.search.storage
+name: Search Settings for Storage
+app: com.apple.Preferences
+difficulty: medium
+tags:
+- search
+- typing
+- capability:search-then-act
+instruction: Open Settings, search for "Storage" using the search field, and open the Storage page from
+  the results.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: Storage
+teardown:
+- terminate: com.apple.Preferences
+notes: Search results are a different surface from the settings list; acting on a result is the skill.

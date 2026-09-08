@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Thin wrapper so you can run `bin/phoneshell doctor` from anywhere.
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+exec "$ROOT/.venv/bin/python" -m phoneshell.cli "$@"

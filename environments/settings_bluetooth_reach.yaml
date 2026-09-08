@@ -1,0 +1,19 @@
+id: settings.bluetooth.reach
+name: Reach the Bluetooth settings page
+app: com.apple.Preferences
+difficulty: easy
+tags:
+- settings
+- navigation
+- first-party
+instruction: Open Settings and go to the Bluetooth page.
+setup:
+- terminate: com.apple.Preferences
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.Preferences
+- kind: element_exists
+  text: Bluetooth
+teardown:
+- terminate: com.apple.Preferences
