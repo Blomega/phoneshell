@@ -110,6 +110,11 @@ def setup(
     if not dm.ok:
         raise typer.Exit(1)
 
+    src = dev.ensure_wda_source()
+    console.print(escape(src.line()))
+    if not src.ok:
+        raise typer.Exit(1)
+
     app_path = dev.wda_paths()["app"]
     if not skip_build:
         console.print("[bold]building WebDriverAgent[/bold] (first build takes a few minutes)")

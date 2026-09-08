@@ -294,10 +294,20 @@ def build(run_name: str = "v1") -> Path:
     probes = sum(1 for t in tasks if any(g.startswith("capability:") for g in t.tags))
     jobs = len(tasks) - probes
     apps = len({(t.app or "").rsplit(".", 1)[-1] for t in tasks if t.app})
-    scored_n = sum(1 for r in rows if not r.get("skipped"))
-    passed_n = sum(1 for r in rows if not r.get("skipped") and r["passed"])
-    turns = [r["turns"] for r in rows if not r.get("skipped")]
-    secs = [r["seconds"] for r in rows if not r.get("skipped")]
+    # Count from the SAME rows the leaderboard scores: live tasks only, newest
+    # attempt only, nothing skipped. Counting raw rows here put "71 of 78 scored
+    # tasks passed" in the footer under a headline of 95.9% on the same page,
+    # because retired tasks and superseded attempts were still in the file.
+    live_ids = {t.id for t in tasks}
+    newest = {}
+    for r in rows:
+        if r["task_id"] in live_ids:
+            newest[r["task_id"]] = r
+    counted = [r for r in newest.values() if not r.get("skipped")]
+    scored_n = len(counted)
+    passed_n = sum(1 for r in counted if r["passed"])
+    turns = [r["turns"] for r in counted]
+    secs = [r["seconds"] for r in counted]
     avg_turns = round(sum(turns) / len(turns), 1) if turns else 0
     avg_secs = round(sum(secs) / len(secs)) if secs else 0
 
@@ -332,7 +342,7 @@ def build(run_name: str = "v1") -> Path:
      developer build and a harness that does not lie to you. So nobody measures it.</p>
   <a class="cta" href="#leaderboard">See the results &rarr;</a>
   <div class="dots">
-    <span><i style="background:var(--emerald)"></i>{len(tasks)} tasks scored</span>
+    <span><i style="background:var(--emerald)"></i>{scored_n} of {len(tasks)} tasks scored</span>
     <span><i style="background:var(--blue)"></i>iPhone 17 Pro Max, iOS 26.6</span>
     <span><i style="background:var(--purple)"></i>0 humans grading</span>
   </div>
@@ -454,5 +464,13 @@ bin/phoneshell bench --model claude-sonnet-5</code></pre>
 </body></html>"""
     out = SITE / "index.html"
     out.write_text(page)
-    (SITE / "results.json").write_text(json.dumps({"board": board, "runs": rows}, indent=1))
+    # Publish the measurements, not the transcript. `agent_said` is free text the
+    # model wrote about a REAL phone, and it duly published the owner's wifi SSID
+    # and home city. The structured result is what makes a benchmark checkable;
+    # the commentary adds nothing and cannot be vetted line by line.
+    public_fields = ("task_id", "model", "passed", "skipped", "skip_reason",
+                     "turns", "seconds", "cost_usd", "checks", "scaffold", "started_at")
+    public_rows = [{k: r[k] for k in public_fields if k in r} for r in newest.values()]
+    (SITE / "results.json").write_text(
+        json.dumps({"board": board, "runs": public_rows}, indent=1))
     return out

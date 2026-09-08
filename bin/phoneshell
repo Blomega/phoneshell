@@ -1,6 +1,24 @@
 #!/usr/bin/env bash
 # Thin wrapper so you can run `bin/phoneshell doctor` from anywhere.
+#
+# It also creates the virtualenv on first use. A fresh clone has no .venv, and
+# the published quickstart opens with `bin/phoneshell doctor`, so without this
+# the very first command a new user runs dies on "no such file or directory".
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
-exec "$ROOT/.venv/bin/python" -m phoneshell.cli "$@"
+
+PY="$ROOT/.venv/bin/python"
+if [ ! -x "$PY" ]; then
+  echo "first run: creating the virtualenv in .venv" >&2
+  BOOT="$(command -v python3.12 || command -v python3 || true)"
+  if [ -z "$BOOT" ]; then
+    echo "phoneshell needs python3. Install it (brew install python) and try again." >&2
+    exit 1
+  fi
+  "$BOOT" -m venv "$ROOT/.venv"
+  "$PY" -m pip install --quiet --upgrade pip
+  "$PY" -m pip install --quiet -r "$ROOT/requirements.txt"
+  echo "ready" >&2
+fi
+exec "$PY" -m phoneshell.cli "$@"

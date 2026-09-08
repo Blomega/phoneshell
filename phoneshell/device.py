@@ -45,6 +45,30 @@ BUILD_ROOT = Path.home() / "Library" / "Developer" / "phoneshell"
 DEVICE_DD = BUILD_ROOT / "wda-device"
 SIM_DD = BUILD_ROOT / "wda-sim"
 
+WDA_REPO = "https://github.com/appium/WebDriverAgent.git"
+WDA_TAG = "v16.12.4"          # the version every measurement in FINDINGS.md was taken against
+
+
+def ensure_wda_source() -> Check:
+    """Fetch Appium's WebDriverAgent if it is not already vendored.
+
+    vendor/ is deliberately not tracked: WDA is a large third-party tree under its
+    own BSD licence and does not belong in this repository. But nothing fetched it
+    either, so a fresh clone had the build step pointed at a directory that did not
+    exist. Pin the tag rather than tracking main: a WDA release is exactly the kind
+    of change that stops the bridge working on a Tuesday morning.
+    """
+    if (WDA_SRC / "WebDriverAgent.xcodeproj").exists():
+        return Check("wda-source", True, f"WebDriverAgent present at {WDA_SRC}")
+    WDA_SRC.parent.mkdir(parents=True, exist_ok=True)
+    res = run(["git", "clone", "--depth", "1", "--branch", WDA_TAG, WDA_REPO, str(WDA_SRC)],
+              timeout=600)
+    if res.returncode != 0:
+        return Check("wda-source", False, (res.stderr or res.stdout)[:300],
+                     fix=f"clone it by hand: git clone --branch {WDA_TAG} {WDA_REPO} {WDA_SRC}")
+    return Check("wda-source", True, f"cloned WebDriverAgent {WDA_TAG}")
+
+
 def detect_team() -> str | None:
     """The Apple team id to sign WebDriverAgent with, taken from THIS Mac.
 
