@@ -194,8 +194,10 @@ def _esc(text: str) -> str:
 
 
 def build(run_name: str = "v1") -> Path:
-    tasks = load_all(ROOT / "environments")
-    board = score(run_name)
+    # include_private=False: the held-out tasks must not be published, not even
+    # their ids and instructions.
+    tasks = load_all(ROOT / "environments", include_private=False)
+    board = score(run_name, include_private=False)
     rows = []
     path = RESULTS / f"{run_name}.jsonl"
     if path.exists():

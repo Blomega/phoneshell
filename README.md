@@ -9,6 +9,24 @@ deep link. Ordering from Grab or replying on WhatsApp is the same code path as o
 Settings, because it operates the phone the way a finger does, with your accounts
 already logged in.
 
+## The held-out split
+
+The suite in `environments/` is **60 of 76 tasks**. Sixteen are kept private and are not in this
+repository or its history.
+
+This is not coyness. A benchmark whose entire answer key is public becomes training data, and once
+that happens the score measures memorisation rather than capability. Holding a split back is the
+only way a number stays meaningful after the benchmark gets any attention, so every serious
+benchmark does it.
+
+The public 60 cover **all 22 capabilities**, so a score over them is directly comparable between
+models and you can run the whole thing yourself today. The held-out 16 are one task from each
+capability that had more than one, plus five end-to-end jobs, so the private half is representative
+rather than a pile of leftovers.
+
+If you want a scored run against the full 76 on real hardware, that is what we do.
+
+
 ## Status
 
 Running against a physical iPhone 17 Pro Max on iOS 26.6: real apps, real accounts, real

@@ -21,3 +21,7 @@ site/index.html
 # Local code-graph cache from the graphify tool. Generated, machine-specific,
 # and 3MB of AST JSON: useful here, noise in a published repo.
 graphify-out/
+
+# The held-out task split. A benchmark whose entire answer key is public becomes
+# training data, so these never leave this machine.
+environments-private/

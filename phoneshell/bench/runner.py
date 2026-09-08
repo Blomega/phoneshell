@@ -386,7 +386,7 @@ class Runner:
         return path
 
 
-def score(run_name: str = "latest") -> dict:
+def score(run_name: str = "latest", include_private: bool = True) -> dict:
     """Aggregate a run into the numbers that go on the leaderboard.
 
     Skipped tasks are excluded entirely rather than counted as failures, and the
@@ -403,7 +403,11 @@ def score(run_name: str = "latest") -> dict:
     # the suite. Also keep only the LATEST attempt per task, so a re-run after a
     # check was corrected supersedes the result the broken check produced.
     from .schema import load_all
-    live = {t.id for t in load_all(Path(__file__).resolve().parent.parent.parent / "environments")}
+    # include_private=False when scoring for PUBLICATION, so the published rate
+    # is over the published tasks. Mixing the two put a leaderboard computed over
+    # 74 tasks above a footer computed over 60, on the same page.
+    live = {t.id for t in load_all(Path(__file__).resolve().parent.parent.parent / "environments",
+                                   include_private=include_private)}
     newest: dict[tuple[str, str], dict] = {}
     for row in rows:
         if row["task_id"] not in live:

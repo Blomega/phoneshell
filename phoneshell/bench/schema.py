@@ -98,8 +98,23 @@ class Task:
         )
 
 
-def load_all(directory: Path) -> list[Task]:
-    tasks = [Task.load(p) for p in sorted(directory.glob("*.yaml"))]
+def load_all(directory: Path, include_private: bool = True) -> list[Task]:
+    """Every task in `directory`, plus the held-out set beside it if present.
+
+    The published suite is deliberately incomplete. A benchmark whose whole answer
+    key is public becomes training data, and within a model generation or two the
+    score stops measuring capability and starts measuring memorisation. So
+    `environments-private/` is gitignored: a fresh clone runs the public tasks,
+    this machine runs all of them, and nothing else in the code has to branch.
+
+    `include_private=False` is for anything that PUBLISHES, so the held-out task
+    ids and instructions never reach the site.
+    """
+    dirs = [directory]
+    private = directory.parent / (directory.name + "-private")
+    if include_private and private.is_dir():
+        dirs.append(private)
+    tasks = [Task.load(p) for d in dirs for p in sorted(d.glob("*.yaml"))]
     ids = [t.id for t in tasks]
     duplicates = {i for i in ids if ids.count(i) > 1}
     if duplicates:
