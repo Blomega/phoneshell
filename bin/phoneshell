@@ -10,12 +10,20 @@ export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Develope
 
 PY="$ROOT/.venv/bin/python"
 if [ ! -x "$PY" ]; then
-  echo "first run: creating the virtualenv in .venv" >&2
-  BOOT="$(command -v python3.12 || command -v python3 || true)"
+  # Pick a modern interpreter explicitly. `python3` on macOS is the 3.9 that
+  # ships with the Command Line Tools, and half of these dependencies refuse to
+  # install on it, so taking whatever `python3` happens to be fails on a Mac that
+  # has a perfectly good 3.13 sitting next to it.
+  BOOT=""
+  for v in 3.14 3.13 3.12 3.11; do
+    if command -v "python$v" >/dev/null 2>&1; then BOOT="$(command -v "python$v")"; break; fi
+  done
   if [ -z "$BOOT" ]; then
-    echo "phoneshell needs python3. Install it (brew install python) and try again." >&2
+    echo "phoneshell needs Python 3.11 or newer (found: $(python3 -V 2>&1 || echo none))." >&2
+    echo "  brew install python@3.13" >&2
     exit 1
   fi
+  echo "first run: creating the virtualenv with $($BOOT -V 2>&1)" >&2
   "$BOOT" -m venv "$ROOT/.venv"
   "$PY" -m pip install --quiet --upgrade pip
   "$PY" -m pip install --quiet -r "$ROOT/requirements.txt"
