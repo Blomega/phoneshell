@@ -48,6 +48,25 @@ def is_artifact(label: str, on: bool) -> bool:
     return bool(ARTIFACT.match(label)) and not on
 
 
+def _owner_is_using(phone, seconds: int = 12) -> bool:
+    """Is a person touching the phone right now?
+
+    A screen that changes while we are not driving it is someone else's hand.
+    Cheap to ask, and it is the difference between a background job and a script
+    that fights its owner for their own phone.
+    """
+    from phoneshell.perception.screen import visual_difference
+    try:
+        before = phone.wda.screenshot()
+        for _ in range(max(1, seconds // 4)):
+            time.sleep(4)
+            if visual_difference(before, phone.wda.screenshot()) > 0.02:
+                return True
+    except Exception:
+        return False
+    return False
+
+
 def open_alarm_list(phone) -> bool:
     """Get to Clock > Alarms, and say so honestly if we could not.
 
@@ -122,6 +141,15 @@ def main() -> int:
             # scrolling an unrelated app forever achieves nothing: check we are
             # still on the alarm list and walk back to it if not.
             if phone.wda.active_app_info().get("bundleId") != "com.apple.mobiletimer":
+                # Something else has the phone. If that something is a PERSON,
+                # navigating back is worse than the bug it fixes: the cleaner
+                # would yank the screen away from them every few seconds. So look
+                # first. A screen that is changing on its own is someone using
+                # it, and the only correct move is to wait for them to finish.
+                if _owner_is_using(phone):
+                    print("the owner is using the phone; waiting", flush=True)
+                    time.sleep(60)
+                    continue
                 print("lost the alarm list, navigating back", flush=True)
                 if not open_alarm_list(phone):
                     print("STOP: cannot get back to the alarm list", flush=True)
