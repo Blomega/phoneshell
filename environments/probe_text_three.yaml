@@ -1,0 +1,22 @@
+id: probe.text.three
+name: Read the written word, panel three
+app: com.apple.mobilesafari
+difficulty: medium
+tags:
+- probe
+- reading
+- stratum:tree
+- capability:tree-sufficient
+instruction: Open https://blolabel.ai/probe/three/ and tell me the written word.
+setup:
+- terminate: com.apple.mobilesafari
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilesafari
+- kind: answer_contains
+  text: BASALT
+teardown:
+- terminate: com.apple.mobilesafari
+notes: The matched control. Same page, same navigation, same question shape, but this answer IS in the
+  accessibility tree, so any difference from its probe.image twin is attributable to the image alone.

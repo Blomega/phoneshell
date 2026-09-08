@@ -451,7 +451,7 @@ class Runner:
         except Exception:
             pass
 
-        passed, checks = run_all(self.phone, task.checks)
+        passed, checks = run_all(self.phone, task.checks, said=result.agent_said)
         # A model that ran out of time did not complete the task, whatever the
         # phone happens to look like afterwards. Measured: clock.alarm.set_time
         # timed out with ZERO completed turns and $0.00 spent, and still

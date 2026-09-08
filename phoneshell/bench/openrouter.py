@@ -84,6 +84,12 @@ TOOLS: list[dict] = [
         "parameters": {"type": "object", "properties": {
             "name": {"type": "string"}}, "required": ["name"]}}},
     {"type": "function", "function": {
+        "name": "phone_open_url",
+        "description": ("Open a web address in Safari. Use this whenever a task names a URL: "
+                        "opening Safari alone lands on whatever page was last loaded."),
+        "parameters": {"type": "object", "properties": {
+            "url": {"type": "string"}}, "required": ["url"]}}},
+    {"type": "function", "function": {
         "name": "phone_press",
         "description": "Press home, or go back.",
         "parameters": {"type": "object", "properties": {
@@ -200,6 +206,13 @@ class PhoneTools:
         if not r.ok:
             return f"could not open {name!r}: {r.error or r.detail}"
         return self._screen(f"opened {name}")
+
+    def phone_open_url(self, url: str) -> str:
+        r = self.phone.open_url(str(url))
+        if not r.ok:
+            return f"could not open {url!r}: {r.error or r.detail}"
+        time.sleep(2.5)          # let the page paint before reading it
+        return self._screen(f"opened {url}")
 
     def phone_press(self, button: str) -> str:
         (self.phone.home if button == "home" else self.phone.back)()

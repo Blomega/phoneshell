@@ -28,8 +28,22 @@ def _match(elements: list[Element], needle: str) -> list[Element]:
     return find_by_text(elements, needle, clickable_only=False)
 
 
-def run_check(phone, check: Check) -> CheckResult:
+def run_check(phone, check: Check, said: str = "") -> CheckResult:
     kind = check.kind
+    if check.kind == "answer_contains":
+        # The ONLY check that grades what the model said rather than what the
+        # phone shows, and it exists for one narrow case: a task whose deliverable
+        # is information, not a state change. "What word is in that picture" has
+        # no phone state to inspect -- the word is on screen either way, so every
+        # other check would pass without the model having read anything. Ground
+        # truth has to be fixed and known in advance, which is why these tasks run
+        # against a page we host rather than against content that can change.
+        want = (check.text or "").strip().lower()
+        got = (said or "").lower()
+        hit = bool(want) and want in got
+        return CheckResult(check.kind, hit,
+                           f"{want!r} {'is' if hit else 'is NOT'} in the answer "
+                           f"({(said or '')[:60]!r})")
     try:
         result = _dispatch(phone, check)
     except WDAError as exc:
@@ -135,6 +149,6 @@ def _dispatch(phone, check: Check) -> CheckResult:
     return CheckResult(kind, False, f"unknown check kind {kind!r}")
 
 
-def run_all(phone, checks: list[Check]) -> tuple[bool, list[CheckResult]]:
-    results = [run_check(phone, c) for c in checks]
+def run_all(phone, checks: list[Check], said: str = "") -> tuple[bool, list[CheckResult]]:
+    results = [run_check(phone, c, said=said) for c in checks]
     return (all(r.passed for r in results) and bool(results)), results

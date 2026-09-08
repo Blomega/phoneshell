@@ -1,0 +1,23 @@
+id: probe.image.one
+name: Read the picture, panel one
+app: com.apple.mobilesafari
+difficulty: medium
+tags:
+- probe
+- reading
+- stratum:render
+- capability:render-dependent
+instruction: Open https://blolabel.ai/probe/one/ and tell me the word shown in the picture.
+setup:
+- terminate: com.apple.mobilesafari
+- home
+checks:
+- kind: foreground_app
+  text: com.apple.mobilesafari
+- kind: answer_contains
+  text: MERIDIAN
+teardown:
+- terminate: com.apple.mobilesafari
+notes: The word exists ONLY as pixels, verified absent from every accessibility node on the page while
+  OCR reads it. One panel per page, so the stimulus is in the first screenful and the task measures perception
+  rather than scrolling.
