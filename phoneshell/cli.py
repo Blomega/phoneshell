@@ -499,7 +499,8 @@ def bench(
     limit: int = typer.Option(0, help="run at most N tasks, to spend quota in controlled batches"),
     prepare: bool = typer.Option(True, help="set Auto-Lock to Never before running"),
     scaffold: bool = typer.Option(False, help="give the model harness guidance on using the tools"),
-    vision: bool = typer.Option(True, help="show the model the screenshot (--no-vision runs on the accessibility tree alone)"),
+    no_vision: bool = typer.Option(False, "--no-vision",
+        help="withhold the screenshot and run on the accessibility tree alone"),
 ) -> None:
     """Run the iOS agent benchmark against a model, on the real phone."""
     from pathlib import Path as _Path
@@ -590,7 +591,12 @@ def bench(
     for t in tasks:
         console.print(f"  [cyan]{t.id}[/cyan] {t.instruction[:60]}")
         try:
-            result = runner.run(t, model=model, scaffold=scaffold, vision=vision)
+            # None means "decide per model": a flag defaulting to True overrode the
+            # VISIONLESS list and sent an image to models that cannot take one, and
+            # OpenRouter answered "no endpoints found that support image input" for
+            # every task. Only an explicit --no-vision forces it.
+            result = runner.run(t, model=model, scaffold=scaffold,
+                                vision=False if no_vision else None)
         except (UsageLimitReached, RigUnavailable) as exc:
             stopped_early = str(exc)
             Runner.record(TaskResult(task_id=t.id, model=model, passed=False, skipped=True,

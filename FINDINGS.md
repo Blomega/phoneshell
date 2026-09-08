@@ -602,3 +602,74 @@ drops it as decoration.
 * **Typing verification could fail on an unreadable tree, pass on text that was already there, and
   trip over whitespace.** The tree collapses whitespace runs, so a typed newline could never match
   what was read back. All three guarded.
+
+---
+
+## 23. The screenshot is not paying for itself
+
+The benchmark could only ever run Anthropic models, because the agent loop was the `claude` CLI.
+Routing a vendor-prefixed slug through OpenRouter instead made it cross-vendor, and the first thing
+that made possible was an experiment rather than a leaderboard.
+
+Two of the six models, Qwen3-Max and DeepSeek v3.2, cannot accept an image at all. They work from
+the accessibility tree alone. That makes them a control group for a question with no published
+answer: **on iOS, with a well-labelled accessibility tree, what is the screenshot actually worth?**
+
+Comparing them against GPT-5.1 confounds the model with the modality, so the clean version is one
+model run both ways. Same model, same 24 tasks, same physical phone:
+
+| GPT-5.1 | score | steps | seconds | cost |
+| --- | --- | --- | --- | --- |
+| tree **and** screenshot | 20/24, 83.3% | 6.5 | 42 | $0.196 |
+| tree only | 20/24, 83.3% | 6.1 | 38 | $0.154 |
+
+**Zero points.** The image costs 27% more money, half a step more, and four seconds a task, and buys
+nothing measurable. Task by task it is not quite a wash, which is the more interesting part:
+
+* `notes.text_select` passed only **with** the image.
+* `calculator.chain` passed only **without** it. The picture is not free even when it is ignored: it
+  is context, and context can mislead.
+
+The independent confirmation is stronger than the ablation. **Qwen3-Max, which never saw a single
+screenshot, tied GPT-5.1 and Claude Opus 4.8 at 83.3%**, and did it for less money than either.
+
+### The leaderboard that produced it
+
+24 tasks covering all 22 capabilities, one physical iPhone 17 Pro Max on iOS 26.6, $4.29 of API
+spend in total.
+
+| model | score | steps | $/task | input |
+| --- | --- | --- | --- | --- |
+| Kimi K3 | **91.7%** | 6.2 | $0.0228 | tree + image |
+| GPT-5.1 | 83.3% | 6.5 | $0.0082 | tree + image |
+| Claude Opus 4.8 | 83.3% | 5.8 | $0.1130 | tree + image |
+| Qwen3-Max | 83.3% | 6.3 | **$0.0076** | **tree only** |
+| Gemini 3.1 Pro | 79.2% | 5.2 | $0.0223 | tree + image |
+| DeepSeek v3.2 | 75.0% | 8.9 | $0.0050 | tree only |
+
+Claude Opus 4.8 costs **fifteen times** what Qwen3-Max costs for exactly the same score. On this
+task set the accuracy frontier is nearly flat between 79% and 92% while price moves by a factor of
+twenty-three, which says the interesting axis for anyone actually deploying this is not accuracy.
+
+**The scope of the claim matters.** Every task here runs against Apple's own applications, and Apple
+labels its controls properly. Section 20 records a chat app returning `WAMessageBubbleTableViewCell`
+as a button's name, and a Flutter or Unity app can expose one opaque view for a whole screen. So the
+honest statement is: *where the tree is good, the screenshot is redundant.* Whether vision rescues a
+badly-labelled app is the obvious next experiment, and it is the one that would matter commercially.
+
+### One capability defeats every model
+
+| capability | passed |
+| --- | --- |
+| edge-gesture | **0/6** |
+| precise-taps | 4/6 |
+| scroll-end | 4/6 |
+
+`edge-gesture` is a swipe that must begin at `y=0`, off the drawn screen, to open Control Centre or
+Notification Centre. Not one of the six frontier models managed it, and the two tasks no model
+solved at all are that one and `clock.timer.set`. This is what a capability-isolated suite buys: not
+"the models scored 83%", but *the gesture that starts off-screen is unsolved across the industry*.
+
+**Twelve of the twenty-four tasks were passed by every single model.** They no longer separate
+anything and are dead weight in a leaderboard, which is a finding about the benchmark rather than
+about the models: the suite needs harder tasks more than it needs more tasks.
