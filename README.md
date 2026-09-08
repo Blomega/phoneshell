@@ -1,241 +1,229 @@
-# phoneshell
+<h1 align="center">phoneshell</h1>
 
-Drive your real iPhone from this Mac, with an agent, over the cable or the same wifi.
+<p align="center">
+  <b>Drive a real iPhone from your Mac, with an agent.</b><br>
+  And the benchmark that measures how well one can actually use it.
+</p>
 
-Not a mirror and not a screen-scraper: it speaks the same automation protocol Apple's
-own UI tests use, so it reads the actual accessibility tree of whatever app is open,
-taps real controls, types real text, and can launch any installed app by bundle id or
-deep link. Ordering from Grab or replying on WhatsApp is the same code path as opening
-Settings, because it operates the phone the way a finger does, with your accounts
-already logged in.
+<p align="center">
+  <a href="https://blolabel.ai"><img src="https://img.shields.io/badge/leaderboard-blolabel.ai-10b981?style=flat" alt="Leaderboard"/></a>
+  <a href="https://blolabel.ai"><img src="https://img.shields.io/badge/best%20score-94.8%25-2563eb?style=flat" alt="Best score"/></a>
+  <img src="https://img.shields.io/badge/tasks-60%20public%20%2F%2076%20total-7c3aed?style=flat" alt="Tasks"/>
+  <img src="https://img.shields.io/badge/device-physical%20iPhone%20%C2%B7%20iOS%2026-0f172a?style=flat" alt="Device"/>
+  <img src="https://img.shields.io/badge/python-3.11%2B-3776ab?style=flat&logo=python&logoColor=white" alt="Python"/>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-64748b?style=flat" alt="License"/></a>
+</p>
 
-## The held-out split
+Every published "can an AI use a phone" score is Android, because Android runs in software, free,
+thousands of phones at once. An iPhone cannot. It needs real hardware, a Mac, a signed developer
+build, and a harness that does not lie to you about what happened. So almost nobody measures it.
 
-The suite in `environments/` is **60 of 76 tasks**. Sixteen are kept private and are not in this
-repository or its history.
+- **It is not a mirror or a screen-scraper.** It speaks XCUITest, the automation protocol Apple's
+  own UI tests use, so it reads the real accessibility tree of whatever app is open, taps real
+  controls and types real text. Ordering food is the same code path as opening Settings.
+- **The phone grades the benchmark, not the model.** A task passes only if the device itself ends
+  in the required state. An agent that reports "I enabled that setting" and an agent that enabled
+  it are different things, and only the second one passes.
+- **It refuses to report success it cannot see.** Every layer of this stack returns `200 OK` for
+  work it never did. [`FINDINGS.md`](FINDINGS.md) is 600 lines of the ways it does that, each one
+  measured on a real device.
 
-This is not coyness. A benchmark whose entire answer key is public becomes training data, and once
-that happens the score measures memorisation rather than capability. Holding a split back is the
-only way a number stays meaningful after the benchmark gets any attention, so every serious
-benchmark does it.
+<p align="center">
+  <img src="docs/hero.png" alt="A Calculator screen with every control numbered, beside the element table and the compound call the agent used to compute 47 x 9" width="900">
+</p>
+<p align="center">
+  <em>Both halves of what the agent receives: a screenshot with numbered controls, and the same
+  screen as a table it can act on by id.</em>
+</p>
 
-The public 60 cover **all 22 capabilities**, so a score over them is directly comparable between
-models and you can run the whole thing yourself today. The held-out 16 are one task from each
-capability that had more than one, plus five end-to-end jobs, so the private half is representative
-rather than a pile of leftovers.
+---
 
-If you want a scored run against the full 76 on real hardware, that is what we do.
+## Get started
 
-
-## Status
-
-Running against a physical iPhone 17 Pro Max on iOS 26.6: real apps, real accounts, real
-gestures. It drives Settings, Safari, Notes, Clock, Calculator and third-party apps like Grab,
-and it ships a 32-task benchmark with automatic verification that scores a model on real
-hardware. The simulator path still exists and is the fastest way to develop without a phone.
-
-## The one-time setup, with the phone
-
-1. On the phone: **Settings > Privacy & Security > Developer Mode > on**, let it reboot.
-   Then **Settings > Developer > Enable UI Automation > on**. Without that second toggle
-   WebDriverAgent installs and launches perfectly and every single gesture fails, which
-   is a miserable thing to debug.
-2. On the phone: **Settings > Display & Brightness > Auto-Lock > Never** while it is
-   docked. Automation cannot type a passcode, by design, so the phone has to be awake.
-3. On the phone: **Settings > General > Software Update > Automatic Updates > off**.
-   iOS 27 ships around 14 September 2026 and breaks the detached launch path this uses.
-4. Plug the phone in with a cable, unlock it, tap **Trust**.
-5. On the Mac:
+You need a Mac, an iPhone, a cable, and a free Apple developer account.
 
 ```bash
-cd ~/Desktop/projects/pro-phoneshell
-./.venv/bin/python -m phoneshell.cli doctor    # says exactly what is missing
-./.venv/bin/python -m phoneshell.cli setup     # builds, signs, installs WebDriverAgent
-./.venv/bin/python -m phoneshell.cli up        # brings the bridge up and supervises it
+git clone https://github.com/Blomega/phoneshell
+cd phoneshell
+
+bin/phoneshell doctor      # names every missing piece and how to fix it
+bin/phoneshell setup       # builds and installs the runner onto the phone
+bin/phoneshell up          # brings the bridge up
 ```
 
-`setup` signs with a codesigning identity from your own keychain: it detects one automatically,
-or you can pin a specific team with `wda.development_team` in `runtime/config.yaml`. A paid
-Apple Developer account gives a profile good for a year; a free account expires every 7 days.
+`bin/phoneshell` creates its own virtualenv on first run, and `setup` fetches Appium's
+WebDriverAgent at the pinned tag it was tested against. Two toggles on the phone cannot be set from
+here and `doctor` will tell you about them: **Developer Mode**, and **Settings > Developer > Enable
+UI Automation**. Without the second one everything installs, launches and silently does nothing.
 
-Then, in a second terminal, either:
+Then either drive it yourself:
 
 ```bash
-./.venv/bin/python -m phoneshell.cli serve     # the app: live screen, click to control, chat
-./.venv/bin/python -m phoneshell.cli shell     # drive it by hand, see what the agent sees
+bin/phoneshell shell       # see exactly what the agent sees, act by element id
+bin/phoneshell serve       # live screen in a browser, click to control, chat to delegate
 ```
 
-or point any MCP client at it:
+Or run the benchmark:
 
 ```bash
-claude mcp add phoneshell -- ~/Desktop/projects/pro-phoneshell/.venv/bin/python -m phoneshell.mcp_server
+bin/phoneshell bench --list
+bin/phoneshell bench --model claude-sonnet-5
 ```
 
-To develop without touching the phone, `python -m phoneshell.cli sim` runs the identical
-stack against an iOS 26.5 simulator.
+---
 
-## How it works
+## Use it from an AI assistant
 
-```
-  you ──▶ app (chat + live screen)         MCP client (Claude Code, Claude Desktop)
-             │                                        │
-             └──────────────┬─────────────────────────┘
-                            ▼
-                   phoneshell MCP tools
-            observe · tap · type · swipe · open_app · open_url · alert
-                            │
-                     perception + safety
-        accessibility tree ─▶ filter ─▶ dedupe ─▶ TSV + numbered screenshot
-                            │
-                      WebDriverAgent HTTP  :8100     MJPEG live screen :9100
-                            │
-                usbmux port forward over the cable  (or the phone's LAN address)
-                            │
-                    WebDriverAgent (XCUITest runner) on the iPhone
+phoneshell is an MCP server, so any MCP client can drive the phone. It exposes 22 tools: observe,
+tap, type, swipe, 49 named gestures, picker wheels, popup dismissal, app launch, and `phone_do` for
+running several steps in one call.
+
+```bash
+bin/phoneshell mcp-config    # prints the config block to paste into your client
 ```
 
-**Control plane.** WebDriverAgent, the XCTest runner Appium uses, built and signed here
-and installed on the phone. It is the only supported, non-jailbreak way to get a real
-accessibility tree plus real touch injection on a physical iPhone. It is launched with
-`xcrun devicectl device process launch`, which is the one launcher that detaches: every
-other option (xcodebuild, go-ios runwda, pymobiledevice3's test service) holds the
-testmanagerd session open and takes WDA down with it when it exits.
+---
 
-**Perception.** Tree first, pixels second. A raw `/source` for one screen is ~200 nodes
-and ~78 KB of JSON; the filter takes that to 12-16 real controls, one line each, in
-reading order. Numbered boxes are drawn on the screenshot only when the tree is too thin
-to trust, which is the WebView, map and game case. That split is not taste: measured,
-hybrid beats tree-only 53.7% to 35.2% and pixels-only 15.6%, but on rich native trees the
-tree wins and on thin ones the marks win.
+## The benchmark
 
-**Grounding.** The model never emits coordinates. It names an id from the observation it
-was given, and this side resolves that id against the same snapshot, verifies it, and
-only then sends an absolute W3C touch event.
+76 tasks on a physical iPhone, every one graded by the device. Each task is three parts, and the
+first and third involve no model at all, which is what makes a score reproducible.
 
-The verification is two checks. Structural: is the rect degenerate, off screen, or a flat
-block of colour, all of which mean covered or not yet painted. Textual: macOS Vision
-reads the pixels under the element and they have to agree with the label the model was
-shown. That second check exists because when a stale tree label and the pixels disagree,
-models follow the text 30-79% of the time and act wrongly on it almost always, and it is
-the difference between catching "Place order" pointing at a Cancel button and not.
+| | |
+|---|---|
+| **Setup** | Deterministic steps put the phone in a known state, so every attempt starts identically. |
+| **Instruction** | One sentence goes to the agent. It sees an accessibility tree and a screenshot. |
+| **Checks** | Assertions read the device directly and decide pass or fail. The agent never sees them. |
 
-It is deliberately narrow. Only controls whose label is the text drawn on them get the
-text check: Buttons, links, labels, tabs. Icons, images, text fields, webviews and
-containers all carry labels describing something other than their own pixels, and
-checking those raised a false alarm on 39% of elements when measured across three real
-screens. Scoped to the controls where the label really is the rendering, it is 0% false
-alarms over 46 elements and still blocks a relabelled button.
+A complete task is one file:
 
-**Settling.** Every observation waits for the framebuffer to stop changing first. A home
-screen read 1.0s after pressing home returned 6 elements here; the same read at 2.0s
-returned 12. Reading mid-animation is the single easiest way to make an agent look stupid.
+```yaml
+id: clock.timer.set_minutes
+name: Dial the timer to 5 minutes
+app: com.apple.mobiletimer
+difficulty: medium
+tags: [clock, picker, "capability:picker-set"]
+instruction: Open the Clock app, go to Timers, and set the timer duration to 5 minutes.
+setup:
+  - terminate: com.apple.mobiletimer
+  - home
+checks:
+  - kind: foreground_app
+    text: com.apple.mobiletimer
+  - kind: regex_on_screen
+    text: (?<![0-9])5 min
+teardown:
+  - terminate: com.apple.mobiletimer
+```
 
-## Two modes
+The suite splits into **45 capability probes**, each isolating one skill so a failure names the
+missing skill rather than pointing vaguely at a long task, and **31 end-to-end jobs** that catch
+what only breaks when several capabilities have to hold together.
 
-`takeover` (default) is the agent driving the phone. `shared` makes the agent yield: it brackets
-its own actions, reads any screen change it did not cause as you picking the phone up, pauses, and
-resumes when you put it down. Switch it live in the app header.
+Current results are at **[blolabel.ai](https://blolabel.ai)**.
 
-Shared mode is as close to "runs in the background" as the hardware allows, and that is not a
-limitation of this code. Checked against the iOS 26.4 SDK headers on this Mac: `UIWindowScene.h`
-declares exactly one external-display role, `UIWindowSceneSessionRoleExternalDisplayNonInteractive`,
-and the interactive one was deprecated in iOS 16. The phone enumerates seven display slots (one
-primary, one TVOut, five wireless) but everything past the built-in screen mirrors and cannot be
-touched, and the CoreDevice HID path posts to the same `mainTouchscreen` digitizer your finger uses.
-There is no offscreen scene either: iPhone reports `supportsMultipleScenes == NO`, and
-`launchUnattached` is `LSApplicationWorkspace openApplicationWithBundleID:`, which foregrounds.
-For genuine parallelism, use a second phone.
+### The held-out split
 
-## Gestures
+`environments/` holds **60 of 76 tasks**. Sixteen are private and are not in this repository or its
+history.
 
-Forty-nine of them, thirty-one exposed to the agent through one tool: taps up to triple, long press,
-force touch, two/three/four/five-finger chains, pinch, rotate, flick with momentum, page flips, edge
-and corner swipes (Control Centre, Notification Centre, app switcher, Spotlight), row swipes,
-drag-to-reorder, keyboard-as-trackpad, three-finger copy and paste, pull-to-refresh, and the
-hardware buttons over HID.
+A benchmark whose entire answer key is public becomes training data, and the score then measures
+memorisation rather than capability. The public 60 cover **all 22 capabilities**, so a score over
+them is comparable between models and you can run the whole public suite today. The held-out 16 are
+one task from each capability that had more than one, plus five end-to-end jobs, so the private
+half is representative rather than leftovers.
 
-Three things only the device taught us: top-edge gestures are issued from `y=0`; page flips need
-momentum, because a drag that ends stationary snaps back; and `/wda/homescreen` silently fails often
-enough that `home()` verifies itself and falls back to a HID press and then the bottom-edge swipe.
-Note also that Control Centre, Notification Centre, Spotlight and the app switcher are all
-`com.apple.springboard`, so "am I on the home screen" has to look at the screen, not the bundle id.
+---
 
-**Every gesture is gated on liveness.** WebDriverAgent answers `200` with a null value for gestures
-sent to a locked or sleeping phone and does nothing at all: two screenshots either side of such a
-swipe are byte-identical. A 200 means the runner accepted it, never that the phone moved, so the
-gesture layer raises `ScreenLocked` instead of reporting a success that did not happen.
+## What it can do
 
-## Popups
+**49 gestures**, because a phone is not a mouse: edge swipes that must start at `y=0` to open
+Control Centre and Notification Centre, long press, force touch, two- and three-finger gestures,
+pinch, rotate, row swipes to reveal delete, drag to reorder, and the keyboard-as-trackpad cursor
+drag.
 
-Promo sheets are the most common way an agent stalls, so they are a harness reflex rather than
-something the model reasons about. `phone_dismiss_popup` (and an automatic pass after opening an
-app) tries the real close control, then the known wording, then swiping the sheet down, then the
-backdrop, then a back swipe, verifying after each. It never answers a system permission dialog and
-never taps anything matching pay, order, send, delete or allow.
+**Picker wheels.** The spinning columns iOS uses for times, dates and durations cannot be set by
+swiping: they step by whole rows, so a swipe overshoots and never settles. XCTest turns them by
+*tapping* beside the selected row, and phoneshell calibrates the row height per wheel before it
+starts, because the fixed offset WebDriverAgent uses moves two rows on some of them.
 
-## The passcode
+**Popups.** A catalogue of 14 overlay shapes with an ordered set of moves for each: close control,
+then known labels, then a drag down from the grabber, then the backdrop, then a back swipe.
 
-A phone that auto-locks stops an unattended rig dead, because iOS deliberately blocks automation
-from the passcode screen. `phoneshell set-passcode` stores the code in the macOS login Keychain,
-encrypted at rest, typed at a hidden prompt so it never reaches your shell history or a transcript.
-It is used for one thing: tapping digits on that phone's own keypad. `--forget` removes it. The
-alternative, and the better one for a docked phone, is Auto-Lock set to Never.
+**Memory.** It fingerprints screens it has seen before and remembers how long each takes to settle,
+so a familiar screen is polled tighter than a new one.
+
+**Two modes.** Exclusive, where the agent has the phone; and shared, where it yields the moment you
+pick the phone up and resumes when you put it down.
+
+---
 
 ## What it cannot do
 
-Honest list, all verified rather than assumed:
+Being specific about this matters more than the feature list.
 
-- **Send a WhatsApp message without a tap.** `whatsapp://send?phone=…&text=…` fills the
-  composer and stops. No URL, entitlement, intent or shortcut sends it. The agent can tap
-  Send, but nothing can skip that step.
-- **Order on Grab by deep link.** `grab://open?screenType=GRABFOOD` reaches a tab and
-  nothing more. Cart, address, payment and confirmation are UI automation, every time.
-- **Face ID, the passcode screen, or Apple Pay confirmation.** Not automatable on a real
-  device, at all. Keep the phone unlocked and awake while it is being driven.
-- **App Store purchases**, which are out-of-process and password gated.
-- **Run while the phone is locked.** Unlike iPhone Mirroring, this needs the phone awake,
-  and in exchange you can use the phone yourself at the same time.
+- **Apps that expose nothing.** It reads the accessibility tree. Apple labels its controls
+  properly; a Flutter or Unity app can expose one opaque view for a whole screen, and one chat app
+  measured here returns `WAMessageBubbleTableViewCell` as a button's name, which is a class name,
+  not meaning.
+- **Screens whose geometry lies.** An alarm's toggle reports its position as `x=0, width=63` while
+  being drawn at 89% across the row.
+- **Very long screens.** A 640-row list takes 2.6s to read, 24s with a sheet open, against 154ms on
+  an ordinary screen, and at that size the tree comes back *incomplete with no error*.
+- **Face ID, Apple Pay, and anything the secure enclave gates.** By design.
+- **Running unattended without the passcode.** iOS locks, and a locked phone cannot be driven.
+  `bin/phoneshell set-passcode` stores it in the macOS Keychain. It is never written to a file,
+  never logged, and never leaves the machine.
 
-Expect roughly 50-65% single-shot success on genuinely novel multi-step tasks in
-third-party apps, which is where the published numbers on real closed-source apps sit.
-Repeated tasks do much better, which is what the macro layer is for.
+---
 
 ## Safety
 
-The phone has money on it, so:
+Actions that look irreversible (pay, order, send, delete) are refused the first time and require an
+explicit confirmation, so an agent has to tell you what it is about to do before it can do it.
+Every action is written to a local audit log. The bridge binds to loopback by default.
 
-- Anything matching pay / order / checkout / send / delete / transfer is **refused once**
-  and only fires when the same call is repeated with `confirmed=true`, which means the
-  decision is visible in the transcript rather than buried in a tool call.
-- Passwords and Keychain are on a deny list of apps the agent may not open.
-- Every action, manual or agent, is appended to `runtime/logs/audit.jsonl`.
-- **WebDriverAgent authenticates nothing, and by default it listens on every interface
-  the phone has.** The usbmux forward puts a socket on the Mac's loopback, but that does
-  not close the phone's own port: unless `USE_IP` is honoured, anyone on the same wifi
-  can reach `http://<phone>:8100` and read your screen, your pasteboard and tap anything.
-  `phoneshell up` passes `USE_IP=127.0.0.1` to bind it to the phone's loopback, but
-  whether a physical device honours that is not something anyone has verified, so
-  `phoneshell doctor` probes the phone's LAN address directly and tells you the truth
-  rather than assuming. Treat a failed `lan-exposure` check as real.
+The benchmark cleans up after itself: an earlier version saved an alarm on every run and reached
+640 of them, which made a single Clock read cost 2.6 seconds and caused the suite to fail its own
+timer task. A suite that mutates the device has to undo it, or its numbers drift out from under it.
+
+---
 
 ## Layout
 
 ```
 phoneshell/
-  wda/client.py        the WebDriverAgent client, written against the runner's own source
-  perception/tree.py   accessibility tree to a short, deduped, actionable element list
-  perception/screen.py stability detection, downscaling, numbered overlays
-  agent/observation.py one observation per step: TSV + picture + alert + hints
-  agent/verify.py      consistency gate and stuck detection
-  actions.py           the verb layer: tap, type, swipe, open, back, wait
-  apps.py              installed-app catalogue and the deep links worth having
-  device.py            build, sign, strip, install, launch, forward, health
-  safety.py            confirmation rails and the audit log
-  mcp_server.py        the 13 tools any MCP client can drive
-  server.py + ui/      the local app: live screen, click to control, chat
-  cli.py               doctor / setup / up / sim / shell / serve / mcp
+├── wda/          WebDriverAgent HTTP client, written against the runner's own source
+├── perception/   accessibility tree condensing, screenshots, Set-of-Marks, OCR
+├── agent/        observation building, overlay playbook, consistency gate, macros
+├── bench/        task schema, runner, checks, site generator
+├── actions.py    the verb layer: everything an agent is allowed to do
+├── gestures.py   49 gestures
+└── mcp_server.py the 22 MCP tools
+environments/     the 60 public benchmark tasks, one YAML file each
+FINDINGS.md       600 lines of measured failure modes
 ```
 
-`vendor/WebDriverAgent` is pinned to v16.12.4. Build products go to
-`~/Library/Developer/phoneshell`, never under `~/Desktop`: that folder is TCC-protected
-and a build there hangs the runner in an `open()` syscall with no error at all.
+---
+
+## Why the findings are the interesting part
+
+The code here is reimplementable in a weekend. The failure taxonomy is not, and it is the reason
+this works at all. A sample of what [`FINDINGS.md`](FINDINGS.md) records, each measured:
+
+- WebDriverAgent returns `200 OK` with a null value for **every** gesture sent to a locked phone,
+  and two screenshots either side are byte-identical.
+- `devicectl` exits 0 and prints "Launched application" for a bundle that is not installed.
+- iOS offloads unused apps and does not spare a development build: it removed the automation runner
+  itself, mid-run.
+- A phone can reach a state where every read is perfect and every write is silently dropped. The
+  device log showed 110,000 dropped HID events. Only a reboot clears it.
+- Six distinct ways this benchmark found to report a score that was not true, each one making the
+  number look *better*.
+
+---
+
+<p align="center">
+  <sub>Apache 2.0. Built on Appium's <a href="https://github.com/appium/WebDriverAgent">WebDriverAgent</a> (BSD-3), which
+  <code>setup</code> fetches at a pinned tag. Results and leaderboard at <a href="https://blolabel.ai">blolabel.ai</a>.</sub>
+</p>
