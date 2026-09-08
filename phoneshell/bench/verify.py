@@ -51,7 +51,9 @@ def _dispatch(phone, check: Check) -> CheckResult:
     if kind == "element_exists_anywhere":
         # Scrolls to look. A reminder that exists but sits below the fold is a
         # pass, and treating it as a failure blames the model for our impatience.
-        snap = phone.snapshot(with_screenshot=False, stable=False)
+        # Settle first: an un-settled read mid-animation comes back short, and a
+        # short read here fails a task the model actually completed.
+        snap = phone.snapshot(with_screenshot=False, stable=True)
         if _match(snap.elements, check.text):
             return CheckResult(kind, True, f"{check.text!r} was already visible")
         found = phone.scroll_to_text(check.text, max_swipes=6)
@@ -61,8 +63,22 @@ def _dispatch(phone, check: Check) -> CheckResult:
     if kind in {"element_exists", "text_on_screen"}:
         snap = phone.snapshot(with_screenshot=False, stable=False)
         hits = _match(snap.elements, check.text)
-        return CheckResult(kind, bool(hits),
-                           f"{check.text!r} {'found' if hits else 'not found'} on screen")
+        if hits or not check.negate:
+            return CheckResult(kind, bool(hits),
+                               f"{check.text!r} {'found' if hits else 'not found'} on screen")
+        # Proving something is GONE takes more work than proving it is there.
+        # One un-settled, non-scrolling read that happens to miss becomes
+        # "correctly not found" and scores a pass: reminders.complete passed that
+        # way while the reminders it was meant to have completed were still on the
+        # phone. So settle, look again, and scroll before believing an absence.
+        snap = phone.snapshot(with_screenshot=False, stable=True)
+        if _match(snap.elements, check.text):
+            return CheckResult(kind, True, f"{check.text!r} found on screen")
+        if not snap.elements:
+            return CheckResult(kind, True, "the screen could not be read, so absence is unproven")
+        found = phone.scroll_to_text(check.text, max_swipes=6)
+        return CheckResult(kind, found.ok,
+                           f"{check.text!r} {'found after scrolling' if found.ok else 'not found, after settling and scrolling'} on screen")
 
     if kind == "element_value":
         snap = phone.snapshot(with_screenshot=False, stable=False)

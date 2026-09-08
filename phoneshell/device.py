@@ -555,7 +555,15 @@ def recycle_runner(udid: str, runner_bundle_id: str, port: int = 8100,
     deadline = _time.time() + wait
     while _time.time() < deadline:
         try:
+            # A bare TCP connect is NOT proof: this repo's own client says so,
+            # because a usbmux forward accepts the connection and then resets it
+            # when nothing is listening on the phone. So while `phoneshell up`
+            # holds iproxy open, this succeeds on the first attempt whether or
+            # not the runner ever came back. Ask for an actual HTTP answer.
             with socket.create_connection(("127.0.0.1", port), timeout=1.5):
+                pass
+            from .wda.client import WDAClient
+            if WDAClient(base_url=f"http://127.0.0.1:{port}", timeout=4).is_alive():
                 return Check("recycle", True, "WebDriverAgent restarted and answering")
         except OSError:
             _time.sleep(1.5)
@@ -644,16 +652,30 @@ def input_check(cfg) -> Check:
     from .wda.client import WDAError
     try:
         phone = Phone(cfg)
+        # Go to the home screen FIRST. A full-width swipe through the middle of a
+        # list row is the destructive row action in most apps, and this ran on
+        # whatever happened to be in front: the same gesture is what the alarm
+        # cleaner uses to DELETE a row. On the home screen it only turns a page.
+        try:
+            phone.home()
+            time.sleep(1.0)
+        except WDAError:
+            pass
         geo = phone.wda.geometry()
         y = geo.point_h * 0.5
         right, left = geo.point_w * 0.85, geo.point_w * 0.15
-        before = phone.wda.screenshot()
-        phone.wda.drag(right, y, left, y, duration=0.15)
-        time.sleep(1.0)
-        moved = visual_difference(before, phone.wda.screenshot())
-        # Put the screen back where it was, whatever the verdict.
-        phone.wda.drag(left, y, right, y, duration=0.15)
-        time.sleep(0.6)
+        # Both directions: one alone is not guaranteed to move anything, and a
+        # rubber-band at the end of the home screen would read as a dead phone.
+        moved = 0.0
+        for from_x, to_x in ((right, left), (left, right)):
+            before = phone.wda.screenshot()
+            phone.wda.drag(from_x, y, to_x, y, duration=0.15)
+            time.sleep(1.0)
+            moved = max(moved, visual_difference(before, phone.wda.screenshot()))
+            phone.wda.drag(to_x, y, from_x, y, duration=0.15)   # put it back
+            time.sleep(0.6)
+            if moved > 0.01:
+                break
         if moved > 0.01:
             return Check("input", True, f"gestures reach the screen ({moved:.1%} moved)")
         return Check(

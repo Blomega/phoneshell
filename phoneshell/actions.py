@@ -265,7 +265,8 @@ class Phone:
                     if submit:
                         self.wda.type_text("\n")
                     typed = self._after("type", f"{text!r} into [{into.idx}]", before, settle=0.8)
-                    return self._confirm_typed(text, typed, submit)
+                    return self._confirm_typed(text, typed, submit,
+                                               into=into, before=before)
                 except WDAError as exc:
                     log.debug("element value path failed (%s), falling back to tap+keys", exc)
             self.wda.tap_w3c(into.cx, into.cy)
@@ -280,37 +281,70 @@ class Phone:
         payload = text + ("\n" if submit else "")
         self.wda.type_text(payload)
         result = self._after("type", f"{text!r}{' + return' if submit else ''}", before, settle=0.8)
-        return self._confirm_typed(text, result, submit)
+        return self._confirm_typed(text, result, submit, into=into, before=before)
 
-    def _confirm_typed(self, text: str, result: ActionResult, submit: bool) -> ActionResult:
+    @staticmethod
+    def _squash(text: str) -> str:
+        """Collapse whitespace the way the tree already has.
+
+        _clean() in the tree layer replaces every whitespace run with a single
+        space, so a typed newline or double space can never match the value read
+        back and a correct action is reported as broken. Compare like for like.
+        """
+        return " ".join(text.split()).lower()
+
+    def _confirm_typed(self, text: str, result: ActionResult, submit: bool,
+                       into: Element | None = None,
+                       before: Snapshot | None = None) -> ActionResult:
         """Say plainly whether the typed text actually reached a field.
 
         Keystrokes go to whatever holds keyboard focus, and when nothing does
         they are dropped in silence. The keyboard still animates in, so the pixel
         diff reports "something changed" and the agent believes it typed.
         Measured on Reminders that produced an empty reminder and a confident
-        report that the text had been saved: the run passed the foreground check
-        and failed on the text that was never there. The tree is the only witness
-        that can tell those two apart, and one read is cheaper than a lost task.
+        report that the text had been saved.
+
+        Three ways this check can itself be wrong, all guarded below:
+        an unreadable tree is not evidence the text is missing; text that was
+        already on the screen before is not evidence it was typed; and a field
+        that reformats what it holds is not lying.
         """
         if submit:
             return result          # submitting usually navigates away from the text
-        probe = text.strip()[:24].lower()
+        probe = self._squash(text)[:24]
         if not probe:
             return result
         try:
             raw = flatten(self.wda.source())
         except WDAError:
             return result          # cannot tell, so do not cry wolf
+        # An empty or one-node tree means the read failed, not that the text is
+        # absent. /source comes back short during animations and returns a single
+        # bogus root for {}, and treating that as "not on screen" fails a correct
+        # action. Absence needs a read that could actually have seen something.
+        if sum(1 for e in raw if (e.value or e.label or e.name)) < 2:
+            return result
         if any(e.type == "SecureTextField" for e in raw):
             return result          # a password field masks what it holds
-        for e in raw:
-            for shown in (e.value, e.label, e.name):
-                if shown and probe in shown.lower():
-                    return result
-        result.detail += " -- NOT on screen afterwards: the field almost certainly"\
-                         " never had focus. Tap the field and type again before"\
-                         " assuming this worked."
+
+        def holds(elements) -> bool:
+            for e in elements:
+                for shown in (e.value, e.label, e.name):
+                    if shown and probe in self._squash(shown):
+                        return True
+            return False
+
+        if holds(raw):
+            # Present now. That is only PROOF if it was not present before: a
+            # reminder list already showing "collect parcel" from an earlier run
+            # would otherwise confirm a typing action that never landed.
+            if before is not None and before.elements and holds(before.elements):
+                result.detail += (" -- note: that text was already on screen before"
+                                  " typing, so this does not confirm it was entered")
+            return result
+        result.detail += (" -- NOT on screen afterwards: the field almost certainly"
+                          " never had focus. Tap the field and type again before"
+                          " assuming this worked.")
         result.ok = False
         return result
 
@@ -389,10 +423,19 @@ class Phone:
                 return True
             gd, wd = _digits(got), _digits(want)
             if gd and wd:
-                # Numbers decide on their own. Falling through to a substring
-                # test here matched "5" against "15 min" and stopped the wheel
-                # ten rows early while reporting success.
-                return gd.lstrip("0") == wd.lstrip("0")
+                # Numbers decide, but they do not decide ALONE. Comparing digits
+                # only was a correct fix for "5" matching "15 min" and a wrong one
+                # for everything else: it threw away weekday, month, AM/PM and
+                # unit, so "9:00 AM" matched "9:00 PM" and "Mon Sep 9" matched
+                # "Fri Oct 9". On a wheel like that this reports success having
+                # fired no taps at all, and the caller saves the wrong date. So
+                # the numbers must agree AND whatever letters were asked for must
+                # actually be on the row.
+                if gd.lstrip("0") != wd.lstrip("0"):
+                    return False
+                letters = "".join(c for c in want.lower() if c.isalpha())
+                return not letters or letters in "".join(
+                    c for c in got.lower() if c.isalpha())
             return bool(want) and want.lower() in got.lower()
 
         def tap(fraction: float, down: bool) -> None:
@@ -410,6 +453,7 @@ class Phone:
         if matches(current):
             return self._after("set_picker", f"wheel {wheel} already reads {current!r}",
                                before, settle=0.1)
+        spent = 0                          # every tap sent, for the report
 
         # ---- calibrate: find the offset that moves this wheel exactly one row.
         step = None
@@ -440,7 +484,7 @@ class Phone:
                                 detail=f"wheel {wheel} would not move; taps are missing it")
         if matches(current):
             return self._after("set_picker",
-                               f"wheel {wheel} reads {current!r} after {taps} tap(s)",
+                               f"wheel {wheel} reads {current!r} after {taps + spent} tap(s)",
                                before, settle=0.1)
 
         # ---- which way is down? one calibrated tap answers it and moves us on.
@@ -461,7 +505,7 @@ class Phone:
                                     detail=f"wheel {wheel} is stuck on {current!r}")
         if matches(current):
             return self._after("set_picker",
-                               f"wheel {wheel} reads {current!r} after {taps} tap(s)",
+                               f"wheel {wheel} reads {current!r} after {taps + spent} tap(s)",
                                before, settle=0.1)
 
         # ---- cover the distance. A tap costs 550ms and a read costs 154ms, both
@@ -480,8 +524,14 @@ class Phone:
             rows = round(distance / per_tap)
             if abs(rows) <= 5:
                 break
+            # Clamp the travel in PIXELS against the wheel's own box, not in
+            # rows. Eight rows of a tall wheel is wider than the wheel, and the
+            # gesture then starts and ends outside it: on a sheet that means the
+            # drag begins on the sheet itself and drags the sheet instead.
             span = max(-8, min(8, rows))
             dy = -span * row_px if down else span * row_px
+            reach = height * 0.34                    # keeps both ends well inside
+            dy = max(-reach * 2, min(reach * 2, dy))
             self.wda.drag(cx, cy - dy / 2, cx, cy + dy / 2, duration=0.3)
             time.sleep(0.5)
             moved = read()
@@ -490,20 +540,26 @@ class Phone:
             current = moved
             if matches(current):
                 return self._after("set_picker", f"wheel {wheel} reads {current!r} "
-                                   f"after {taps} tap(s) and a drag", before, settle=0.1)
+                                   f"after {taps + spent} tap(s) and a drag", before, settle=0.1)
 
         # ---- stride: the remaining rows are arithmetic, so read once at the end.
+        # Its taps are counted separately from max_attempts. Sharing one counter
+        # meant a long stride (5 to 45 on a minute wheel is 40 taps) exhausted the
+        # budget before the closed loop below ever ran, and the closed loop exists
+        # precisely to correct a stride that fell short. One dropped tap in a long
+        # stride then left the wheel a few rows off with its own recovery disabled.
         distance = rows_between(current, want)
         if per_tap and distance is not None:
             rows = round(distance / per_tap)
             direction = down if rows > 0 else not down
-            for _ in range(min(abs(rows), 60)):
+            stride_taps = min(abs(rows), 60)
+            for _ in range(stride_taps):
                 tap(step, direction)
-                taps += 1
+            spent += stride_taps          # reported, but not charged to the budget
             current = read()
             if matches(current):
                 return self._after(
-                    "set_picker", f"wheel {wheel} reads {current!r} after {taps} tap(s)",
+                    "set_picker", f"wheel {wheel} reads {current!r} after {taps + spent} tap(s)",
                     before, settle=0.1)
             down = direction
 
@@ -513,7 +569,7 @@ class Phone:
         while taps < max_attempts:
             if matches(current):
                 return self._after(
-                    "set_picker", f"wheel {wheel} reads {current!r} after {taps} tap(s)",
+                    "set_picker", f"wheel {wheel} reads {current!r} after {taps + spent} tap(s)",
                     before, settle=0.1)
             # Once we are close, walk towards the value rather than guessing.
             gap = rows_between(current, want)
@@ -535,7 +591,7 @@ class Phone:
                     detail=f"wheel {wheel} cycled {len(seen)} rows without reaching {want!r}")
             current = nxt
         return ActionResult(ok=False, action="set_picker", changed=False,
-                            detail=f"wheel {wheel} still reads {current!r} after {taps} taps")
+                            detail=f"wheel {wheel} still reads {current!r} after {taps + spent} taps")
 
     def press_key(self, key: Literal["return", "delete", "tab"], before: Snapshot | None = None) -> ActionResult:
         mapping = {"return": "\n", "delete": "\b", "tab": "\t"}
@@ -656,15 +712,40 @@ class Phone:
         The snapshots here skip the stability gate and the screenshot: this loop
         only needs text, and that takes it from ~1.0s a look to ~0.4s.
         """
-        def look() -> tuple[bool, int | None, str]:
+        geo = self.wda.geometry()
+        # iOS 26 floats a search field or a tab bar over the bottom of a list and
+        # a navigation bar over the top, and the accessibility tree happily
+        # reports a row that is underneath one of them as being on screen. Tapping
+        # it then hits the bar instead: measured here, "Display & Brightness" was
+        # found at y=906 of 956 and the tap opened Settings search, after which
+        # every later step searched a screen it had never left. So a hit is only
+        # useful once it is clear of both bars.
+        top_safe, bottom_safe = geo.point_h * 0.13, geo.point_h - 95
+
+        def look() -> tuple[bool, int | None, str, float | None]:
             snap = self.snapshot(with_screenshot=False, stable=False)
             hits = find_by_text(snap.elements, needle, clickable_only=False)
-            return bool(hits), (hits[0].idx if hits else None), snap.signature
+            return (bool(hits), (hits[0].idx if hits else None), snap.signature,
+                    hits[0].cy if hits else None)
 
-        found, idx, _ = look()
+        def nudge_into_the_clear(idx: int | None,
+                                 cy: float | None) -> tuple[int | None, float | None]:
+            """Ease an obstructed hit into the middle of the screen."""
+            for _ in range(2):
+                if cy is None or top_safe <= cy <= bottom_safe:
+                    break
+                self.swipe("down" if cy > bottom_safe else "up", distance=0.25)
+                found, idx, _, cy = look()
+                if not found:
+                    return None, None
+            return idx, cy
+
+        found, idx, _, cy = look()
         if found:
-            return ActionResult(ok=True, action="scroll_to_text",
-                                detail=f"{needle!r} was already on screen", data={"index": idx})
+            idx, cy = nudge_into_the_clear(idx, cy)
+            if idx is not None:
+                return ActionResult(ok=True, action="scroll_to_text",
+                                    detail=f"{needle!r} was already on screen", data={"index": idx})
 
         opposite: Direction = {"down": "up", "up": "down",
                                "left": "right", "right": "left"}[direction]
@@ -677,8 +758,11 @@ class Phone:
             for _ in range(budget):
                 self.swipe(way)
                 swipes += 1
-                found, idx, sig = look()
+                found, idx, sig, cy = look()
                 if found:
+                    idx, _ = nudge_into_the_clear(idx, cy)
+                    if idx is None:
+                        continue
                     return ActionResult(
                         ok=True, action="scroll_to_text",
                         detail=f"found {needle!r} after {swipes} swipes ({way})",

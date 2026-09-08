@@ -508,3 +508,97 @@ This is the fifth distinct way this benchmark has found to report a number that 
 others: fabricating scores for tasks that never ran, verification that destroyed its own
 measurement, counting results from retired tasks, and scoring a task whose app was not installed.
 Every one of them made the number look *better*.
+
+---
+
+## 22. An adversarial review of one day's work found nine critical defects
+
+Five reviewers, one per dimension, each finding verified by an independent skeptic told to refute
+it. Fifteen findings, **thirteen survived**, nine of them critical. Two were refuted and dropped.
+
+What makes them worth writing down is that they are almost all the *same* defect wearing different
+clothes: **a reading taken at the wrong moment, or a reading that proves less than it appears to,
+used as grounds to act or to score.** That is the exact fault that had already deleted one of the
+owner's alarms earlier in the day, and it was still present in eight other places.
+
+### The fix was applied to one copy of the gesture and not the other
+
+The delete swipe that started at 92% of the row width, landed on the alarm's toggle, and switched
+nine alarms on was fixed in `scripts/clean_alarms.py`. **The same gesture in
+`Runner.remove_artifact_alarms` was missed**, and it runs as teardown on three Clock tasks, so the
+next benchmark run turned three more alarms on: 12:00 AM, 12:10 AM and 12:56 AM. Found by the
+review, confirmed on the phone, fixed in both places.
+
+The lesson is duller than the bug: when a gesture is worth a comment explaining why it is fragile,
+grep for every copy of it before considering it fixed.
+
+### Digits alone are not a match
+
+`set_picker` compared picker rows by their digits, which was a correct fix for `"5"` matching
+`"15 min"` and a wrong one for everything else. It discarded weekday, month, AM/PM and unit:
+
+| row shows | asked for | old verdict | truth |
+| --- | --- | --- | --- |
+| `9:00 AM` | `9:00 PM` | match | different by twelve hours |
+| `Fri Oct 9` | `Mon Sep 9` | match | different by a month |
+| `1 hour before` | `1 day before` | match | different by a day |
+
+On a combined date wheel that returns `ok=True` having fired no taps at all, and the caller saves
+the wrong date. Now the numbers must agree **and** whatever letters were asked for must be on the
+row.
+
+### Proving something is gone is harder than proving it is there
+
+`element_exists` with `negate: true` took one un-settled, non-scrolling read and inverted it, so a
+read that simply missed became "correctly not found" and scored a pass. `reminders.complete` passed
+exactly that way while the reminders it was meant to have completed were still on the phone.
+
+Absence now has to survive a settled read and a scroll, and an unreadable screen returns "absence
+is unproven" rather than a pass. The asymmetry from section 19 holds here too: **a bad read can
+make something look gone; it cannot invent something that is not there.**
+
+### A row the tree can see is not a row you can tap
+
+`scroll_to_text` returned as soon as the text appeared anywhere on screen. iOS 26 floats a search
+field over the bottom of a list and a navigation bar over the top, and the tree reports a row
+underneath one of them as perfectly visible. Measured: `Display & Brightness` was found at y=906 of
+956, the tap hit the search bar instead, Settings search opened, and every later step searched a
+screen it had never left. The visible symptom was `could not find 'Auto-Lock' in Settings` on a
+phone where Auto-Lock was one swipe away.
+
+A hit is now nudged clear of both bars before it is returned, which fixes it for every caller
+rather than for Settings alone.
+
+### iOS does not tell you which row is selected
+
+Confirming a setting by searching the page for the option's own label proves nothing: on Auto-Lock
+the row `Never` is listed whether or not it is the chosen value, so the check passed every time and
+the phone kept locking mid-run, which cost four benchmark runs.
+
+The accessibility tree exposes no selection state at all here: no `traits`, no `value`, no
+`isSelected`. What it does expose is a `Button` labelled `checkmark` inside the chosen row and
+nowhere else. That is the evidence, and it is only visible in the raw tree, because `condense()`
+drops it as decoration.
+
+### The rest
+
+* **A TCP connect proves the usbmux forward, not the runner.** `recycle_runner` accepted
+  `socket.create_connection` as proof WebDriverAgent came back. This repo's own client documents
+  that a forward accepts the connection and then resets it when nothing is listening on the phone,
+  so with `phoneshell up` holding iproxy open this succeeded on the first attempt whether or not
+  the runner ever restarted. It now requires an HTTP answer.
+* **`doctor` swiped destructively across whatever app was in front.** The input probe dragged
+  full-width through the vertical centre of the foreground app, which on a list is the destructive
+  row action, and is literally the gesture the alarm cleaner uses to delete a row. It now goes to
+  the home screen first, and tries both directions, because a rubber-band at the end of the home
+  screen was reading as a dead phone.
+* **A task cut off by `--max-turns` still scored a pass.** Only the wall-clock timeout was guarded.
+  The CLI exits 0 with `{"subtype":"error_max_turns","is_error":true}`, which was read as an
+  ordinary result. That is the sixth distinct way this benchmark found to report a number that was
+  not true.
+* **A setup failure was scored as a model failure.** The model was never asked, so a harness fault
+  (an offloaded app's restore dialog, one typo in a task file) went into the denominator and
+  lowered the score for reasons no model can affect. It is now recorded as not scored.
+* **Typing verification could fail on an unreadable tree, pass on text that was already there, and
+  trip over whitespace.** The tree collapses whitespace runs, so a typed newline could never match
+  what was read back. All three guarded.

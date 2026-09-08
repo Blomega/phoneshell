@@ -196,9 +196,14 @@ class Runner:
                     and 60 <= e.cy <= geo.point_h - 130]
             if not rows:
                 break
-            # A full-width swipe deletes an alarm outright, no confirm tap.
-            self.phone.wda.drag(geo.point_w * 0.92, rows[0].cy,
-                                geo.point_w * 0.08, rows[0].cy, duration=0.25)
+            # A full-width swipe deletes an alarm outright, no confirm tap. Start
+            # at 65% across, NOT 92%: the row's toggle is drawn at about 88%, and
+            # a swipe beginning on top of it is taken as a tap on the switch.
+            # Measured twice on this device: forty such "deletes" removed nothing
+            # and turned nine alarms ON, several of them after midnight. This copy
+            # of the gesture was missed when scripts/clean_alarms.py was fixed.
+            self.phone.wda.drag(geo.point_w * 0.65, rows[0].cy,
+                                geo.point_w * 0.05, rows[0].cy, duration=0.25)
             time.sleep(0.45)
             removed += 1
         return removed
@@ -299,6 +304,12 @@ class Runner:
         try:
             self.apply(task.setup)
         except (WDAError, ValueError) as exc:
+            # The model was never asked, so this is not a model failure. Scoring
+            # it as one puts a harness fault (an offloaded app's restore dialog, a
+            # launch timeout, one typo in a task file) into the denominator and
+            # quietly lowers the reported score for reasons no model can affect.
+            result.skipped = True
+            result.skip_reason = f"setup failed: {exc}"
             result.error = f"setup failed: {exc}"
             return result
 
@@ -312,6 +323,16 @@ class Runner:
             # (a timer picker) abort the 22 tasks queued behind it.
             timed_out = True
             payload = {"result": "", "error": f"exceeded the {task.timeout_seconds:.0f}s budget"}
+        # The CLI also gives up when the model exhausts --max-turns, and it exits
+        # 0 with {"subtype":"error_max_turns","is_error":true} and usually no
+        # result text. That is a model that ran out of budget mid-task, exactly
+        # like the wall-clock timeout, and scoring it from whatever the phone
+        # happens to look like afterwards credits work it never finished.
+        ran_out = bool(payload.get("is_error")) or \
+            str(payload.get("subtype") or "").startswith("error_max_turns")
+        if ran_out and not timed_out:
+            timed_out = True
+            result.error = result.error or f"ran out of turns ({payload.get('subtype') or 'is_error'})"
         result.turns = int(payload.get("num_turns") or 0)
         result.cost_usd = float(payload.get("total_cost_usd") or 0)
         result.agent_said = str(payload.get("result") or "")[:400]
