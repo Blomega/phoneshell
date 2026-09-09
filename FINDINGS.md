@@ -967,6 +967,13 @@ At 60 tasks the widest gap on the board becomes significant. At 76 the top model
 from the middle of the field. No size of sweep will separate the three that tie exactly, and
 reporting that is a better outcome than the ordering the page used to imply.
 
+> **This projection was wrong and section 30 is the correction.** The sweep ran, and at 58
+> tasks not one pair separates either. The estimate assumed the measured 17% disagreement rate
+> would hold across the tasks not yet run. It did not: the added tasks were easier, models
+> agreed more, and the disagreement rate fell to about 5%. The requirement therefore moved
+> *away*, from ~33 tasks to ~80. Scaling a measured rate to a larger sample is only valid if
+> the new sample resembles the old one, and here it did not.
+
 The 20 `probe.*` tasks are excluded from the sweep. They are experiment 2's stimuli, built so
 a model with eyes gets ten and a model without gets none; on a general leaderboard they would
 measure one narrow property twenty times and manufacture a vision/text gap that says nothing
@@ -1029,3 +1036,74 @@ Rebooting clears every state at once, which makes it useless as evidence about *
 the problem. It also has a real cost the note recorded elsewhere: after a reboot iOS refuses
 developer services until a human unlocks the phone, so the "remedy" ends an unattended run. The
 remedy was worse than the fault and nobody checked, for four sections.
+
+
+## 30. Adding tasks moved the ranking further out of reach
+
+Section 28 said the leaderboard could rank nothing and that 60 tasks would fix it. The first
+half was right. The second was wrong in an interesting way, and the wrong prediction is worth
+more than a confirmed one would have been.
+
+The sweep ran on a physical iPhone 14 Pro: **58 tasks common to all six models, 349 scored
+cells, $9.25**. Result:
+
+| | 24-task suite (section 28) | 58-task suite |
+| --- | --- | --- |
+| pairs separating at p<0.05 | 0 of 15 | **0 of 15** |
+| tasks passed by every model | 12 of 24 (50%) | **46 of 58 (79%)** |
+| tasks that discriminate | 10 | 11 |
+| tasks needed for the widest gap | ~33 | **~80** |
+
+**2.4x the tasks bought one extra discriminating item, and the ranking got further away.**
+
+### Why the estimate inverted
+
+McNemar sees only disagreements. Adding tasks helps only if the new tasks *provoke* them, and
+these did not: the suite went from 50% to 79% at ceiling, so the disagreement rate fell from
+about 17% to about 5%. Required sample size scales inversely with that rate, so it rose from
+~33 to ~80 even as the actual sample grew from 24 to 58.
+
+The error in section 28 was scaling a measured rate to a larger sample without asking whether
+the larger sample resembled the smaller one. It did not. **A power calculation is a statement
+about the items you have not written yet, and it is only as good as the assumption that they
+resemble the ones you have.**
+
+### The eleven items carrying the entire benchmark
+
+```
+1/6  clock.timer.set                 5/6  notes.type_long
+1/6  reminders.create                5/6  resilience.scrolled_list
+4/6  settings.battery.percentage     5/6  resilience.wrong_app
+5/6  calculator.chain                5/6  settings.bluetooth.reach
+5/6  calculator.percentage           5/6  settings.scroll.to_bottom
+5/6  clock.alarm.set_time
+```
+
+Everything else, 46 of 58 tasks and 276 of the 349 cells run, produced identical outcomes for
+every model and contributed nothing to the comparison. Eight of the eleven are 5/6, meaning a
+single model failed alone: those separate one model from the field but cannot order the rest.
+
+Two pairs are *exactly* symmetric, each winning precisely the tasks the other loses:
+Claude Opus 4.8 vs GPT-5.1, and DeepSeek v3.2 vs Gemini 3.1 Pro. **No task set of any size
+separates them.** That is not a limitation of the sample; it is a statement about the models on
+this instrument.
+
+### What this actually establishes
+
+The suite is at ceiling. On first-party iOS apps with well-formed accessibility trees, six
+frontier models from six vendors succeed **89.7% to 96.6%** of the time and are statistically
+indistinguishable from one another. Phone control on Apple's own apps is close to solved, and
+a benchmark built from those apps cannot discriminate between frontier models no matter how
+many tasks it contains.
+
+So the direction is not more tasks. It is tasks that fail. The eleven live items point at
+where: **multi-column picker wheels, cross-app creation flows, scrolling to a true list end,
+long typing, and recovering from a wrong starting state.** Section 26 supplies the other lead,
+since third-party apps return `WAMessageBubbleTableViewCell` as a button name and are where the
+tree stops describing the screen.
+
+### The cost of learning it
+
+$9.25 and about seven hours, of which the sweep was five. Cheap for a result that redirects the
+next phase of work, and far cheaper than writing forty more tasks on the assumption that
+section 28's projection held.

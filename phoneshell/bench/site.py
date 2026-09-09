@@ -53,13 +53,21 @@ def _board_run() -> str:
         if len(per_model) < 6:
             continue
         sets = list(per_model.values())
-        balanced = all(sk == sets[0] for sk in sets)
-        complete = expected.issubset(sets[0])
+        # Score on the tasks EVERY model attempted, which is what makes the
+        # comparison paired, and is exactly how analyse_models.py scores it. A
+        # physical phone loses cells to device faults, so demanding a perfectly
+        # balanced 100% means the best data never publishes: this sweep ended
+        # 11 cells short of 360 and would have been discarded in favour of a
+        # 24-task run less than half its size.
+        common = set.intersection(*sets)
+        complete = len(common) >= 0.9 * len(expected)
+        balanced = True
         # xv is the incumbent: it predates the full suite and is published, so
         # it stands until something complete replaces it.
         if name == "xv" or (balanced and complete):
-            if len(sets[0]) > best_tasks:
-                best, best_tasks = name, len(sets[0])
+            size = len(set.intersection(*sets))
+            if size > best_tasks:
+                best, best_tasks = name, size
     return best
 
 MODEL_LABELS = {
@@ -327,6 +335,7 @@ def devices_used(*runs: str) -> str:
     seen: set[tuple[str, str]] = set()
     legacy = False
     for run in runs:
+        stamped_here = False
         path = RESULTS / f"{run}.jsonl"
         if not path.exists():
             continue
@@ -337,11 +346,18 @@ def devices_used(*runs: str) -> str:
             model = str(r.get("device_model") or "")
             os_v = str(r.get("device_os") or "")
             if model in GENERIC_MODELS and not os_v:
-                legacy = True
+                # Unstamped. Only a run with NO stamps at all can be attributed
+                # to the legacy phone: three blank rows inside a run that is
+                # otherwise stamped came from the same phone as the rest of it,
+                # and letting them summon a second device put a phone in the
+                # footer that never ran a single task.
+                pass
             elif model in GENERIC_MODELS:
-                seen.add(("iPhone", os_v))
+                seen.add(("iPhone", os_v)); stamped_here = True
             else:
-                seen.add((model, os_v))
+                seen.add((model, os_v)); stamped_here = True
+        if not stamped_here and (RESULTS / f"{run}.jsonl").exists():
+            legacy = True
     if legacy:
         seen.add(LEGACY_DEVICE)
     if not seen:
