@@ -23,16 +23,43 @@ SITE = ROOT / "site"
 # one does not: a sweep in progress has fewer models than it will end with, and
 # publishing it mid-flight would show a board that changes shape hourly.
 def _board_run() -> str:
-    best, best_cells = "xv", 0
+    """Which run the leaderboard is drawn from.
+
+    A sweep in progress must NOT win. Round-robin means a half-finished run
+    already has all six models and a growing task count, so ranking runs by
+    size alone would publish a board that changes shape every hour and quietly
+    re-ranks models between two visits to the page. The earlier version of this
+    function carried a comment saying it prevented that, and did not.
+
+    So a run qualifies only when it is BALANCED (every model attempted the same
+    tasks) and COMPLETE (it covers the whole non-probe public suite). Among
+    qualifying runs the largest wins, and if none qualifies the previous board
+    stands.
+    """
+    expected = {t.id for t in load_all(ROOT / "environments", include_private=False)
+                if not t.id.startswith("probe.")}
+    best, best_tasks = "xv", 0
     for name in ("xv", "xv2", "xv3"):
         path = RESULTS / f"{name}.jsonl"
         if not path.exists():
             continue
-        rows = [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
-        models = {r["model"] for r in rows if not r.get("skipped")}
-        cells = len({(r["model"], r["task_id"]) for r in rows if not r.get("skipped")})
-        if len(models) >= 6 and cells > best_cells:
-            best, best_cells = name, cells
+        per_model: dict[str, set[str]] = {}
+        for line in path.read_text().splitlines():
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            if not r.get("skipped"):
+                per_model.setdefault(r["model"], set()).add(r["task_id"])
+        if len(per_model) < 6:
+            continue
+        sets = list(per_model.values())
+        balanced = all(sk == sets[0] for sk in sets)
+        complete = expected.issubset(sets[0])
+        # xv is the incumbent: it predates the full suite and is published, so
+        # it stands until something complete replaces it.
+        if name == "xv" or (balanced and complete):
+            if len(sets[0]) > best_tasks:
+                best, best_tasks = name, len(sets[0])
     return best
 
 MODEL_LABELS = {
