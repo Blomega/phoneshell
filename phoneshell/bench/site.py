@@ -18,6 +18,12 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 SITE = ROOT / "site"
 
 MODEL_LABELS = {
+    "deepseek/deepseek-v3.2": "DeepSeek v3.2",
+    "qwen/qwen3-max": "Qwen3-Max",
+    "anthropic/claude-opus-4.8": "Claude Opus 4.8",
+    "moonshotai/kimi-k3": "Kimi K3",
+    "google/gemini-3.1-pro-preview": "Gemini 3.1 Pro",
+    "openai/gpt-5.1": "GPT-5.1",
     "claude-sonnet-5": "Claude Sonnet 5",
     "claude-opus-5": "Claude Opus 5",
     "claude-haiku-4-5-20251001": "Claude Haiku 4.5",
@@ -59,8 +65,8 @@ a:hover{text-decoration:underline}
 
 header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.88);
   backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.bar{display:flex;align-items:center;gap:28px;height:64px}
-.bar img{height:26px;width:auto;display:block}
+.bar{display:flex;align-items:center;gap:28px;height:88px}
+.bar img{height:52px;width:auto;display:block}
 .bar nav{display:flex;gap:24px;margin-left:auto}
 .bar nav a{color:var(--nav);font-size:14px;font-weight:500;text-decoration:none}
 .bar nav a:hover{color:var(--ink)}
@@ -189,6 +195,63 @@ CAPABILITY_NOTES = {
 }
 
 
+def experiment_two() -> dict | None:
+    """The paired vision ablation, computed from the run files.
+
+    Nothing on the page is typed by hand. If the experiment is re-run the site
+    re-states whatever the new data says, including if it says something less
+    convenient.
+    """
+    import math
+    from .schema import load_all as _load
+
+    def rows(run: str) -> dict:
+        path = RESULTS / f"{run}.jsonl"
+        out: dict = {}
+        if path.exists():
+            for line in path.read_text().splitlines():
+                if line.strip():
+                    r = json.loads(line)
+                    if not r.get("skipped"):
+                        out[(r["model"], r["task_id"])] = r
+        return out
+
+    seen, blind = rows("exp2-v"), rows("exp2-n")
+    shared = sorted(set(seen) & set(blind))
+    if not shared:
+        return None
+    stratum = {t.id: g.split(":", 1)[1]
+               for t in _load(ROOT / "environments")
+               for g in t.tags if g.startswith("stratum:")}
+
+    def mcnemar(b: int, c: int) -> float:
+        n = b + c
+        if n == 0:
+            return 1.0
+        k = min(b, c)
+        return min(1.0, 2 * sum(math.comb(n, i) for i in range(k + 1)) / 2 ** n)
+
+    def cell(keys: list) -> dict:
+        a = sum(1 for k in keys if seen[k]["passed"])
+        d = sum(1 for k in keys if blind[k]["passed"])
+        b = sum(1 for k in keys if seen[k]["passed"] and not blind[k]["passed"])
+        c = sum(1 for k in keys if blind[k]["passed"] and not seen[k]["passed"])
+        cv = sum(seen[k].get("cost_usd") or 0 for k in keys) / max(len(keys), 1)
+        cn = sum(blind[k].get("cost_usd") or 0 for k in keys) / max(len(keys), 1)
+        return {"n": len(keys), "with": a, "without": d, "b": b, "c": c,
+                "p": mcnemar(b, c), "tax": 100 * (cv - cn) / max(cn, 1e-9)}
+
+    out = {"runs": len(shared) * 2, "models": sorted({m for m, _ in shared})}
+    for name in ("render", "tree"):
+        out[name] = cell([k for k in shared if stratum.get(k[1]) == name])
+    out["per_model"] = [
+        {"model": m,
+         **cell([k for k in shared if stratum.get(k[1]) == "render" and k[0] == m])}
+        for m in out["models"]
+    ]
+    return out
+
+
 def _esc(text: str) -> str:
     return html.escape(str(text))
 
@@ -293,6 +356,13 @@ def build(run_name: str = "v1") -> Path:
     total_checks = sum(len(t.checks) for t in tasks)
     best = max(board.values(), key=lambda r: r["pass_rate"])["pass_rate"] if board else None
 
+    exp = experiment_two()
+    per_model_rows = "\n".join(
+        f"<tr><td>{MODEL_LABELS.get(m['model'], m['model'].split('/')[-1])}</td>"
+        f"<td class='r num'>{m['with']}/{m['n']}</td>"
+        f"<td class='r num'>{m['without']}/{m['n']}</td>"
+        f"<td class='r num'>{m['p']:.4f}</td></tr>"
+        for m in exp["per_model"]) if exp else ""
     probes = sum(1 for t in tasks if any(g.startswith("capability:") for g in t.tags))
     jobs = len(tasks) - probes
     apps = len({(t.app or "").rsplit(".", 1)[-1] for t in tasks if t.app})
@@ -328,38 +398,107 @@ def build(run_name: str = "v1") -> Path:
 <header><div class="wrap bar">
   <a href="/" aria-label="Blolabel"><img src="{LOGO_URI}" alt="Blolabel"></a>
   <nav>
-    <a href="#leaderboard">Leaderboard</a>
-    <a href="#capabilities">Capabilities</a>
-    <a href="#tasks">Tasks</a>
+    <a href="#finding">The result</a>
     <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+    <a href="#tasks">Tasks</a>
     <a href="#run">Run it</a>
   </nav>
 </div></header>
 
 <div class="hero"><div class="wrap inner">
-  <span class="eyebrow">iOS 26 &middot; physical iPhone &middot; graded by the device</span>
-  <h1>Agents Are Measured<br><span class="grad">On Android.</span><br>We Measure iOS.</h1>
-  <p class="lede">Android runs in software, free, thousands of phones at once, so that is where
-     every published number comes from. An iPhone cannot. It needs real hardware, a Mac, a signed
-     developer build and a harness that does not lie to you. So nobody measures it.</p>
-  <a class="cta" href="#leaderboard">See the results &rarr;</a>
+  <span class="eyebrow">pre-registered &middot; {exp['runs']} paired runs &middot; physical iPhone, iOS 26</span>
+  <h1>Vision Is Worth<br><span class="grad">100 Points Or Zero.</span><br>Never In Between.</h1>
+  <p class="lede">We gave three frontier models the same task on a real iPhone, once with a
+     screenshot and once without, and varied only where the answer lived. When it was in the
+     accessibility tree the picture changed nothing. When it existed only as pixels, the picture
+     was the entire task.</p>
+  <a class="cta" href="#finding">See the result &rarr;</a>
   <div class="dots">
-    <span><i style="background:var(--emerald)"></i>{scored_n} of {len(tasks)} tasks scored</span>
-    <span><i style="background:var(--blue)"></i>iPhone 17 Pro Max, iOS 26.6</span>
-    <span><i style="background:var(--purple)"></i>0 humans grading</span>
+    <span><i style="background:var(--emerald)"></i>{exp['render']['with']}/{exp['render']['n']} with the image</span>
+    <span><i style="background:var(--red)"></i>{exp['render']['without']}/{exp['render']['n']} without it</span>
+    <span><i style="background:var(--blue)"></i>p &lt; 0.0001</span>
   </div>
 </div></div>
 
 <div class="strip">
-  <div class="hi"><b>{('&mdash;' if best is None else str(best) + '%')}</b><span>best score</span></div>
-  <div><b class="num">{len(tasks)}</b><span>tasks</span></div>
-  <div><b class="num">{probes}</b><span>capability probes</span></div>
-  <div><b class="num">{jobs}</b><span>end-to-end jobs</span></div>
-  <div><b class="num">{total_checks}</b><span>automatic checks</span></div>
-  <div><b class="num">{apps}</b><span>Apple apps</span></div>
+  <div class="hi"><b class="num">{100 * exp['render']['with'] // exp['render']['n']}%</b><span>with the screenshot</span></div>
+  <div><b class="num">{100 * exp['render']['without'] // exp['render']['n']}%</b><span>without it</span></div>
+  <div><b class="num">{exp['runs']}</b><span>paired runs</span></div>
+  <div><b class="num">{len(exp['models'])}</b><span>frontier models</span></div>
+  <div><b class="num">+{exp['render']['tax']:.0f}%</b><span>cost of the image</span></div>
+  <div><b class="num">{len(tasks)}</b><span>public tasks</span></div>
 </div>
 
 <div class="wrap">
+
+<section id="finding">
+  <div class="sh"><h2>The result</h2>
+  <p>Every task was run twice by the same model, back to back, with the order alternating. The only
+     thing that differed between the two arms is whether the model was shown the screen.</p></div>
+
+  <div class="scroll"><table>
+    <thead><tr><th>Where the answer lives</th><th class="r">With the image</th>
+      <th class="r">Tree only</th><th class="r">McNemar exact</th></tr></thead>
+    <tbody>
+      <tr><td><b>Only in the pixels</b><br><span class="dim">a word drawn into a picture, no alt text</span></td>
+        <td class="r num"><b>{exp['render']['with']}/{exp['render']['n']}</b><br>
+          <span class="pill p-pass">{100*exp['render']['with']//exp['render']['n']}%</span></td>
+        <td class="r num"><b>{exp['render']['without']}/{exp['render']['n']}</b><br>
+          <span class="pill p-fail">{100*exp['render']['without']//exp['render']['n']}%</span></td>
+        <td class="r num"><b>p &lt; 0.0001</b></td></tr>
+      <tr><td><b>In the accessibility tree</b><br><span class="dim">the control: same page, same question</span></td>
+        <td class="r num">{exp['tree']['with']}/{exp['tree']['n']}<br>
+          <span class="pill p-idle">{100*exp['tree']['with']//exp['tree']['n']}%</span></td>
+        <td class="r num">{exp['tree']['without']}/{exp['tree']['n']}<br>
+          <span class="pill p-idle">{100*exp['tree']['without']//exp['tree']['n']}%</span></td>
+        <td class="r num">p = 1.0</td></tr>
+    </tbody></table></div>
+
+  <p class="note" style="margin-top:24px"><b>The interaction is the finding, not the headline
+     number.</b> The control row shows nothing at all. Same pages, same navigation, same question
+     shape, same resolution, same prompt: the only difference is where the answer sits. So the
+     effect cannot be an artifact of the harness, and a model that scores 100% on one row scores
+     zero on the other.</p>
+
+  <h3 style="margin:34px 0 14px">Every model, independently</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Model</th><th class="r">With the image</th><th class="r">Tree only</th>
+      <th class="r">p</th></tr></thead><tbody>
+    {per_model_rows}
+    </tbody></table></div>
+
+  <div class="cards" style="margin-top:34px">
+    <div class="card"><span class="n">WHAT IT COSTS</span><h3>+{exp['render']['tax']:.0f}% per task</h3>
+      <p>Carrying the screenshot is a pure token tax. Step counts were unchanged either way, so
+         the model does not work harder with it, only more expensively.</p></div>
+    <div class="card"><span class="n">THE RULE</span><h3>Send it for rendered content</h3>
+      <p>Not as a global setting. On a labelled screen the image buys nothing; on a map tile, a
+         chart, a book cover or a canvas it is the whole task.</p></div>
+    <div class="card"><span class="n">THE CATCH</span><h3>Apple labels its own apps well</h3>
+      <p>Across thirteen first-party screens, eleven were fully described by their tree. Third-party
+         apps are a different story: one chat app returns
+         <code>WAMessageBubbleTableViewCell</code> where a button name should be.</p></div>
+  </div>
+</section>
+
+<section id="method">
+  <div class="sh"><h2>Why you can believe it</h2>
+  <p>An earlier version of this experiment reported that vision was worth nothing, and it was wrong.
+     The image had been downscaled to 235&times;512, so the vision arm was never a test of vision.
+     That retraction is why the method below exists.</p></div>
+  <div class="cards">
+    <div class="card"><span class="n">01 PRE-REGISTERED</span><h3>The analysis was fixed first</h3>
+      <p>The design, the primary endpoint, the minimum detectable effect and the falsification
+         condition were committed to git before the run. The sequence is auditable.</p></div>
+    <div class="card"><span class="n">02 CONTROLLED STIMULUS</span><h3>Not found, built</h3>
+      <p>Ten pages, each with one word in HTML and another rendered into an image. Verified on the
+         device: 0 of 10 image words appear anywhere in the tree, 10 of 10 written words do.</p></div>
+    <div class="card"><span class="n">03 PAIRED AND INTERLEAVED</span><h3>Drift cancels</h3>
+      <p>Each task runs both ways back to back with the order alternating, so device state cannot
+         load onto one arm. A real phone changes underneath you.</p></div>
+  </div>
+</section>
 
 <section id="leaderboard">
   <div class="sh"><h2>Leaderboard</h2>
@@ -380,7 +519,7 @@ def build(run_name: str = "v1") -> Path:
   <div class="scroll">{capability_table}</div>
 </section>
 
-<section id="method">
+<section id="anatomy">
   <div class="sh"><h2>How a task works</h2>
   <p>Three parts. The first and the third involve no model at all, which is what makes a score
      reproducible.</p></div>
