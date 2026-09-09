@@ -366,6 +366,32 @@ def devices_used(*runs: str) -> str:
     return "a physical " + " and ".join(parts)
 
 
+def _restrict(run: str, tasks: set[str]) -> dict:
+    """Leaderboard figures computed over one agreed set of tasks."""
+    path = RESULTS / f"{run}.jsonl"
+    if not path.exists():
+        return {}
+    per: dict[str, list[dict]] = {}
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        if r.get("skipped") or r["task_id"] not in tasks:
+            continue
+        per.setdefault(r["model"], []).append(r)
+    out = {}
+    for model, rs in per.items():
+        passed = sum(1 for r in rs if r["passed"])
+        out[model] = {
+            "skipped": 0, "tasks": len(rs), "passed": passed,
+            "pass_rate": round(100 * passed / len(rs), 1),
+            "avg_turns": round(sum(r["turns"] for r in rs) / len(rs), 1),
+            "avg_seconds": round(sum(r["seconds"] for r in rs) / len(rs), 1),
+            "total_cost_usd": round(sum(r.get("cost_usd") or 0 for r in rs), 4),
+        }
+    return out
+
+
 def board_significance(run: str = "xv") -> dict | None:
     """Test every pair on the board instead of implying an order by sorting it.
 
@@ -412,6 +438,7 @@ def board_significance(run: str = "xv") -> dict | None:
     return {
         "n": n, "models": order, "passed": passed, "pairs": pairs,
         "per_task": {t: sum(1 for m in models if res[(m, t)]) for t in shared},
+        "shared": shared,
         "significant": [q for q in pairs if q["p"] < 0.05],
         "ceiling": solved, "floor": unsolved,
         "discriminating": n - solved - unsolved,
@@ -436,6 +463,14 @@ def build(run_name: str = "v1") -> Path:
     # the run that happens to be named on the command line showed a single model
     # and made the page look like a one-horse race.
     board = score(BOARD_RUN, include_private=False) or score(run_name, include_private=False)
+    # Kimi attempted one task the others never reached, so scoring each model
+    # over whatever it happened to run put 56/59 beside 54/58 in the same
+    # column while the significance panel underneath compared them on 58. Two
+    # denominators on one page is the quiet kind of wrong. Score the table over
+    # the tasks every model attempted, which is what makes it paired at all.
+    _sig = board_significance(BOARD_RUN)
+    if _sig:
+        board = _restrict(BOARD_RUN, _sig["shared"]) or board
     rows = []
     path = RESULTS / f"{run_name}.jsonl"
     if path.exists():
