@@ -619,6 +619,7 @@ def build(run_name: str = "v1") -> Path:
     <a href="#finding">The result</a>
     <a href="#method">Method</a>
     <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
      <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
     <a href="#tasks">Tasks</a>
     <a href="#run">Run it</a>
