@@ -971,3 +971,61 @@ The 20 `probe.*` tasks are excluded from the sweep. They are experiment 2's stim
 a model with eyes gets ten and a model without gets none; on a general leaderboard they would
 measure one narrow property twenty times and manufacture a vision/text gap that says nothing
 about controlling a phone.
+
+## 29. The activation wedge is not a reboot problem, it is a process that will not die
+
+Section 27 concluded that app activation degrades under sustained automation and that only a
+reboot restores it. **That is wrong, and the correction is worth more than the original
+observation.**
+
+A 360-cell sweep died at run 190 after 189 minutes of continuous automation. The state at the
+moment of failure:
+
+* the phone was still on the cable and `usbmux` resolved it
+* `iproxy` was listening on 8100
+* the WebDriverAgent runner **process was alive on the device**
+* WebDriverAgent answered no HTTP at all
+* the supervisor relaunched the runner, reported `wda-launch: OK`, and nothing changed. It did
+  this for twenty minutes.
+
+The last line is the finding. **`devicectl process launch` against an already-running app is a
+no-op that reports success.** The wedged process keeps the field, the launch returns 0, the
+supervisor believes it has healed the rig, and the loop runs forever against a corpse. Every
+layer was reporting health except the one that mattered.
+
+### The recovery, which takes seconds and no reboot
+
+```
+1. stop the supervisor            (so it stops relaunching underneath you)
+2. devicectl device info processes --device <udid>     -> find the runner pid
+3. devicectl device process terminate --device <udid> --pid <pid>
+4. kill the orphaned iproxy                            (see below)
+5. restart the bridge
+```
+
+WebDriverAgent came back on the first attempt: *"WebDriverAgent is ready to accept commands"*.
+The phone was never rebooted, never unlocked by hand, and never left the cable.
+
+### The second half, which cost a restart cycle to find
+
+Killing the bridge does **not** kill `iproxy`. It is orphaned, it keeps port 8100, and the
+replacement bridge then dies on bind with `iproxy exited immediately`, whose suggested fix is
+*"check the cable and that the device is trusted"*. The cable is fine. The message sends you to
+inspect hardware while a stale tunnel from your own previous process holds the port.
+
+### What changed
+
+* `device.terminate_runner()` finds the device-side runner by process listing and terminates it.
+  `recycle_runner()` now calls it **before** launching, so healing replaces the wedged process
+  instead of launching alongside it. This alone would have kept the sweep alive.
+* `PortForward.start()` clears a stale `iproxy` off the port before binding. It kills **only**
+  iproxy: something else on 8100 is the operator's business, and an automation harness that kills
+  unknown processes to free a port is a harness that takes down things it knows nothing about.
+
+### Why section 27 got it wrong
+
+A reboot works, so the first explanation that fitted was accepted without testing a cheaper one.
+Rebooting clears every state at once, which makes it useless as evidence about *which* state was
+the problem. It also has a real cost the note recorded elsewhere: after a reboot iOS refuses
+developer services until a human unlocks the phone, so the "remedy" ends an unattended run. The
+remedy was worse than the fault and nobody checked, for four sections.

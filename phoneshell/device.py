@@ -32,6 +32,7 @@ import logging
 import os
 import plistlib
 import shutil
+import signal
 import subprocess
 import time
 from dataclasses import dataclass, field
@@ -581,6 +582,34 @@ def launch_wda_attached(udid: str, log_path: Path) -> subprocess.Popen:
     return subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, env=_env())
 
 
+def terminate_runner(udid: str) -> int:
+    """Kill the device-side WebDriverAgent process. Returns how many died.
+
+    This is the step whose absence ended a 190-run sweep. The runner can reach a
+    state where its process is alive and scheduled but its HTTP server never
+    answers, and `devicectl process launch` on an already-running app does NOT
+    replace it: the launch reports success, the wedged process keeps the field,
+    and the supervisor relaunches forever against a corpse. FINDINGS.md section
+    27 concluded that only a reboot cleared this. It does not. Terminating the
+    process first and then launching recovers it in seconds, with the phone
+    still on the cable and nobody present.
+    """
+    listed = run(["xcrun", "devicectl", "device", "info", "processes",
+                  "--device", udid], timeout=90)
+    killed = 0
+    for line in listed.stdout.splitlines():
+        if "WebDriverAgentRunner-Runner" not in line:
+            continue
+        head = line.split(maxsplit=1)[0] if line.split() else ""
+        if not head.isdigit():
+            continue
+        res = run(["xcrun", "devicectl", "device", "process", "terminate",
+                   "--device", udid, "--pid", head], timeout=90)
+        if res.returncode == 0:
+            killed += 1
+    return killed
+
+
 def recycle_runner(udid: str, runner_bundle_id: str, port: int = 8100,
                    mjpeg_port: int = 9100, wait: float = 40.0) -> Check:
     """Restart WebDriverAgent on the phone and wait for it to answer.
@@ -592,6 +621,17 @@ def recycle_runner(udid: str, runner_bundle_id: str, port: int = 8100,
     """
     import socket
     import time as _time
+
+    # Terminate before launching. Relaunching on top of a wedged runner is a
+    # no-op that reports success, which is how the supervisor came to relaunch
+    # the same dead process for twenty minutes while the sweep died.
+    try:
+        killed = terminate_runner(udid)
+        if killed:
+            print(f"    [heal] terminated {killed} wedged runner process(es)", flush=True)
+            _time.sleep(2.0)
+    except Exception:
+        pass
 
     launched = launch_wda(udid, runner_bundle_id, port, mjpeg_port)
     if not launched.ok:
@@ -617,6 +657,26 @@ def recycle_runner(udid: str, runner_bundle_id: str, port: int = 8100,
 # ------------------------------------------------------------------ port forward
 
 
+def _holders_of(port: int) -> list[int]:
+    """PIDs of any iproxy still listening on a local port.
+
+    Only iproxy is ever killed here. Something else on 8100 is the operator's
+    business, and killing an unknown process to free a port is how an automation
+    harness starts taking down things that have nothing to do with it.
+    """
+    try:
+        out = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN"],
+                             capture_output=True, text=True, timeout=15).stdout
+    except Exception:
+        return []
+    pids = []
+    for line in out.splitlines()[1:]:
+        parts = line.split()
+        if len(parts) > 1 and parts[0].startswith("iproxy") and parts[1].isdigit():
+            pids.append(int(parts[1]))
+    return pids
+
+
 class PortForward:
     """usbmux tunnel from a local port to the phone.
 
@@ -633,6 +693,18 @@ class PortForward:
         iproxy = shutil.which("iproxy") or "/opt/homebrew/bin/iproxy"
         if not Path(iproxy).exists():
             return Check("forward", False, "iproxy is missing", fix="brew install libimobiledevice")
+        # An iproxy from a previous bridge outlives the process that spawned it
+        # and keeps the port, so the replacement dies on bind and reports
+        # "iproxy exited immediately", whose suggested fix is the cable. The
+        # cable is fine; the old tunnel is the problem. Clear the port first.
+        for local, _remote in self.pairs:
+            for pid in _holders_of(local):
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except OSError:
+                    pass
+        if any(_holders_of(local) for local, _ in self.pairs):
+            time.sleep(1.0)
         args = [iproxy] + [f"{local}:{remote}" for local, remote in self.pairs] + ["-u", self.udid]
         self.proc = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         time.sleep(1.2)
