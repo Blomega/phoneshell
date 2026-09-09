@@ -1,0 +1,87 @@
+{
+  "dimension": "ios-agents",
+  "brand": "Blolabel",
+  "site": "https://blolabel.ai",
+  "outlet": "https://blolabel.ai/blog",
+  "publishDir": "site/blog",
+  "publishMode": "file",
+  "pathPattern": "site/blog/{slug}/index.html",
+  "indexFile": "site/blog/index.html",
+  "thesis": "Agents that operate real phones should be measured on real phones, by the phone. Blolabel runs 80 public tasks on a physical iPhone and grades them from device state, not from a model's own account of what it did. The headline result: a screenshot is worth 100 points or zero, never in between. When the answer is in the accessibility tree the image changes nothing; when it exists only as pixels, the image is the entire task.",
+  "audience": [
+    "researchers building GUI and computer-use agents",
+    "engineers choosing between accessibility-tree and vision-based mobile automation",
+    "people who evaluate agents and distrust self-reported success",
+    "teams costing out vision tokens against measurable gain"
+  ],
+  "clusters": [
+    {
+      "name": "Real devices vs simulators and mocks",
+      "subtopics": ["physical device benchmarking", "simulator fidelity gap", "flaky UI automation", "device-graded evaluation", "reproducible harnesses"],
+      "entities": ["XCUITest", "Appium", "WebDriverAgent", "iOS Accessibility API", "Android UIAutomator", "AndroidWorld", "MobileAgentBench"],
+      "targetQuestions": [
+        "why do mobile agent benchmarks disagree with real device behaviour?",
+        "how do you grade an agent task without trusting the agent's own report?",
+        "is a simulator good enough for evaluating phone agents?"
+      ],
+      "hub": "/blog",
+      "spokes": []
+    },
+    {
+      "name": "Vision versus the accessibility tree",
+      "subtopics": ["screenshot tokens", "a11y tree coverage", "pixel-only information", "multimodal cost", "when vision actually pays"],
+      "entities": ["GPT-4o", "Claude computer use", "Gemini", "Set-of-Mark prompting", "OmniParser", "ScreenSpot"],
+      "targetQuestions": [
+        "do GUI agents need screenshots or is the accessibility tree enough?",
+        "what does a screenshot actually cost per step and when is it worth it?",
+        "when does vision change the outcome for a phone agent?"
+      ],
+      "hub": "/blog",
+      "spokes": []
+    },
+    {
+      "name": "How to evaluate an agent honestly",
+      "subtopics": ["pre-registration", "paired runs", "not-scored vs failed", "statistical power", "leakage and contamination"],
+      "entities": ["OSWorld", "WebArena", "GAIA", "SWE-bench", "AgentBench"],
+      "targetQuestions": [
+        "how many runs do you need to claim an agent is better?",
+        "what is the difference between a failed task and a task that was never scored?",
+        "how do you pre-register an agent evaluation?"
+      ],
+      "hub": "/blog",
+      "spokes": []
+    },
+    {
+      "name": "Where phone agents actually break",
+      "subtopics": ["rate limits", "app state drift", "permission dialogs", "long-horizon recovery", "step budgets"],
+      "entities": ["iOS 26", "iPhone 17 Pro Max", "phoneshell", "Siri Shortcuts", "App Intents"],
+      "targetQuestions": [
+        "what makes phone agents fail on real hardware?",
+        "how many steps does a typical phone task take an agent?",
+        "which iPhone tasks are hardest for AI agents?"
+      ],
+      "hub": "/blog",
+      "spokes": []
+    }
+  ],
+  "feeds": [
+    "https://arxiv.org/list/cs.HC/recent",
+    "https://arxiv.org/list/cs.AI/recent",
+    "https://huggingface.co/datasets/blolabel/phoneshell-bench"
+  ],
+  "searchSeeds": [
+    "GUI agent benchmark iPhone",
+    "computer use agent accessibility tree",
+    "mobile agent evaluation real device",
+    "screenshot vs DOM agent performance"
+  ],
+  "houseFacts": [
+    "80 public tasks, run on a physical iPhone 17 Pro Max on iOS 26.6",
+    "120 paired runs across 3 frontier models, pre-registered",
+    "100% success with the screenshot and 0% without it when the answer is pixels-only; p < 0.0001",
+    "the screenshot adds about 35% to per-step cost",
+    "tasks are graded from device state, not from the model's own report",
+    "tasks never attempted (rate limit, app missing) are reported as not scored, never as failures"
+  ],
+  "notes": "Articles are standalone HTML pages at site/blog/<slug>/index.html, listed by inserting a <li> between the POSTS:START and POSTS:END markers in site/blog/index.html. Match the existing page structure exactly: shared header, .post article body, .sources list. Never invent a benchmark number; every figure must come from results.json, a cited paper, or houseFacts above."
+}
