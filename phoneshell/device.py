@@ -216,23 +216,67 @@ def usbmux_devices() -> list[dict]:
         return []
 
 
-def device_check() -> Check:
+def device_check(prefer: str | None = None) -> Check:
+    """Which phone this session is driving.
+
+    `prefer` is the configured UDID and it is honoured absolutely. Without it
+    this returned whichever device sorted first, which is fine with one phone
+    on the desk and dangerous with two: after the 14 Pro dropped off the cable
+    mid-sweep and came back, the bridge selected the 17 Pro Max over wifi
+    instead, reported `[OK] device: Sam iphone (iPhone 17 Pro Max)`, and only
+    failed later on a CoreDevice id mismatch. Had it succeeded it would have run
+    state-mutating tasks against the wrong personal phone and filed the results
+    as though they came from the right one.
+
+    So a configured device that is absent is an ERROR naming what is present,
+    never a silent substitution. Picking a different instrument than the one you
+    were told to use is not a fallback, it is a wrong answer.
+    """
     usb = usbmux_devices()
     devices = list_devices()
     live = [d for d in devices if d.connected]
-    if usb:
-        d = usb[0]
+
+    def _from_usb(d: dict) -> Check:
         return Check(
             "device", True,
             f"{d.get('DeviceName', '?')} ({d.get('ProductType', '?')}) "
             f"iOS {d.get('ProductVersion', '?')} over {d.get('ConnectionType', 'USB')}",
             data={"udid": d.get("Identifier") or d.get("UniqueDeviceID"), "raw": d},
         )
-    if live:
-        d = live[0]
+
+    def _from_devicectl(d: Device) -> Check:
         return Check("device", True,
-                     f"{d.name.strip()} ({d.model}) iOS {d.ios_version} over {d.transport or 'usb'}",
+                     f"{d.name.strip()} ({d.model}) iOS {d.ios_version} "
+                     f"over {d.transport or 'usb'}",
                      data={"udid": d.udid, "identifier": d.identifier})
+
+    if prefer:
+        for d in usb:
+            if prefer in (d.get("Identifier"), d.get("UniqueDeviceID")):
+                return _from_usb(d)
+        for d in live:
+            if d.udid == prefer:
+                return _from_devicectl(d)
+        present = ", ".join(
+            f"{d.get('DeviceName', '?')} ({d.get('ProductType', '?')})" for d in usb
+        ) or ", ".join(f"{d.name.strip()} ({d.model})" for d in live) or "nothing"
+        return Check(
+            "device", False,
+            f"the configured phone is not connected. Present instead: {present}",
+            fix=("plug that phone in, or point the config at one that is here. "
+                 "Refusing to substitute: a different phone is a different "
+                 "instrument, and running against it would file the results "
+                 "under the wrong device."),
+            data={"wanted": prefer},
+        )
+
+    if len(usb) + len(live) > 1:
+        log.warning("more than one phone is reachable and none is configured; "
+                    "pin device.udid so this cannot pick the wrong one")
+    if usb:
+        return _from_usb(usb[0])
+    if live:
+        return _from_devicectl(live[0])
     known = ", ".join(f"{d.name.strip()} [{d.state}]" for d in devices) or "none paired"
     return Check(
         "device", False, f"no iPhone connected (paired but idle: {known})",

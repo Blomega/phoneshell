@@ -53,7 +53,7 @@ def doctor() -> None:
     """Check every link in the chain and say exactly what to do about each break."""
     cfg = _cfg()
     console.print(Panel.fit("phoneshell doctor", style="bold"))
-    checks = [dev.xcode_ok(), dev.device_check()]
+    checks = [dev.xcode_ok(), dev.device_check(_cfg().device.udid or None)]
     udid = checks[-1].data.get("udid") or cfg.device.udid
     if checks[-1].ok:
         checks.append(dev.developer_mode_check(udid))
@@ -97,7 +97,9 @@ def setup(
 ) -> None:
     """Build, sign, install and start WebDriverAgent on the phone. Run once."""
     cfg = _cfg()
-    check = dev.device_check()
+    # --udid wins: setup is the command you run when adopting a NEW phone, so it
+    # must not be blocked by a config that still points at the old one.
+    check = dev.device_check(udid or cfg.device.udid or None)
     console.print(escape(check.line()))
     if not check.ok:
         raise typer.Exit(1)
@@ -158,7 +160,7 @@ def up(
 ) -> None:
     """Bring the bridge up, then supervise it until you stop it."""
     cfg = _cfg()
-    check = dev.device_check()
+    check = dev.device_check(udid or cfg.device.udid or None)
     console.print(escape(check.line()))
     if not check.ok and not wifi:
         raise typer.Exit(1)
