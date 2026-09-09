@@ -13,6 +13,7 @@ from pathlib import Path
 
 from .runner import RESULTS, score
 from .schema import Task, load_all
+from .stats import mcnemar_exact, required_n, wilson
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 SITE = ROOT / "site"
@@ -42,7 +43,7 @@ CSS = """
   --ink:#020817; --muted:#64748b; --nav:#374151; --faint:#94a3b8;
   --line:#e2e8f0; --line-soft:#eef2f7;
   --dark:#0f172a; --blue:#2563eb; --teal:#0d9488; --purple:#7c3aed;
-  --emerald:#10b981; --red:#ef4444;
+  --emerald:#10b981; --red:#ef4444; --amber:#d97706;
   --pass-bg:#ecfdf5; --fail-bg:#fef2f2; --idle-bg:#f1f5f9;
   --r:8px;
 }
@@ -137,6 +138,14 @@ pre{background:var(--dark);color:#e2e8f0;border-radius:12px;padding:20px 22px;
 pre code{font-family:ui-monospace,Menlo,monospace}
 .note{border-left:3px solid var(--emerald);background:var(--panel);padding:16px 20px;
   border-radius:0 var(--r) var(--r) 0;color:var(--muted);font-size:14.5px}
+.warn{border-left:3px solid var(--amber);background:#fffbeb;padding:18px 22px;
+  border-radius:0 var(--r) var(--r) 0;font-size:14.5px;color:#78350f}
+.warn b{color:#451a03}
+.ci{display:block;font-size:11.5px;color:var(--faint);font-weight:500;
+  letter-spacing:.01em;margin-top:2px}
+.pairs{width:100%;font-size:13px}
+.pairs td,.pairs th{padding:7px 10px}
+.pairs .ns{color:var(--faint)}
 
 footer{border-top:1px solid var(--line);padding:34px 0 130px;color:var(--faint);font-size:13px}
 footer a{color:var(--muted)}
@@ -252,6 +261,59 @@ def experiment_two() -> dict | None:
     return out
 
 
+def board_significance(run: str = "xv") -> dict | None:
+    """Test every pair on the board instead of implying an order by sorting it.
+
+    A leaderboard sorted by pass rate reads as a ranking whether or not the
+    numbers support one. On this suite they do not: the models were run on the
+    same tasks, which makes the comparison paired, and not one pair of them
+    separates under McNemar. Publishing that fact next to the table is the
+    difference between a benchmark and a scoreboard.
+    """
+    path = RESULTS / f"{run}.jsonl"
+    if not path.exists():
+        return None
+    live = {t.id for t in load_all(ROOT / "environments", include_private=False)}
+    res: dict[tuple[str, str], bool] = {}
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        r = json.loads(line)
+        if r.get("skipped") or r["task_id"] not in live:
+            continue
+        res[(r["model"], r["task_id"])] = bool(r["passed"])
+    models = sorted({m for m, _ in res})
+    if len(models) < 2:
+        return None
+    # Only tasks every model attempted: an unbalanced set makes the percentages
+    # incomparable before any test is run.
+    shared = set.intersection(*({t for m, t in res if m == mm} for mm in models))
+    if not shared:
+        return None
+    n = len(shared)
+    passed = {m: sum(1 for t in shared if res[(m, t)]) for m in models}
+    order = sorted(models, key=lambda m: -passed[m])
+
+    pairs = []
+    for a, b in ((x, y) for i, x in enumerate(order) for y in order[i + 1:]):
+        wa = sum(1 for t in shared if res[(a, t)] and not res[(b, t)])
+        wb = sum(1 for t in shared if res[(b, t)] and not res[(a, t)])
+        pairs.append({
+            "a": a, "b": b, "b_count": wa, "c_count": wb,
+            "p": mcnemar_exact(wa, wb), "need": required_n(wa, wb, n),
+        })
+    solved = sum(1 for t in shared if all(res[(m, t)] for m in models))
+    unsolved = sum(1 for t in shared if not any(res[(m, t)] for m in models))
+    return {
+        "n": n, "models": order, "passed": passed, "pairs": pairs,
+        "per_task": {t: sum(1 for m in models if res[(m, t)]) for t in shared},
+        "significant": [q for q in pairs if q["p"] < 0.05],
+        "ceiling": solved, "floor": unsolved,
+        "discriminating": n - solved - unsolved,
+        "cheapest": min((q["need"] for q in pairs if q["need"]), default=None),
+    }
+
+
 def _esc(text: str) -> str:
     return html.escape(str(text))
 
@@ -260,6 +322,10 @@ def build(run_name: str = "v1") -> Path:
     # include_private=False: the held-out tasks must not be published, not even
     # their ids and instructions.
     tasks = load_all(ROOT / "environments", include_private=False)
+    # Counted, not typed: the page said "60 of 76" long after it was 80 of 96.
+    n_all = len(load_all(ROOT / "environments"))
+    n_caps = len({g.split(':', 1)[1] for t in tasks for g in t.tags
+                  if g.startswith('capability:')})
     # The leaderboard is the CROSS-VENDOR sweep when there is one. Scoring only
     # the run that happens to be named on the command line showed a single model
     # and made the page look like a one-horse race.
@@ -281,10 +347,15 @@ def build(run_name: str = "v1") -> Path:
         for model, r in sorted(board.items(), key=lambda kv: -kv[1]["pass_rate"]):
             label = MODEL_LABELS.get(model, model)
             per = r["total_cost_usd"] / max(r["tasks"], 1)
+            # The interval, not the point estimate, is the honest number. Three
+            # models sit on 83.3% and their intervals span 64-93%: printing only
+            # the percentage invites a ranking the data cannot support.
+            lo, hi = wilson(r["passed"], r["tasks"])
             lb.append(
                 f"<tr><td>{_esc(label)}</td>"
-                f"<td class='num'><b>{r['pass_rate']}%</b><div class='bar'>"
-                f"<i style='width:{r['pass_rate']}%'></i></div></td>"
+                f"<td class='num'><b>{r['pass_rate']}%</b>"
+                f"<span class='ci'>95% CI {lo:.0f}\u2013{hi:.0f}%</span>"
+                f"<div class='bar'><i style='width:{r['pass_rate']}%'></i></div></td>"
                 f"<td class='num'>{r['passed']}/{r['tasks']}</td>"
                 f"<td class='num'>{r['avg_turns']}</td>"
                 f"<td class='num'>{r['avg_seconds']:.0f}s</td>"
@@ -295,25 +366,105 @@ def build(run_name: str = "v1") -> Path:
     else:
         leaderboard = "<p class='dim'>No scored run yet.</p>"
 
+    # ---------------------------------------------------------- is it a ranking?
+    # Sorting a table by pass rate makes it read as an order. Whether it IS one
+    # is a separate question with a separate answer, and on this suite the
+    # answer is no. Publishing the table without this panel would be the most
+    # misleading thing on the page.
+    sig = board_significance()
+    if sig:
+        pair_rows = []
+        for q in sorted(sig["pairs"], key=lambda q: (q["need"] or 10 ** 9)):
+            a = MODEL_LABELS.get(q["a"], q["a"])
+            b = MODEL_LABELS.get(q["b"], q["b"])
+            need = (f"{q['need']} tasks" if q["need"]
+                    else "<span class='ns'>never: the wins are symmetric</span>")
+            pair_rows.append(
+                f"<tr><td>{_esc(a)} <span class='ns'>vs</span> {_esc(b)}</td>"
+                f"<td class='num'>{q['b_count']}\u2013{q['c_count']}</td>"
+                f"<td class='num'>{q['p']:.2f}</td><td class='num'>{need}</td></tr>")
+        verdict = (
+            f"<b>None of the {len(sig['pairs'])} pairs of models on this board "
+            f"separate.</b> Every model ran the same {sig['n']} tasks, which makes "
+            f"this a paired comparison, and not one pair reaches p&lt;0.05 under "
+            f"McNemar\u2019s exact test. The order of the table above is sorted, "
+            f"not ranked."
+            if not sig["significant"] else
+            f"<b>{len(sig['significant'])} of {len(sig['pairs'])} pairs separate "
+            f"at p&lt;0.05.</b> The rest of the ordering is not established.")
+        cheapest = (f" The widest gap on the board would need about "
+                    f"<b>{sig['cheapest']} tasks</b> to reach significance, "
+                    f"against the {sig['n']} it has."
+                    if sig["cheapest"] else "")
+        board_note = f"""
+  <div class="warn" style="margin-top:26px">{verdict}{cheapest}</div>
+  <div class="sh" style="margin-top:34px"><h3>Every pair, tested</h3>
+  <p class="dim">Wins are counted only on tasks where the two models disagreed;
+     tasks they both passed or both failed carry no information about which is
+     better. The last column holds each pair\u2019s observed disagreement rate
+     fixed and asks how large the suite would have to be for that gap to be
+     real.</p></div>
+  <table class="pairs"><thead><tr><th>Pair</th><th class="num">Wins</th>
+  <th class="num">p</th><th class="num">Tasks needed</th></tr></thead>
+  <tbody>{''.join(pair_rows)}</tbody></table>
+  <p class="note" style="margin-top:22px">Of the {sig['n']} tasks,
+     <b>{sig['ceiling']}</b> were passed by every model and <b>{sig['floor']}</b>
+     by none. Only <b>{sig['discriminating']}</b> tell the models apart, so 
+     {100 - round(100 * sig['discriminating'] / sig['n'])}% of the suite is
+     measuring nothing. Harder tasks, not more models, is what this benchmark
+     needs next.</p>"""
+    else:
+        board_note = ""
+
     # ---------------------------------------------------------- task table
     # Newest attempt wins: a task re-run after a broken check was corrected must
     # not be reported by the result that broken check produced.
     results_by_task = {r["task_id"]: r for r in rows}
+    # A per-task column showing ONE model's outcome, with no column saying which
+    # model, is what made this table look like a one-horse race. What a reader
+    # wants from a task list is the item's difficulty: of the models that tried
+    # it, how many got it. That is also the number that says which tasks are
+    # carrying the benchmark and which are decoration.
+    per_task = (sig or {}).get("per_task", {})
+    n_models = len((sig or {}).get("models", []))
     tt = ["<table><thead><tr><th>Task</th><th>App</th><th>Difficulty</th>"
           "<th class='num'>Checks</th><th class='num'>Steps</th><th class='num'>Time</th>"
-          "<th class='num'>Result</th></tr></thead><tbody>"]
+          "<th class='num'>Solved by</th></tr></thead><tbody>"]
     for t in tasks:
         r = results_by_task.get(t.id)
         steps = took = "<span class='dim'>-</span>"
+        if t.id in per_task:
+            k = per_task[t.id]
+            cls = "pass" if k == n_models else ("fail" if k == 0 else "")
+            verdict = (f"<span class='{cls}'>{k}/{n_models}</span>"
+                       f"<div class='bar-mini'><i style='width:"
+                       f"{100 * k // max(n_models, 1)}%'></i></div>")
+            if r and not r.get("skipped"):
+                steps = str(r.get("turns") or "-")
+                took = f"{r.get('seconds', 0):.0f}s"
+            tt.append(
+                f"<tr><td><code>{_esc(t.id)}</code><br><span class='dim'>"
+                f"{_esc(t.instruction[:88])}</span></td>"
+                f"<td>{_esc((t.app or '').rsplit('.', 1)[-1] or 'system')}</td>"
+                f"<td>{_esc(t.difficulty)}</td>"
+                f"<td class='num'>{len(t.checks)}</td><td class='num'>{steps}</td>"
+                f"<td class='num'>{took}</td><td class='num'>{verdict}</td></tr>")
+            continue
         if r is None:
-            verdict = "<span class='dim'>not run</span>"
+            verdict = "<span class='dim'>not swept</span>"
         elif r.get("skipped"):
             # Never scored: the model was not asked, or the app is not on the
             # phone. Reporting these as failures would blame the model for the
             # device, which is how a benchmark starts lying.
             verdict = f"<span class='dim' title='{_esc(str(r.get('skip_reason',''))[:120])}'>not scored</span>"
         else:
-            verdict = "<span class='pass'>pass</span>" if r["passed"] else "<span class='fail'>fail</span>"
+            # Reference run only: one model, so it is evidence the task is
+            # runnable, not a difficulty figure. Marked as such rather than
+            # dressed up as a score under the same heading as k/6.
+            mark = "pass" if r["passed"] else "fail"
+            verdict = (f"<span class='{mark}' title='reference run only, "
+                       f"not the multi-model sweep'>{mark}</span>"
+                       f"<span class='ci'>1 model</span>")
             steps = str(r.get("turns") or "-")
             took = f"{r.get('seconds', 0):.0f}s"
         app = (t.app or "").rsplit(".", 1)[-1] or "system"
@@ -518,6 +669,7 @@ def build(run_name: str = "v1") -> Path:
   <p>Every task runs on a physical iPhone. Nothing is simulated, and no human decides whether a
      run passed.</p></div>
   {leaderboard}
+  {board_note}
   <p class="note" style="margin-top:22px">A task passes only if the phone itself ends in the
      required state. What the agent <em>says</em> it did counts for nothing: an agent that reports
      &ldquo;I have enabled that setting&rdquo; and an agent that enabled it are different things,
@@ -556,10 +708,13 @@ def build(run_name: str = "v1") -> Path:
      against Apple&rsquo;s own applications: Settings, Safari, Notes, Reminders, Clock, Calculator,
      Contacts, Maps, Calendar, Files, Books, Compass, Shortcuts, Voice Memos and the home screen
      itself. No third-party app is automated, so no third party&rsquo;s terms are involved.</p>
-  <p class="note">These are 60 of 76. Sixteen are held back and are not in the public repository or
-     its history: a benchmark whose entire answer key is public becomes training data, and the score
-     then measures memorisation rather than capability. The public 60 cover all 22 capabilities, so
-     a score over them is comparable between models and you can run the whole thing today.</p></div>
+  <p class="note">These are {len(tasks)} of {n_all}. {n_all - len(tasks)} are held back and are in
+     neither the public repository nor its history: a benchmark whose entire answer key is public
+     becomes training data, and the score then measures memorisation rather than capability. The
+     public {len(tasks)} cover all {n_caps} capabilities, so a score over them is comparable between
+     models and you can run the whole thing today. <b>Steps and time</b> in the table come from the
+     single-model reference run; <b>solved by</b> comes from the {n_models}-model sweep, which has
+     so far covered {len(per_task)} of these tasks.</p></div>
   <div class="scroll">{task_table}</div>
 </section>
 

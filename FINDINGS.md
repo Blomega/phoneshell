@@ -896,3 +896,78 @@ Every experiment in this file was ultimately shaped by this constraint. It is th
 for the thing being sold: the hard part of driving real iPhones is not writing the code, it is
 keeping the rig alive, and the failure that stops you is invisible to every health check that only
 asks whether the device is answering.
+
+## 28. The published leaderboard could not rank anything, and the arithmetic says so
+
+Sam looked at the leaderboard and asked why three of the six models were showing the same
+number and what the ranking was worth. That is the right question, and the answer is worse
+than a presentation problem: **not one of the fifteen model pairs on that board separates.**
+
+The board was six percentages sorted descending, which reads as an order whether or not the
+data supports one. Every model ran the *same* 24 tasks, so this is a paired design, and the
+correct test is McNemar's on the disagreements. Run properly:
+
+| pair | wins | p | tasks it would need |
+| --- | --- | --- | --- |
+| Kimi K3 vs DeepSeek v3.2 | 4-0 | 0.12 | ~33 |
+| Kimi K3 vs Gemini 3.1 Pro | 3-0 | 0.25 | ~44 |
+| Kimi K3 vs GPT-5.1 / Opus 4.8 / Qwen3-Max | 2-0 | 0.50 | ~66 |
+| Claude Opus 4.8 vs GPT-5.1 | 2-2 | 1.00 | never |
+| Claude Opus 4.8 vs Qwen3-Max | 2-2 | 1.00 | never |
+| GPT-5.1 vs Qwen3-Max | 2-2 | 1.00 | never |
+
+Three pairs are marked *never*. Their disagreements are exactly symmetric: each model wins the
+two tasks the other loses. Scaling the suite cannot separate them, because there is nothing to
+scale, and the identical 83.3% on the board is not a coincidence to be explained away. **To
+this instrument those three models are the same model.**
+
+Two numbers make the failure concrete.
+
+**Six disagreements.** McNemar needs `b >= 6` one-directional disagreements to reach p<0.05
+(`2 x 0.5^6 = 0.031`), and that threshold does not move with the size of the task set. A
+benchmark on which no two models disagree six times in the same direction cannot rank them if
+it runs a million tasks.
+
+**Ten items.** Of the 24 tasks, 12 were passed by every model and 2 by none. Both kinds carry
+zero information about ranking. **58% of the suite was measuring nothing** and the real
+instrument was 10 items wide.
+
+### What this does not undermine
+
+Experiment 2 (§26) is untouched by it, and the contrast is the useful part. That result is
+30/30 against 0/30 within the same model, p < 0.0001, and it holds because it was designed
+around a *within-subject* contrast with a control stratum rather than a between-model ranking.
+Sam asked the same question of that table too, why all three models show identical numbers,
+and there the answer is the opposite one: the stimulus is deliberately binary, so identical
+numbers across models are the predicted result and their agreement is a replication, not a
+tie. **The same observation, identical numbers, is evidence in one design and a symptom in the
+other.** Which one it is depends entirely on whether the design was built to compare models.
+
+### What was changed
+
+* `phoneshell/bench/stats.py` now holds Wilson intervals, McNemar's exact test, and a
+  power calculation, in one place. It had been reimplemented three times.
+* The published leaderboard carries a 95% interval under every score, a table of all fifteen
+  pairwise tests, and a plain statement that the order is sorted rather than ranked.
+* The task table reported one unnamed model's pass or fail per task, which is what made the
+  page look like a one-horse race. It now reports how many of the six models cleared each
+  task, which is the item's difficulty and the number that says which tasks carry the suite.
+* Every count on the page is computed. The prose said "60 of 76" for some time after it had
+  become 80 of 96.
+
+### The fix, and its price
+
+`scripts/run_sweep.py` runs all 60 non-probe public tasks across all six models,
+round-robin **by task rather than by model** so that an interrupted run still leaves a
+balanced paired design, and resumable per `(model, task)` so a restart costs nothing for work
+already done. Measured per-task costs put the full sweep at **$10.73**, or **$13.59** with the
+16 held-out tasks, and about five hours of wall clock.
+
+At 60 tasks the widest gap on the board becomes significant. At 76 the top model separates
+from the middle of the field. No size of sweep will separate the three that tie exactly, and
+reporting that is a better outcome than the ordering the page used to imply.
+
+The 20 `probe.*` tasks are excluded from the sweep. They are experiment 2's stimuli, built so
+a model with eyes gets ten and a model without gets none; on a general leaderboard they would
+measure one narrow property twenty times and manufacture a vision/text gap that says nothing
+about controlling a phone.

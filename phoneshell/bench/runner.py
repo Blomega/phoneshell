@@ -106,6 +106,9 @@ class TaskResult:
     model: str
     passed: bool
     scaffold: bool = False
+    device_model: str = ""
+    device_os: str = ""
+    device_udid: str = ""
     skipped: bool = False
     skip_reason: str = ""
     checks: list[dict] = field(default_factory=list)
@@ -424,6 +427,16 @@ class Runner:
         if ran_out and not timed_out:
             timed_out = True
             result.error = result.error or f"ran out of turns ({payload.get('subtype') or 'is_error'})"
+        # Which phone produced this. Two devices with different iOS builds and
+        # different app mixes are not the same instrument, and pooling them
+        # silently would be the kind of quiet error this file is full of.
+        try:
+            st = self.phone.wda.status()
+            result.device_model = str(st.get("device") or "")
+            result.device_os = str((st.get("os") or {}).get("version") or "")
+            result.device_udid = self.phone.cfg.device.udid or ""
+        except Exception:
+            pass
         result.turns = int(payload.get("num_turns") or 0)
         result.cost_usd = float(payload.get("total_cost_usd") or 0)
         result.agent_said = str(payload.get("result") or "")[:400]
