@@ -18,6 +18,23 @@ from .stats import mcnemar_exact, required_n, wilson
 ROOT = Path(__file__).resolve().parent.parent.parent
 SITE = ROOT / "site"
 
+# The run the leaderboard is drawn from. The newest complete cross-vendor sweep
+# wins, so a finished xv2 supersedes xv without a code change, and a half-built
+# one does not: a sweep in progress has fewer models than it will end with, and
+# publishing it mid-flight would show a board that changes shape hourly.
+def _board_run() -> str:
+    best, best_cells = "xv", 0
+    for name in ("xv", "xv2", "xv3"):
+        path = RESULTS / f"{name}.jsonl"
+        if not path.exists():
+            continue
+        rows = [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
+        models = {r["model"] for r in rows if not r.get("skipped")}
+        cells = len({(r["model"], r["task_id"]) for r in rows if not r.get("skipped")})
+        if len(models) >= 6 and cells > best_cells:
+            best, best_cells = name, cells
+    return best
+
 MODEL_LABELS = {
     "deepseek/deepseek-v3.2": "DeepSeek v3.2",
     "qwen/qwen3-max": "Qwen3-Max",
@@ -261,6 +278,51 @@ def experiment_two() -> dict | None:
     return out
 
 
+# Runs recorded before the harness stamped the device carry no model or OS in
+# their rows. Naming that phone here is an assertion from the project record,
+# not something read from the data, so it is written down once and labelled
+# rather than interpolated silently into a sentence. Model and iOS version are
+# public product facts, not anything personal.
+LEGACY_DEVICE = ("iPhone 17 Pro Max", "26.6")
+# WDA answers "iphone" for every iPhone ever made, so a row carrying it has an
+# OS version but no usable model.
+GENERIC_MODELS = {"", "iphone", "iPhone"}
+
+
+def devices_used(*runs: str) -> str:
+    """Name the phone from the result rows rather than from prose.
+
+    The footer said "iPhone 17 Pro Max running iOS 26.6" for as long as that
+    happened to be true. There are two phones on this desk now, and a sentence
+    naming the wrong one is a quiet lie about which instrument produced the
+    numbers.
+    """
+    seen: set[tuple[str, str]] = set()
+    legacy = False
+    for run in runs:
+        path = RESULTS / f"{run}.jsonl"
+        if not path.exists():
+            continue
+        for line in path.read_text().splitlines():
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            model = str(r.get("device_model") or "")
+            os_v = str(r.get("device_os") or "")
+            if model in GENERIC_MODELS and not os_v:
+                legacy = True
+            elif model in GENERIC_MODELS:
+                seen.add(("iPhone", os_v))
+            else:
+                seen.add((model, os_v))
+    if legacy:
+        seen.add(LEGACY_DEVICE)
+    if not seen:
+        return "a physical iPhone"
+    parts = [f"{m} running iOS {v}" if v else m for m, v in sorted(seen)]
+    return "a physical " + " and ".join(parts)
+
+
 def board_significance(run: str = "xv") -> dict | None:
     """Test every pair on the board instead of implying an order by sorting it.
 
@@ -319,6 +381,7 @@ def _esc(text: str) -> str:
 
 
 def build(run_name: str = "v1") -> Path:
+    BOARD_RUN = _board_run()
     # include_private=False: the held-out tasks must not be published, not even
     # their ids and instructions.
     tasks = load_all(ROOT / "environments", include_private=False)
@@ -329,7 +392,7 @@ def build(run_name: str = "v1") -> Path:
     # The leaderboard is the CROSS-VENDOR sweep when there is one. Scoring only
     # the run that happens to be named on the command line showed a single model
     # and made the page look like a one-horse race.
-    board = score("xv", include_private=False) or score(run_name, include_private=False)
+    board = score(BOARD_RUN, include_private=False) or score(run_name, include_private=False)
     rows = []
     path = RESULTS / f"{run_name}.jsonl"
     if path.exists():
@@ -371,7 +434,8 @@ def build(run_name: str = "v1") -> Path:
     # is a separate question with a separate answer, and on this suite the
     # answer is no. Publishing the table without this panel would be the most
     # misleading thing on the page.
-    sig = board_significance()
+    device_line = devices_used(BOARD_RUN, run_name)
+    sig = board_significance(BOARD_RUN)
     if sig:
         pair_rows = []
         for q in sorted(sig["pairs"], key=lambda q: (q["need"] or 10 ** 9)):
@@ -761,7 +825,7 @@ bin/phoneshell bench --model claude-sonnet-5</code></pre>
 <footer><div class="wrap">
   Built on phoneshell, an open harness for driving a real iPhone from a Mac.
   Results generated {time.strftime('%d %B %Y', time.gmtime())} from run <code>{_esc(run_name)}</code>
-  on a physical iPhone 17 Pro Max running iOS 26.6: {passed_n} of {scored_n} scored tasks passed,
+  on {device_line}: {passed_n} of {scored_n} scored tasks passed,
   averaging {avg_turns} steps and {avg_secs} seconds each.
   Tasks the model was never asked, because of a rate limit or because the app was not installed,
   are shown as not scored rather than counted as failures.

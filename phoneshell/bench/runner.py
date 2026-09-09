@@ -67,6 +67,41 @@ AGENT_TOOLS = [
 ]
 
 
+# Apple's ProductType is the only stable machine-readable model id. The map
+# exists because "iPhone15,2" names nothing to a reader; these are public
+# hardware identifiers, not anything personal.
+PRODUCT_NAMES = {
+    "iPhone15,2": "iPhone 14 Pro",
+    "iPhone15,3": "iPhone 14 Pro Max",
+    "iPhone16,1": "iPhone 15 Pro",
+    "iPhone16,2": "iPhone 15 Pro Max",
+    "iPhone17,1": "iPhone 16 Pro",
+    "iPhone17,2": "iPhone 16 Pro Max",
+    "iPhone18,1": "iPhone 17 Pro",
+    "iPhone18,2": "iPhone 17 Pro Max",
+}
+_MODEL_CACHE: list[str] = []
+
+
+def _hardware_model() -> str:
+    """The marketing name of the attached phone, resolved once per process."""
+    if _MODEL_CACHE:
+        return _MODEL_CACHE[0]
+    name = ""
+    try:
+        out = subprocess.run(["pymobiledevice3", "usbmux", "list"],
+                             capture_output=True, text=True, timeout=20).stdout
+        for dev in json.loads(out or "[]"):
+            pt = str(dev.get("ProductType") or "")
+            if pt:
+                name = PRODUCT_NAMES.get(pt, pt)
+                break
+    except Exception:
+        pass
+    _MODEL_CACHE.append(name)
+    return name
+
+
 class RigUnavailable(RuntimeError):
     """The phone could not be driven, so the task was never really attempted.
 
@@ -432,7 +467,11 @@ class Runner:
         # silently would be the kind of quiet error this file is full of.
         try:
             st = self.phone.wda.status()
-            result.device_model = str(st.get("device") or "")
+            # WDA's own "device" field is the literal string "iphone" on every
+            # iPhone ever made, which does not identify an instrument. The
+            # hardware model comes from usbmux instead, resolved once per
+            # process because it costs a subprocess and never changes mid-run.
+            result.device_model = _hardware_model() or str(st.get("device") or "")
             result.device_os = str((st.get("os") or {}).get("version") or "")
             result.device_udid = self.phone.cfg.device.udid or ""
         except Exception:

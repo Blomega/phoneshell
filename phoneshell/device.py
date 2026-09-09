@@ -28,6 +28,7 @@ Notes that cost real time to discover:
 from __future__ import annotations
 
 import json
+import logging
 import os
 import plistlib
 import shutil
@@ -37,6 +38,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .config import Config, WDA_SRC
+
+log = logging.getLogger(__name__)
 
 DEVELOPER_DIR = "/Applications/Xcode.app/Contents/Developer"
 # Build products live here, never under ~/Desktop or ~/Documents: those are
@@ -78,6 +81,7 @@ def detect_team() -> str | None:
     account. Configure `wda.development_team` to pin a specific one.
     """
     res = run(["security", "find-identity", "-v", "-p", "codesigning"], timeout=45)
+    teams: list[str] = []
     for line in res.stdout.splitlines():
         if '"' not in line:
             continue
@@ -90,8 +94,24 @@ def detect_team() -> str | None:
                                  capture_output=True, text=True, timeout=30).stdout
         for part in subject.split("/"):
             if part.startswith("OU="):
-                return part[3:].strip()
-    return None
+                team = part[3:].strip()
+                if team and team not in teams:
+                    teams.append(team)
+    # Returning the first identity in the keychain is a guess dressed as an
+    # answer. This Mac carries two teams, and the one that sorts first is NOT
+    # the one this project signs with. Guessing wrong does not fail loudly: it
+    # produces a runner signed by the other team, which iOS then refuses to
+    # install over an existing one with IXUserPresentableErrorDomain error 1,
+    # an error whose text says nothing about teams (FINDINGS.md section 11).
+    # So refuse to choose, and say what to pin.
+    if len(teams) > 1:
+        log.warning(
+            "this Mac has %d signing teams (%s) and no wda.development_team is "
+            "configured. Refusing to guess: pin the right one in runtime/config.yaml, "
+            "because signing with the wrong team fails at install time with an error "
+            "that does not mention teams.", len(teams), ", ".join(teams))
+        return None
+    return teams[0] if teams else None
 
 
 def _env() -> dict[str, str]:
