@@ -844,3 +844,55 @@ would have produced a confident wrong answer:
   OCR fragments of words the tree already had.
 
 Every one of them would have been invisible in the aggregate and fatal to the conclusion.
+
+---
+
+## 27. App activation degrades under sustained automation, and only a reboot restores it
+
+The single most disruptive failure in a long session is not a crash. It is that `open_app` quietly
+stops working while everything else keeps answering.
+
+Measured repeatedly across one long session:
+
+| symptom | state |
+| --- | --- |
+| `/status`, `/source`, `/screenshot` | fine |
+| `is_locked`, `active_app_info` | fine |
+| a full-width drag | 0.0% of pixels move |
+| `open_app` on any bundle id | returns false; SpringBoard stays in front |
+
+Both `activate` and `launch` are tried and both report success. The foreground never changes. It is
+not a wrong bundle id and it is not one app: after a reboot, Maps, Amazon and Airbnb all opened
+normally, and **fifteen minutes later not one app on the phone would come forward.**
+
+### What does not fix it
+
+* **Recycling the runner makes it worse.** `recycle_runner` killed WebDriverAgent and it did not
+  come back within its timeout, turning a partial failure into a total one. Restarting the bridge
+  from scratch brings WDA back but leaves activation exactly as broken.
+* Waiting does not help. Nor does terminating the target app first, nor a deep link, nor tapping the
+  icon: the runner's own error text says so, and it is right.
+
+### What does fix it
+
+A reboot, every time. And by section 24, a reboot then withholds developer services until somebody
+unlocks the phone by hand, which ends any unattended run.
+
+### The operational consequence, which is the actual finding
+
+**A physical-device rig has a duty cycle.** It is not a server. Sustained automation degrades a
+device-side capability that no API exposes and no amount of Mac-side cleverness repairs, on a
+timescale of tens of minutes under heavy use rather than days.
+
+So a long unattended run cannot simply be started and left. It needs either
+
+* a scheduled reboot cadence with a person available at each one, or
+* a passcode-less test device that can be rebooted freely, which is the real answer for anyone
+  running this seriously, or
+* work batched to fit inside the healthy window, with checkpointing so a wedge costs one batch
+  rather than the whole run.
+
+Every experiment in this file was ultimately shaped by this constraint. It is the strongest argument
+for the thing being sold: the hard part of driving real iPhones is not writing the code, it is
+keeping the rig alive, and the failure that stops you is invisible to every health check that only
+asks whether the device is answering.

@@ -102,7 +102,17 @@ def main() -> int:
         if not r.ok:
             print(f"  skip {app}: {r.error or r.detail}")
             continue
-        time.sleep(2.0)
+        time.sleep(2.5)
+        # open_app can report success while the app never actually comes forward,
+        # and then this measures the HOME SCREEN and reports it as the app. Agoda
+        # came back as "Home Screen, 11 elements, 46% covered", which would have
+        # gone into a published average as a third-party data point. Refuse to
+        # measure a screen that is not the app that was asked for.
+        front = phone.wda.active_app_info()
+        if str(front.get("bundleId", "")) in ("com.apple.springboard", ""):
+            print(f"  skip {app}: it never came to the foreground "
+                  f"(front is {front.get('bundleId')})")
+            continue
         row = gap_for_screen(phone, app)
         rows.append(row)
         print(f"\n{app}  ({row['app']}, {row['elements']} elements)")
