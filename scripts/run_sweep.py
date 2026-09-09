@@ -44,6 +44,7 @@ from phoneshell.actions import Phone                                          # 
 from phoneshell.bench.runner import (RESULTS, Runner, RigUnavailable,          # noqa: E402
                                      UsageLimitReached)
 from phoneshell.bench.schema import load_all                                   # noqa: E402
+from phoneshell.lock import DeviceBusy, device_lock                            # noqa: E402
 
 MODELS = [
     "moonshotai/kimi-k3",
@@ -118,6 +119,18 @@ def main() -> int:
         print("nothing to do")
         return 0
 
+    # One phone, one job. A watchdog resumed this sweep, the operator started a
+    # second believing the first was dead, and the two drove the same phone for
+    # seventy minutes. The duplicated task ids in the log were the only symptom;
+    # the corrupted checks looked like ordinary passes and failures. 64 rows had
+    # to be discarded.
+    try:
+        lock = device_lock(f"run_sweep --run {args.run}")
+        lock.__enter__()
+    except DeviceBusy as exc:
+        print(exc)
+        return 1
+
     phone = Phone()
     here = phone.cfg.device.udid or ""
     prior = devices_in(args.run)
@@ -153,6 +166,7 @@ def main() -> int:
               f"{task.id:<28} {mark:<4} {res.turns:>2}t {res.seconds:>3.0f}s "
               f"eta {(len(todo) - i) * rate / 60:>4.0f}m", flush=True)
 
+    lock.__exit__(None, None, None)
     print(f"\nswept for {(time.time() - started) / 60:.0f} min")
     for m in models:
         k, n = tally[m]
