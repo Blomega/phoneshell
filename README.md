@@ -7,8 +7,8 @@
 
 <p align="center">
   <a href="https://blolabel.ai"><img src="https://img.shields.io/badge/leaderboard-blolabel.ai-10b981?style=flat" alt="Leaderboard"/></a>
-  <a href="https://blolabel.ai"><img src="https://img.shields.io/badge/best%20score-94.8%25-2563eb?style=flat" alt="Best score"/></a>
-  <img src="https://img.shields.io/badge/tasks-60%20public%20%2F%2076%20total-7c3aed?style=flat" alt="Tasks"/>
+  <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20dataset-phoneshell--bench-ffce3a?style=flat" alt="Dataset"/></a>
+  <img src="https://img.shields.io/badge/tasks-80%20public%20%2F%2096%20total-7c3aed?style=flat" alt="Tasks"/>
   <img src="https://img.shields.io/badge/device-physical%20iPhone%20%C2%B7%20iOS%2026-0f172a?style=flat" alt="Device"/>
   <img src="https://img.shields.io/badge/python-3.11%2B-3776ab?style=flat&logo=python&logoColor=white" alt="Python"/>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-64748b?style=flat" alt="License"/></a>
@@ -120,7 +120,18 @@ The suite splits into **45 capability probes**, each isolating one skill so a fa
 missing skill rather than pointing vaguely at a long task, and **31 end-to-end jobs** that catch
 what only breaks when several capabilities have to hold together.
 
-Current results are at **[blolabel.ai](https://blolabel.ai)**.
+Current results are at **[blolabel.ai](https://blolabel.ai)**, and every task definition and
+scored run is published as a dataset at
+**[huggingface.co/datasets/blolabel/phoneshell-bench](https://huggingface.co/datasets/blolabel/phoneshell-bench)**,
+so the analyses below can be recomputed without owning the hardware.
+
+A word about that leaderboard, because it is the most misreadable thing here. Six models over
+the same 24 tasks, sorted by pass rate, looks like a ranking and is not one: run as the paired
+design it actually is, **none of the fifteen pairs separate under McNemar's exact test**. The
+widest gap is 4 wins to 0 at p = 0.12. Three pairs disagree perfectly symmetrically and no size
+of task set will ever separate them. Twelve of those 24 tasks were passed by every model and two
+by none, so more than half of that run was measuring nothing. The site says so on the page, and
+`scripts/run_sweep.py` is the fix.
 
 ### The held-out split
 

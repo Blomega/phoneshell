@@ -555,6 +555,7 @@ def build(run_name: str = "v1") -> Path:
     <a href="#finding">The result</a>
     <a href="#method">Method</a>
     <a href="#leaderboard">Leaderboard</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
     <a href="#tasks">Tasks</a>
     <a href="#run">Run it</a>
   </nav>
@@ -730,6 +731,11 @@ bin/phoneshell up          # brings the bridge up
 
 bin/phoneshell bench --list
 bin/phoneshell bench --model claude-sonnet-5</code></pre>
+  <p class="note" style="margin-top:22px">Or skip the hardware entirely. Every task definition and
+     every scored run on this page is published as a dataset at
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">
+     huggingface.co/datasets/blolabel/phoneshell-bench</a>, including the paired runs behind the
+     result above, so the statistics can be recomputed from source rather than taken on trust.</p>
 </section>
 
 <section>
