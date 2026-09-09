@@ -260,7 +260,10 @@ def build(run_name: str = "v1") -> Path:
     # include_private=False: the held-out tasks must not be published, not even
     # their ids and instructions.
     tasks = load_all(ROOT / "environments", include_private=False)
-    board = score(run_name, include_private=False)
+    # The leaderboard is the CROSS-VENDOR sweep when there is one. Scoring only
+    # the run that happens to be named on the command line showed a single model
+    # and made the page look like a one-horse race.
+    board = score("xv", include_private=False) or score(run_name, include_private=False)
     rows = []
     path = RESULTS / f"{run_name}.jsonl"
     if path.exists():
@@ -461,7 +464,13 @@ def build(run_name: str = "v1") -> Path:
      effect cannot be an artifact of the harness, and a model that scores 100% on one row scores
      zero on the other.</p>
 
-  <h3 style="margin:34px 0 14px">Every model, independently</h3>
+  <h3 style="margin:34px 0 6px">The same effect in every model</h3>
+  <p class="dim" style="margin:0 0 14px;font-size:14px">This is a replication check, not a
+     ranking. The task is deliberately binary, so any model that can read gets everything with the
+     image and nothing without it. Identical numbers are the expected result and the point of
+     them: an effect that varied by model would suggest one model&rsquo;s eyesight rather than a
+     property of the information. For an actual comparison between models see the
+     <a href="#leaderboard">leaderboard</a>.</p>
   <div class="scroll"><table>
     <thead><tr><th>Model</th><th class="r">With the image</th><th class="r">Tree only</th>
       <th class="r">p</th></tr></thead><tbody>
@@ -475,6 +484,10 @@ def build(run_name: str = "v1") -> Path:
     <div class="card"><span class="n">THE RULE</span><h3>Send it for rendered content</h3>
       <p>Not as a global setting. On a labelled screen the image buys nothing; on a map tile, a
          chart, a book cover or a canvas it is the whole task.</p></div>
+    <div class="card"><span class="n">THE LIMIT</span><h3>This shows existence, not degree</h3>
+      <p>A binary task proves the effect crisply and says nothing about size. On a realistic screen
+         the answer is rarely wholly present or wholly absent, and how much vision is worth in
+         between is not measured here.</p></div>
     <div class="card"><span class="n">THE CATCH</span><h3>Apple labels its own apps well</h3>
       <p>Across thirteen first-party screens, eleven were fully described by their tree. Third-party
          apps are a different story: one chat app returns

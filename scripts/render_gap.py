@@ -87,7 +87,13 @@ def gap_for_screen(phone: Phone, label: str) -> dict:
 
 
 def main() -> int:
-    apps = sys.argv[1:] or ["Settings", "Clock", "Calculator", "Weather", "Safari"]
+    # --private measures third-party apps, which hold the owner's messages and
+    # mail. It reports the COUNTS only and never a word, so the statistic can be
+    # published while the content stays on the phone. OCR runs locally either
+    # way; nothing is uploaded and no screenshot is written to disk.
+    private = "--private" in sys.argv
+    apps = [a for a in sys.argv[1:] if not a.startswith("--")] or [
+        "Settings", "Clock", "Calculator", "Weather", "Safari"]
     phone = Phone()
     phone.ensure_unlocked()
     rows = []
@@ -104,7 +110,10 @@ def main() -> int:
               f"of them  ->  {row['coverage']:.0%} covered")
         print(f"  raw gap {row['raw_gap']}, of which {len(row['render_only'])} survive "
               f"the noise filters")
-        if row["render_only"]:
+        if private:
+            print(f"  render-only words: {len(row['render_only'])} "
+                  f"(content withheld: this is a third-party app)")
+        elif row["render_only"]:
             print(f"  render-only ({len(row['render_only'])}): "
                   f"{', '.join(row['render_only'][:14])}")
         else:
