@@ -9,23 +9,23 @@
     --bg:#0d0d0f; --panel:#141416; --panel2:#1a1a1d; --hover:#202024;
     --line:#26262b; --line2:#303036;
     --text:#e8e8ea; --dim:#9a9aa2; --faint:#6a6a72;
-    --accent:#22c55e; --accent2:#16a34a; --blue:#5b8cff; --warn:#eab308; --err:#ef4444;
+    --accent:#22c55e; --blue:#5b8cff; --warn:#eab308; --err:#ef4444;
     --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
-    --rail:52px; --c1:228px; --c2:268px; --c4:300px;
   }
   *{box-sizing:border-box}
   [hidden]{display:none!important}
   html,body{height:100%}
   body{margin:0;overflow:hidden;background:var(--bg);color:var(--text);
-       font:13.5px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+       font:13.5px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
        -webkit-font-smoothing:antialiased}
   button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
-  a{color:inherit;text-decoration:none}
   ::-webkit-scrollbar{width:9px;height:9px}
   ::-webkit-scrollbar-thumb{background:#2e2e34;border-radius:5px}
   ::-webkit-scrollbar-track{background:transparent}
 
-  #app{display:grid;grid-template-columns:var(--rail) var(--c1) var(--c2) 1fr var(--c4);height:100vh}
+  /* The phone is the point of the product, so it owns the room: at 1680px it is
+     about 60% of everything right of the two lists, and it never goes away. */
+  #app{display:grid;grid-template-columns:52px 210px 240px 1fr 1.55fr;height:100vh}
   .col{min-width:0;min-height:0;display:flex;flex-direction:column;border-right:1px solid var(--line)}
   .col:last-child{border-right:none}
 
@@ -33,8 +33,7 @@
   #rail{background:#09090b;align-items:center;padding:12px 0;gap:6px}
   #rail .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#0ea5e9);
     display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#08140c;margin-bottom:10px}
-  .ricon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
-    color:var(--faint);position:relative}
+  .ricon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--faint)}
   .ricon:hover{background:var(--hover);color:var(--text)}
   .ricon.on{background:#1d2a20;color:var(--accent)}
   .ricon svg{width:17px;height:17px}
@@ -43,180 +42,184 @@
     justify-content:center;font-size:11px;color:var(--dim);font-weight:600}
 
   /* ---------------------------------------------------------------- shared */
-  .chead{height:52px;display:flex;align-items:center;gap:9px;padding:0 14px;flex:none;
-    border-bottom:1px solid var(--line)}
-  .chead h2{font-size:14.5px;font-weight:600;margin:0;letter-spacing:-.01em}
-  .chead .sub{color:var(--faint);font-size:11px}
+  .chead{height:50px;display:flex;align-items:center;gap:9px;padding:0 13px;flex:none;border-bottom:1px solid var(--line)}
+  .chead h2{font-size:14px;font-weight:600;margin:0;letter-spacing:-.01em;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
   .grow{flex:1}
-  .iconbtn{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;
-    color:var(--faint)}
+  .iconbtn{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--faint)}
   .iconbtn:hover{background:var(--hover);color:var(--text)}
   .iconbtn svg{width:15px;height:15px}
   .scroll{flex:1;overflow-y:auto;min-height:0}
-  .pill{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:600}
+  .pill{font-size:10.5px;padding:2px 9px;border-radius:20px;font-weight:600;flex:none}
   .pill.open{background:var(--accent);color:#07130b}
   .pill.idle{background:#26262b;color:var(--dim)}
   .pill.err{background:#3b1b1b;color:#fca5a5}
   .badge{min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#26262b;color:var(--dim);
     font-size:10.5px;font-weight:600;display:inline-flex;align-items:center;justify-content:center}
-  .badge.g{background:var(--accent);color:#07130b}
   .muted{color:var(--faint)}
+  .sub{color:var(--faint);font-size:11px;font-family:var(--mono)}
 
   /* ------------------------------------------------------------- column 1 */
   #c1{background:var(--panel)}
-  .newbtn{display:flex;align-items:center;gap:9px;margin:10px 10px 4px;padding:9px 11px;border-radius:9px;
-    color:var(--text);font-weight:500}
+  .newbtn{display:flex;align-items:center;gap:9px;margin:9px 9px 3px;padding:9px 11px;border-radius:9px;font-weight:500}
   .newbtn:hover{background:var(--hover)}
   .newbtn svg{width:15px;height:15px;color:var(--dim)}
-  .navsec{padding:10px 10px 2px;color:var(--faint);font-size:10.5px;font-weight:600;letter-spacing:.07em;
+  .navsec{padding:9px 10px 2px;color:var(--faint);font-size:10.5px;font-weight:600;letter-spacing:.07em;
     text-transform:uppercase;display:flex;align-items:center;gap:6px}
-  .navsec .grow{flex:1}
-  .nav{display:flex;align-items:center;gap:9px;margin:1px 8px;padding:7px 10px;border-radius:8px;
-    width:calc(100% - 16px);text-align:left;color:var(--dim);font-size:13px}
+  .nav{display:flex;align-items:center;gap:9px;margin:1px 7px;padding:7px 9px;border-radius:8px;
+    width:calc(100% - 14px);text-align:left;color:var(--dim);font-size:13px}
   .nav:hover{background:var(--hover);color:var(--text)}
-  .nav.on{background:var(--panel2);color:var(--text);font-weight:500}
-  .nav svg{width:15px;height:15px;flex:none;opacity:.8}
+  .nav.on{background:#131a15;color:var(--text);font-weight:500;box-shadow:inset 0 0 0 1px #1f4029}
   .nav .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile{width:18px;height:18px;border-radius:5px;flex:none;display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:#0b0b0d}
   .dotm{width:7px;height:7px;border-radius:50%;background:#3f3f46;flex:none}
   .dotm.on{background:var(--accent);box-shadow:0 0 7px rgba(34,197,94,.7)}
   .dotm.busy{background:var(--warn);box-shadow:0 0 7px rgba(234,179,8,.7)}
+  #appfilter{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+    padding:6px 9px;color:var(--text);font:inherit;font-size:12px;outline:none}
 
   /* ------------------------------------------------------------- column 2 */
   #c2{background:var(--bg)}
-  .filters{display:flex;align-items:center;gap:8px;padding:8px 13px;border-bottom:1px solid var(--line);
+  .filters{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);
     font-size:12px;color:var(--dim);flex:none}
   .filters select{background:none;border:none;color:var(--dim);font:inherit;font-size:12px;cursor:pointer}
-  .srow{display:flex;gap:10px;padding:10px 13px;border-bottom:1px solid var(--line);cursor:pointer;
+  .srow{display:flex;gap:9px;padding:9px 11px;border-bottom:1px solid var(--line);cursor:pointer;
     align-items:flex-start;width:100%;text-align:left}
   .srow:hover{background:var(--panel)}
   .srow.on{background:var(--panel2);box-shadow:inset 2px 0 0 var(--accent)}
-  .srow img{width:38px;height:72px;object-fit:cover;object-position:top;border-radius:5px;background:#000;
+  .srow img{width:34px;height:66px;object-fit:cover;object-position:top;border-radius:5px;background:#000;
     border:1px solid var(--line2);flex:none}
-  .srow .body{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+  .srow .body{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
   .srow .top{display:flex;align-items:center;gap:6px}
-  .srow .nm{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-  .srow .ago{color:var(--faint);font-size:10.5px;font-family:var(--mono);flex:none}
-  .srow .sub{color:var(--dim);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .srow .trail{color:var(--faint);font-size:11px;display:flex;gap:5px;align-items:center;min-width:0}
-  .srow .trail span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .srow .trail svg{width:11px;height:11px;flex:none;opacity:.7}
+  .srow .nm{font-weight:600;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .srow .ago{color:var(--faint);font-size:10px;font-family:var(--mono);flex:none}
+  .srow .dm{color:var(--faint);font-size:10.5px;font-family:var(--mono)}
+  .srow .trail{color:var(--accent);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-  /* ------------------------------------------------------------- column 3 */
-  #c3{background:var(--bg)}
-  #flow{padding:14px 20px 20px}
-  .node{display:flex;align-items:stretch;gap:0;position:relative}
-  .node .gut{width:26px;flex:none;position:relative}
-  .node .gut:before{content:"";position:absolute;left:11px;top:0;bottom:0;width:1px;background:var(--line2)}
-  .node.last .gut:before{bottom:calc(100% - 26px)}
-  .node .gut:after{content:"";position:absolute;left:11px;top:26px;width:13px;height:1px;background:var(--line2)}
+  /* --------------------------------------------------- column 3: the chat */
+  #mid{background:var(--bg)}
+  .tabs{display:flex;gap:3px;padding:0 10px;height:50px;align-items:center;border-bottom:1px solid var(--line);flex:none}
+  .tab{padding:6px 12px;border-radius:8px;font-size:12.5px;color:var(--dim)}
+  .tab.on{background:var(--panel2);color:var(--text);font-weight:500}
+  #chat{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:86%;padding:9px 13px;border-radius:13px;white-space:pre-wrap;word-wrap:break-word;font-size:13px}
+  .msg.bot{align-self:flex-start;background:var(--panel);border:1px solid var(--line)}
+  .msg.me{align-self:flex-end;background:var(--accent);color:#07130b;font-weight:500}
+  .msg.ask{align-self:flex-start;background:#241f0c;border:1px solid #4a3f14;color:#f5e6a8}
+  .msg.err{align-self:flex-start;background:#2a1414;border:1px solid #5a2020;color:#ffb4b4}
+  .msg b{font-weight:600}
+  .msg .when{display:block;color:var(--faint);font-size:10px;font-family:var(--mono);margin-top:4px}
+  .msg.me .when{color:rgba(7,19,11,.55)}
+  .thinking{align-self:flex-start;display:flex;gap:5px;padding:10px 13px}
+  .thinking i{width:6px;height:6px;border-radius:50%;background:var(--faint);animation:bounce 1.3s infinite}
+  .thinking i:nth-child(2){animation-delay:.18s}
+  .thinking i:nth-child(3){animation-delay:.36s}
+  @keyframes bounce{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+  #composer{flex:none;border-top:1px solid var(--line);background:var(--panel);padding:11px 14px 13px}
+  #cbox{display:flex;gap:9px;align-items:flex-end}
+  #prompt{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px 12px;
+    color:var(--text);font:inherit;resize:none;height:42px;max-height:110px;outline:none}
+  #prompt:focus{border-color:var(--line2)}
+  #prompt.waiting{border-color:#4a3f14;background:#1c180a}
+  .go{background:var(--accent);color:#07130b;font-weight:600;border-radius:10px;padding:10px 18px}
+  .go:disabled{opacity:.4;cursor:default}
+  .go.stop{background:#3b1b1b;color:#fca5a5}
+  #notes{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:var(--faint);align-items:center}
+  .chip{border:1px solid var(--line);border-radius:6px;padding:2px 8px;display:flex;align-items:center;gap:5px}
+  .chip input{width:36px;background:none;border:none;color:var(--text);font:inherit;font-size:11px;
+    font-family:var(--mono);text-align:right;outline:none}
+
+  /* flow tab */
+  #flowwrap{padding:14px 18px 18px}
+  .node{display:flex;position:relative}
+  .node .gut{width:24px;flex:none;position:relative}
+  .node .gut:before{content:"";position:absolute;left:10px;top:0;bottom:0;width:1px;background:var(--line2)}
+  .node.last .gut:before{bottom:calc(100% - 24px)}
+  .node .gut:after{content:"";position:absolute;left:10px;top:24px;width:12px;height:1px;background:var(--line2)}
   .node.root .gut{display:none}
-  .card{flex:1;min-width:0;margin-bottom:8px}
-  .nodebody{display:flex;gap:11px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;
+  .card{flex:1;min-width:0;margin-bottom:7px}
+  .nodebody{display:flex;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;
     background:var(--panel);cursor:pointer;align-items:center;width:100%;text-align:left}
   .nodebody:hover{border-color:var(--line2);background:var(--panel2)}
   .nodebody.on{border-color:var(--accent);background:#131a15}
-  .nodebody img{width:34px;height:64px;object-fit:cover;object-position:top;border-radius:5px;background:#000;
+  .nodebody img{width:30px;height:58px;object-fit:cover;object-position:top;border-radius:4px;background:#000;
     border:1px solid var(--line2);flex:none}
   .nodebody .meta{min-width:0;flex:1}
-  .nodebody .ttl{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .nodebody .via{color:var(--accent);font-size:11.5px;margin-top:1px;overflow:hidden;
-    text-overflow:ellipsis;white-space:nowrap}
-  .nodebody .dm{color:var(--faint);font-size:11px;font-family:var(--mono);margin-top:2px}
-  .kids{margin-left:0}
-  .leafwrap{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 9px 26px}
-  .leaf{font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:6px;padding:2px 7px;
-    background:var(--panel)}
+  .nodebody .ttl{font-weight:600;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .nodebody .via{color:var(--accent);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .nodebody .dm{color:var(--faint);font-size:10px;font-family:var(--mono)}
+  .leafwrap{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 7px 24px}
+  .leaf{font-size:10.5px;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
   .leaf.cross{border-color:#4a3a1a;color:#d6b45e}
-  #composer{flex:none;border-top:1px solid var(--line);background:var(--panel);padding:12px 16px 14px}
-  #composer .tabs{display:flex;gap:4px;margin-bottom:9px}
-  .tab{padding:5px 11px;border-radius:7px;font-size:12.5px;color:var(--dim)}
-  .tab.on{background:var(--panel2);color:var(--text);font-weight:500}
-  #cbox{display:flex;gap:9px;align-items:flex-end}
-  #prompt{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
-    color:var(--text);font:inherit;resize:none;height:42px;max-height:120px;outline:none}
-  #prompt:focus{border-color:var(--line2)}
-  .go{background:var(--accent);color:#07130b;font-weight:600;border-radius:9px;padding:10px 16px}
-  .go:disabled{opacity:.4;cursor:default}
-  .go.stop{background:#3b1b1b;color:#fca5a5}
-  #notes{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;font-size:11px;color:var(--faint)}
-  #notes b{color:var(--dim);font-weight:500}
-  .chip{border:1px solid var(--line);border-radius:6px;padding:2px 8px;display:flex;align-items:center;gap:5px}
-  .chip input{width:38px;background:none;border:none;color:var(--text);font:inherit;font-size:11px;
-    font-family:var(--mono);text-align:right;outline:none}
 
-  /* ------------------------------------------------------------- column 4 */
-  #c4{background:var(--panel)}
-  .tabs2{display:flex;gap:4px;padding:11px 12px 0}
-  .tab2{flex:1;padding:6px;border-radius:8px;font-size:12.5px;color:var(--dim);text-align:center}
-  .tab2.on{background:var(--panel2);color:var(--text);font-weight:500}
-  #mirror{padding:14px 14px 10px;display:flex;justify-content:center;flex:none}
-  #phoneframe{width:150px;border-radius:20px;border:2px solid #2e2e34;overflow:hidden;background:#000;
-    box-shadow:0 14px 34px rgba(0,0,0,.6);position:relative}
-  #phoneframe img{display:block;width:100%}
-  #nophone{width:150px;height:300px;border-radius:20px;border:2px dashed var(--line2);display:flex;
-    align-items:center;justify-content:center;text-align:center;color:var(--faint);font-size:11px;padding:16px;
-    line-height:1.5}
-  .devhead{text-align:center;padding:0 14px 12px;flex:none}
-  .devhead .n{font-weight:600;font-size:14px}
-  .devhead .s{color:var(--faint);font-size:11px;font-family:var(--mono);margin-top:2px}
-  .acc{border-top:1px solid var(--line)}
-  .acchead{display:flex;align-items:center;gap:8px;padding:11px 14px;width:100%;text-align:left;font-size:13px}
-  .acchead:hover{background:var(--hover)}
-  .acchead .grow{flex:1}
-  .acchead svg{width:13px;height:13px;color:var(--faint);transition:transform .15s}
-  .acchead.open svg.chev{transform:rotate(180deg)}
-  .accbody{padding:0 14px 12px;display:none;flex-direction:column;gap:7px}
-  .accbody.open{display:flex}
-  .kv{display:flex;justify-content:space-between;gap:10px;font-size:12px}
-  .kv .k{color:var(--faint)}
-  .kv .v{font-family:var(--mono);font-size:11.5px;text-align:right;word-break:break-all}
-  .btnrow{display:flex;gap:7px;flex-wrap:wrap}
+  /* ------------------------------------------------- column 4: the phone */
+  #right{background:#0a0a0c}
+  #stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:20px;gap:22px}
+  .stagewrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;min-height:0;height:100%}
+  .stagelabel{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;font-weight:600;flex:none}
+  .frame{flex:1;min-height:0;aspect-ratio:9/19.5;border-radius:min(4.4vh,42px);background:#000;overflow:hidden;
+    position:relative}
+  #phoneframe{border:3px solid #2a2a30;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05)}
+  #phoneframe.live{border-color:#2a4a33;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 2px rgba(34,197,94,.4)}
+  .frame img{width:100%;height:100%;object-fit:cover;display:block}
+  #nophone{flex:1;min-height:0;aspect-ratio:9/19.5;border-radius:min(4.4vh,42px);border:2px dashed var(--line2);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    color:var(--faint);font-size:12.5px;padding:28px;gap:9px;line-height:1.6}
+  #nophone b{color:var(--dim);font-size:13.5px}
+  #focus{border:2px solid var(--line);cursor:zoom-in}
+  #focus .tag{position:absolute;left:0;right:0;bottom:0;padding:9px 11px;font-size:10.5px;
+    background:linear-gradient(transparent,rgba(0,0,0,.9));color:var(--dim);font-family:var(--mono)}
+  #devbar{flex:none;border-top:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px}
+  #devbar .n{font-size:12.5px;font-weight:600}
+  #devbar .s{font-size:10.5px;color:var(--faint);font-family:var(--mono)}
   .btn{border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:12px;background:var(--panel2)}
   .btn:hover{border-color:var(--line2)}
   .btn.p{background:var(--accent);border-color:var(--accent);color:#07130b;font-weight:600}
   .btn.d{background:#2a1616;border-color:#4a2020;color:#fca5a5}
   .btn:disabled{opacity:.4;cursor:default}
+  #stats{flex:none;border-top:1px solid var(--line);padding:9px 14px;display:flex;gap:18px;
+    font-size:11.5px;color:var(--dim);align-items:center;flex-wrap:wrap}
+  #stats b{font-family:var(--mono);color:var(--text);font-weight:600}
+  #drawer{flex:none;max-height:34vh;overflow-y:auto;border-top:1px solid var(--line);background:var(--panel)}
+  .acc{border-bottom:1px solid var(--line)}
+  .acchead{display:flex;align-items:center;gap:8px;padding:9px 14px;width:100%;text-align:left;font-size:12.5px}
+  .acchead:hover{background:var(--hover)}
+  .acchead svg{width:13px;height:13px;color:var(--faint);transition:transform .15s}
+  .acchead.open svg.chev{transform:rotate(180deg)}
+  .accbody{padding:0 14px 11px;display:none;flex-direction:column;gap:6px}
+  .accbody.open{display:flex}
+  .kv{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+  .kv .k{color:var(--faint)}
+  .kv .v{font-family:var(--mono);font-size:11.5px;text-align:right;word-break:break-all}
   .chk{display:flex;gap:7px;font-size:11.5px;align-items:flex-start;line-height:1.45}
   .chk .m{font-family:var(--mono);font-size:10px;flex:none;width:28px;padding-top:1px}
   .chk.ok .m{color:var(--accent)} .chk.bad .m{color:var(--err)}
   .chk .fix{color:var(--warn);display:block;margin-top:2px}
-  .devcard{display:flex;gap:9px;align-items:center;padding:8px 10px;border:1px solid var(--line);
-    border-radius:9px;width:100%;text-align:left;background:var(--panel2);margin-bottom:6px}
-  .devcard:hover{border-color:var(--line2)}
+  .devcard{display:flex;gap:9px;align-items:center;padding:7px 9px;border:1px solid var(--line);
+    border-radius:9px;width:100%;text-align:left;background:var(--panel2);margin-bottom:5px}
   .devcard.on{border-color:var(--accent);background:#131a15}
   .devcard .n{font-size:12.5px;font-weight:600}
   .devcard .s{font-size:10.5px;color:var(--faint);font-family:var(--mono)}
-  #logbox{font-family:var(--mono);font-size:10.5px;line-height:1.55;max-height:190px;overflow-y:auto;
-    display:flex;flex-direction:column;gap:2px}
-  #logbox .l{display:flex;gap:6px}
-  #logbox .k{color:var(--blue);flex:none;min-width:56px}
-  #logbox .v{color:var(--faint);word-break:break-word}
-  #logbox .l.bad .k{color:var(--err)} #logbox .l.warn .k{color:var(--warn)}
-  #logbox .l.good .k{color:var(--accent)}
-  .prog{height:3px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-top:3px}
-  .prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .35s}
 
-  /* -------------------------------------------------------------- overlays */
-  .empty{padding:44px 34px;color:var(--dim);font-size:13px;line-height:1.75;max-width:560px}
-  .empty h3{color:var(--text);font-size:16px;margin:0 0 10px}
-  .empty code{font-family:var(--mono);font-size:12px;background:var(--panel2);padding:1px 6px;border-radius:5px;
+  .empty{padding:26px 20px;color:var(--dim);font-size:13px;line-height:1.75}
+  .empty h3{color:var(--text);font-size:15px;margin:0 0 9px}
+  .empty code{font-family:var(--mono);font-size:11.5px;background:var(--panel2);padding:1px 5px;border-radius:4px;
     border:1px solid var(--line)}
   #box{position:fixed;inset:0;background:rgba(5,5,7,.94);display:none;align-items:center;justify-content:center;
     z-index:60;padding:30px;cursor:zoom-out}
   #box.on{display:flex}
   #box img{max-height:100%;border-radius:16px;box-shadow:0 26px 70px rgba(0,0,0,.75)}
-  #box .cap{position:fixed;bottom:20px;left:0;right:0;text-align:center;color:var(--dim);font-size:12px;
-    font-family:var(--mono)}
-  #modal{position:fixed;inset:0;background:rgba(5,5,7,.7);display:none;align-items:center;justify-content:center;
-    z-index:70}
+  #box .cap{position:fixed;bottom:20px;left:0;right:0;text-align:center;color:var(--dim);font-size:12px;font-family:var(--mono)}
+  #modal{position:fixed;inset:0;background:rgba(5,5,7,.7);display:none;align-items:center;justify-content:center;z-index:70}
   #modal.on{display:flex}
   .sheet{width:460px;max-width:92vw;background:var(--panel);border:1px solid var(--line2);border-radius:14px;
     padding:20px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
   .sheet h3{margin:0 0 4px;font-size:16px}
-  .sheet p{margin:0 0 16px;color:var(--dim);font-size:12.5px}
+  .sheet p{margin:0 0 10px;color:var(--dim);font-size:12.5px}
   .sheet label{display:block;font-size:11px;color:var(--faint);margin:12px 0 5px;text-transform:uppercase;
     letter-spacing:.06em;font-weight:600}
-  .sheet input,.sheet select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+  .sheet input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;
     padding:9px 11px;color:var(--text);font:inherit;outline:none}
   .sheet .g2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
   .sheet .foot{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
@@ -229,7 +232,6 @@
 <body>
 
 <div id="app">
-  <!-- ================================================================= rail -->
   <div class="col" id="rail">
     <div class="logo">A</div>
     <button class="ricon on" title="Scans"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/></svg></button>
@@ -240,66 +242,50 @@
     <div class="me">SS</div>
   </div>
 
-  <!-- ============================================================= column 1 -->
   <div class="col" id="c1">
     <div class="chead"><h2>AppScan</h2><div class="grow"></div>
       <button class="iconbtn" id="refresh" title="refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg></button>
     </div>
     <button class="newbtn" id="newscan">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-      New scan
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>New scan
     </button>
+    <div style="padding:2px 8px 6px"><input id="appfilter" placeholder="search apps"></div>
     <div class="scroll">
-      <button class="nav on" id="nav-all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/></svg><span class="t">All scans</span><span class="badge" id="n-all">0</span></button>
-      <button class="nav" id="nav-live"><span class="dotm" id="livedot"></span><span class="t">Live device</span><span class="badge" id="n-live">–</span></button>
-
-      <div class="navsec">Recent scans</div>
-      <div id="runs"></div>
-
+      <div class="navsec"><span class="grow">Scanned</span><span id="n-scanned" class="muted"></span></div>
+      <div id="scanned"></div>
       <div class="navsec"><span class="grow">Apps on this phone</span><span id="appcount" class="muted"></span></div>
-      <div style="padding:2px 8px 6px"><input id="appfilter" placeholder="search apps"
-        style="width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;
-               padding:6px 9px;color:var(--text);font:inherit;font-size:12px;outline:none"></div>
       <div id="apps"></div>
     </div>
   </div>
 
-  <!-- ============================================================= column 2 -->
   <div class="col" id="c2">
     <div class="chead"><h2>Screens</h2><div class="grow"></div>
       <button class="iconbtn" id="gridtoggle" title="open the folder gallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3h7v7M21 3l-9 9"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></button>
     </div>
-    <div class="filters">
-      <span id="scount">0 screens</span>
-      <div class="grow"></div>
-      <select id="order"><option value="new">Newest first</option><option value="old">Crawl order</option><option value="depth">By depth</option></select>
+    <div class="filters"><span id="scount">0 screens</span><div class="grow"></div>
+      <select id="order"><option value="new">Newest first</option><option value="old">Scan order</option><option value="depth">By depth</option></select>
     </div>
     <div class="scroll" id="screens"></div>
   </div>
 
-  <!-- ============================================================= column 3 -->
-  <div class="col" id="c3">
-    <div class="chead">
-      <h2 id="flowtitle">No scan selected</h2>
-      <span class="pill idle" id="flowpill">idle</span>
+  <div class="col" id="mid">
+    <div class="tabs">
+      <button class="tab on" id="t-chat">Chat</button>
+      <button class="tab" id="t-flow">Flow</button>
       <div class="grow"></div>
-      <span class="sub" id="flowsub"></span>
+      <span class="pill idle" id="pill">idle</span>
+      <span class="sub" id="midsub"></span>
     </div>
-    <div class="scroll" id="flowwrap">
+    <div class="scroll" id="chatpane"><div id="chat"></div></div>
+    <div class="scroll" id="flowpane" hidden>
       <div class="empty" id="flowempty">
-        <h3>Screenshot every screen of an app, by itself.</h3>
-        <p>Plug your iPhone into this Mac, connect it on the right, then tell the box below what to
-        collect. AppScan walks the app on the real device, taps its way through every screen it can
-        reach and keeps a screenshot of each one.</p>
-        <p>It taps to navigate and does nothing else: it never types, never flips a switch and never
-        touches a control that sends, buys, deletes or signs out. Everything it refuses is listed with
-        the reason.</p>
-        <p>Try <code>screenshot every screen in Settings</code> or <code>collect Instagram, quick</code>.</p>
+        <h3>Pick an app on the left.</h3>
+        <p>If it has been scanned, its screens and flow show up here. If not, press Start and
+        AppScan walks it on the real phone, keeping a screenshot of every screen it reaches.</p>
       </div>
-      <div id="flow"></div>
+      <div id="flowwrap"></div>
     </div>
     <div id="composer">
-      <div class="tabs"><button class="tab on">Scan</button><button class="tab" id="tab-adv">Limits</button></div>
       <div id="cbox">
         <textarea id="prompt" placeholder="screenshot every screen in Settings">screenshot every screen in Settings</textarea>
         <button class="go" id="go" disabled>Start</button>
@@ -308,62 +294,60 @@
     </div>
   </div>
 
-  <!-- ============================================================= column 4 -->
-  <div class="col" id="c4">
-    <div class="tabs2"><button class="tab2 on" id="t-device">Device</button><button class="tab2" id="t-run">Run</button></div>
-
-    <div class="scroll" id="devicepane">
-      <div id="mirror">
-        <div id="phoneframe" hidden><img id="screen" alt="live screen"></div>
-        <div id="nophone">No phone connected.<br>Plug an iPhone in with a cable and unlock it.</div>
+  <!-- The phone. Always here, never replaced by anything. -->
+  <div class="col" id="right">
+    <div id="stage">
+      <div class="stagewrap">
+        <span class="stagelabel" id="livelabel">live phone</span>
+        <div class="frame" id="phoneframe" hidden><img id="screen" alt="live screen"></div>
+        <div id="nophone"><b>No phone connected</b>
+          Plug an iPhone into this Mac with a cable and unlock it, then press Connect below.</div>
       </div>
-      <div class="devhead"><div class="n" id="devname">—</div><div class="s" id="devsub">not connected</div></div>
+      <div class="stagewrap" id="focuswrap" hidden>
+        <span class="stagelabel">selected screen</span>
+        <div class="frame" id="focus"><img id="focusimg" alt=""><div class="tag" id="focustag"></div></div>
+      </div>
+    </div>
 
+    <div id="devbar">
+      <span class="dotm" id="livedot"></span>
+      <span style="min-width:0"><span class="n" id="devname">—</span>
+        <span class="s" id="devsub">not connected</span></span>
+      <div class="grow"></div>
+      <button class="btn p" id="connect" disabled>Connect</button>
+      <button class="btn" id="relaunch" disabled>Relaunch</button>
+      <button class="btn d" id="drop" disabled>Disconnect</button>
+    </div>
+
+    <div id="stats">
+      <span>screens <b id="s_screens">0</b></span>
+      <span>taps <b id="s_taps">0</b></span>
+      <span>refused <b id="s_skip">0</b></span>
+      <span>elapsed <b id="s_time">0s</b></span>
+      <span class="grow"></span>
+      <span class="muted" id="s_now"></span>
+    </div>
+
+    <div id="drawer">
       <div class="acc">
-        <button class="acchead open" data-acc="a-actions"><span class="grow">Actions</span>
+        <button class="acchead" data-acc="a-dev"><span class="grow">Devices</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="accbody open" id="a-actions">
-          <div class="btnrow">
-            <button class="btn p" id="connect" disabled>Connect</button>
-            <button class="btn" id="relaunch" disabled>Relaunch</button>
-            <button class="btn d" id="drop" disabled>Disconnect</button>
-          </div>
-          <div id="devices"></div>
-        </div>
+        <div class="accbody" id="a-dev"></div>
       </div>
-
       <div class="acc">
         <button class="acchead" data-acc="a-info"><span class="grow">Information</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="accbody" id="a-info"></div>
       </div>
-
       <div class="acc">
         <button class="acchead" data-acc="a-checks"><span class="grow">Readiness</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="accbody" id="a-checks"></div>
       </div>
-    </div>
-
-    <div class="scroll" id="runpane" hidden>
-      <div style="padding:14px 14px 4px;display:flex;flex-direction:column;gap:9px">
-        <div class="kv"><span class="k">screens</span><span class="v" id="s_screens">0</span></div>
-        <div class="prog"><i id="b_screens"></i></div>
-        <div class="kv"><span class="k">elapsed</span><span class="v" id="s_time">0s</span></div>
-        <div class="prog"><i id="b_time"></i></div>
-        <div class="kv"><span class="k">taps</span><span class="v" id="s_taps">0</span></div>
-        <div class="kv"><span class="k">refused as unsafe</span><span class="v" id="s_skip">0</span></div>
-        <div class="kv"><span class="k">doing</span><span class="v" id="s_now">—</span></div>
-      </div>
-      <div class="acc" style="margin-top:8px">
-        <button class="acchead open" data-acc="a-log"><span class="grow">Activity</span>
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="accbody open" id="a-log"><div id="logbox"></div></div>
-      </div>
       <div class="acc">
-        <button class="acchead open" data-acc="a-skip"><span class="grow">Refused controls</span>
+        <button class="acchead" data-acc="a-skip"><span class="grow">Refused controls</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="accbody open" id="a-skip"></div>
+        <div class="accbody" id="a-skip"></div>
       </div>
     </div>
   </div>
@@ -382,23 +366,15 @@
     <div><label>Depth</label><input id="f_max_depth" type="number" value="4"></div>
     <div><label>Minutes</label><input id="f_max_minutes" type="number" value="30"></div>
   </div>
-  <div class="foot">
-    <button class="btn" id="mcancel">Cancel</button>
-    <button class="btn p" id="mstart">Start scan</button>
-  </div>
+  <div class="foot"><button class="btn" id="mcancel">Cancel</button><button class="btn p" id="mstart">Start scan</button></div>
 </div></div>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* The scan writes **bold** in its sentences; nothing else in a message is markup. */
+const fmt = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 
-/* The page is served from the Mac that holds the phone, and the same page is
-   published at appscan.blolabel.ai. Loaded from the web it talks back to the
-   helper on this machine: the phone is on a cable here, not in a cloud.
-
-   The port is probed rather than assumed. `serve` defaults to 8765 but anyone who
-   already had something on that port is on another one, and a hardcoded port makes
-   a running helper look absent. */
 const PORTS = [8765, 8766, 8767];
 const SAME_ORIGIN = location.protocol.startsWith('http') && !location.host.includes('blolabel');
 let API = SAME_ORIGIN ? '' : null;
@@ -415,8 +391,7 @@ async function findHelper() {
       const r = await fetch(base + '/api/devices', { signal: AbortSignal.timeout(2500) });
       if (!r.ok) continue;
       await r.json();
-      API = base;
-      WSURL = `ws://127.0.0.1:${port}/ws/collect`;
+      API = base; WSURL = `ws://127.0.0.1:${port}/ws/collect`;
       return true;
     } catch (e) { /* next port */ }
   }
@@ -425,46 +400,53 @@ async function findHelper() {
 
 const S = {
   devices: [], selected: null, bridge: {}, status: {},
-  run: null, plan: null, crawling: false, t0: 0,
-  screens: [], edges: [], skipped: [], byId: {}, sel: null,
-  apps: [], appPick: null, order: 'new',
+  run: null, plan: null, crawling: false, waiting: false, t0: 0,
+  screens: [], byId: {}, sel: null, skipped: [],
+  apps: [], runs: [], app: null, appName: '', order: 'new', taps: 0,
 };
 
-/* ------------------------------------------------------------------- fetch */
 async function api(path, opts) {
   if (API === null) return null;
-  try {
-    const r = await fetch(API + path, opts);
-    return await r.json();
-  } catch (e) { return null; }
+  try { const r = await fetch(API + path, opts); return await r.json(); }
+  catch (e) { return null; }
 }
 
-/* --------------------------------------------------------------- activity */
-const LOGC = { error:'bad', wedged:'bad', lost:'bad', unreachable:'bad', tap_failed:'bad',
-  budget:'warn', skip:'warn', crossing:'warn', back_missed:'warn', replay:'warn', noop:'warn',
-  alert:'warn', liveness:'warn', app_budget:'warn',
-  screen:'good', done:'good', ready:'good', replayed:'good', alert_closed:'good' };
-function logline(kind, text, cls) {
-  const el = $('logbox'); if (!el) return;
-  const d = document.createElement('div');
-  d.className = 'l ' + (cls || LOGC[kind] || '');
-  d.innerHTML = `<span class="k">${esc(kind)}</span><span class="v">${esc(text)}</span>`;
-  el.appendChild(d);
-  while (el.childElementCount > 300) el.removeChild(el.firstChild);
-  el.scrollTop = el.scrollHeight;
+/* -------------------------------------------------------------- the chat */
+function clock() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+function bubble(text, cls) {
+  const el = document.createElement('div');
+  el.className = 'msg ' + (cls || 'bot');
+  el.innerHTML = fmt(text) + `<span class="when">${clock()}</span>`;
+  $('chat').appendChild(el);
+  const pane = $('chatpane');
+  pane.scrollTop = pane.scrollHeight;
+  return el;
+}
+let thinkingEl = null;
+function thinking(on) {
+  if (on && !thinkingEl) {
+    thinkingEl = document.createElement('div');
+    thinkingEl.className = 'thinking';
+    thinkingEl.innerHTML = '<i></i><i></i><i></i>';
+    $('chat').appendChild(thinkingEl);
+    $('chatpane').scrollTop = $('chatpane').scrollHeight;
+  } else if (!on && thinkingEl) { thinkingEl.remove(); thinkingEl = null; }
 }
 
 /* ---------------------------------------------------------------- devices */
 async function loadDevices() {
   const r = await api('/api/devices');
-  if (!r) { renderOffline(); return; }
+  if (!r) { offline(); return; }
   S.devices = r.devices || []; S.bridge = r.bridge || {};
   if (!S.selected) {
     const pick = S.devices.find(d => d.configured && d.connected) || S.devices.find(d => d.connected)
       || S.devices.find(d => d.configured) || S.devices[0];
     if (pick) { S.selected = pick.udid; loadChecks(); }
   }
-  $('devices').innerHTML = '';
+  $('a-dev').innerHTML = '';
   for (const d of S.devices) {
     const b = document.createElement('button');
     b.className = 'devcard' + (S.selected === d.udid ? ' on' : '');
@@ -472,24 +454,21 @@ async function loadDevices() {
       <span style="min-width:0;flex:1"><span class="n">${esc(d.name)}</span>
       <span class="s">${esc(d.model)} · iOS ${esc(d.ios)} · ${esc(d.source === 'usbmux' ? 'cable' : d.connected ? d.transport : 'offline')}</span></span>`;
     b.onclick = () => { S.selected = d.udid; loadDevices(); loadChecks(); };
-    $('devices').appendChild(b);
+    $('a-dev').appendChild(b);
   }
   if (!S.devices.length) {
-    $('devices').innerHTML = `<div class="chk bad"><span class="m">none</span><span>No iPhone is visible to this Mac.
-      <span class="fix">Plug one in with a cable, unlock it and tap Trust. USB shows up even while the phone is locked,
-      so if nothing appears it is the cable.</span></span></div>`;
+    $('a-dev').innerHTML = `<div class="chk bad"><span class="m">none</span><span>No iPhone is visible to this Mac.
+      <span class="fix">Plug one in with a cable, unlock it and tap Trust.</span></span></div>`;
   }
   $('connect').disabled = !S.selected;
   $('relaunch').disabled = !S.selected;
   $('drop').disabled = !(S.bridge.owned || S.bridge.up);
 }
-
-function renderOffline() {
+function offline() {
   $('devsub').textContent = 'helper not running on this Mac';
-  $('devices').innerHTML = `<div class="chk bad"><span class="m">off</span><span>The AppScan helper is not running.
-    <span class="fix">On the Mac with the phone, run <code>bin/phoneshell serve</code> and reload this page.</span></span></div>`;
+  $('a-dev').innerHTML = `<div class="chk bad"><span class="m">off</span><span>The AppScan helper is not running.
+    <span class="fix">On the Mac with the phone, run <code>bin/phoneshell serve</code>.</span></span></div>`;
 }
-
 async function loadChecks() {
   const r = await api('/api/checks?udid=' + encodeURIComponent(S.selected || ''));
   if (!r) return;
@@ -504,23 +483,24 @@ async function poll() {
   S.status = r || {};
   const up = !!(r && r.connected && !r.error);
   $('livedot').className = 'dotm' + (S.crawling ? ' busy' : up ? ' on' : '');
-  $('n-live').textContent = up ? 'on' : 'off';
+  $('phoneframe').className = 'frame' + (S.crawling ? ' live' : '');
+  $('livelabel').textContent = S.crawling ? 'live phone — scanning' : 'live phone';
   if (up) {
-    $('devname').textContent = r.device || 'iPhone';
-    $('devsub').textContent = `iOS ${r.ios || '?'} · WDA ${r.wda || '?'}`;
     if (r.mjpeg && !$('screen').src) $('screen').src = API + r.mjpeg;
     $('phoneframe').hidden = false; $('nophone').hidden = true;
+    $('devname').textContent = r.device || 'iPhone';
+    $('devsub').textContent = `iOS ${r.ios || '?'} · WDA ${r.wda || '?'}${r.app ? ' · ' + r.app : ''}`;
     $('a-info').innerHTML = [
       ['device', r.device], ['ios', r.ios], ['webdriveragent', r.wda], ['transport', r.transport],
       ['front app', r.app], ['screen', (r.point_size || []).join(' × ')], ['locked', r.locked ? 'yes' : 'no'],
     ].map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v ?? '—')}</span></div>`).join('');
   } else {
-    $('phoneframe').hidden = true; $('nophone').hidden = false;
-    $('screen').src = '';
+    $('phoneframe').hidden = true; $('nophone').hidden = false; $('screen').src = '';
     if (r) { $('devname').textContent = '—'; $('devsub').textContent = r.hint || 'not connected'; }
   }
-  $('go').disabled = !up || S.crawling;
-  setTimeout(poll, S.crawling ? 8000 : 4000);
+  $('go').disabled = (!up && !S.waiting) || (S.crawling && !S.waiting) ? (S.crawling ? false : !S.waiting && !up) : false;
+  if (!S.crawling && !S.waiting) $('go').disabled = !up || !S.plan;
+  setTimeout(poll, S.crawling ? 6000 : 4000);
 }
 
 /* ------------------------------------------------------------------- plan */
@@ -536,7 +516,7 @@ async function readPlan(extra) {
   const r = await api('/api/plan', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   if (!r) return null;
   S.plan = r.plan;
-  $('notes').innerHTML = (r.notes || []).map(n => `<b>${esc(n)}</b>`).join('')
+  $('notes').innerHTML = (r.notes || []).slice(0, 2).map(n => `<span>${esc(n)}</span>`).join('')
     + `<span class="chip">screens <input id="q_max_screens" value="${r.plan.max_screens}"></span>`
     + `<span class="chip">depth <input id="q_max_depth" value="${r.plan.max_depth}"></span>`
     + `<span class="chip">minutes <input id="q_max_minutes" value="${r.plan.max_minutes}"></span>`;
@@ -549,68 +529,75 @@ async function readPlan(extra) {
 }
 
 /* ----------------------------------------------------------------- socket */
-let ws = null, wsReady = false;
+let ws = null;
 function connectSocket() {
-  if (!WSURL) { renderOffline(); return; }
-  try { ws = new WebSocket(WSURL); } catch (e) { renderOffline(); return; }
-  ws.onopen = () => { wsReady = true; };
+  if (!WSURL) { offline(); return; }
+  try { ws = new WebSocket(WSURL); } catch (e) { offline(); return; }
   ws.onmessage = (m) => handle(JSON.parse(m.data));
-  ws.onclose = () => { wsReady = false; setTimeout(connectSocket, 2000); };
+  ws.onclose = () => setTimeout(connectSocket, 2000);
   ws.onerror = () => {};
 }
 function send(msg) {
   if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg));
-  else logline('helper', 'not connected to the Mac helper', 'bad');
+  else bubble('I cannot reach the helper on this Mac. Start it with `bin/phoneshell serve`.', 'err');
 }
 
 function handle(e) {
   switch (e.type) {
+    case 'say': thinking(false); bubble(e.text); if (S.crawling) thinking(true); break;
+    case 'ask':
+      thinking(false); S.waiting = true;
+      bubble(e.question, 'ask');
+      $('prompt').value = ''; $('prompt').placeholder = 'type your answer…';
+      $('prompt').classList.add('waiting'); $('prompt').focus();
+      $('go').textContent = 'Send'; $('go').className = 'go'; $('go').disabled = false;
+      break;
+    case 'answered': S.waiting = false; $('prompt').classList.remove('waiting');
+      $('prompt').placeholder = 'screenshot every screen in…';
+      $('go').textContent = S.crawling ? 'Stop' : 'Start';
+      $('go').className = S.crawling ? 'go stop' : 'go'; thinking(true); break;
+    case 'ask_timeout': S.waiting = false; $('prompt').classList.remove('waiting'); break;
     case 'step':
-      logline(e.step, (e.ok ? '' : 'FAILED: ') + (e.detail || '') + (e.fix ? ` — ${e.fix}` : ''), e.ok ? '' : 'bad');
+      if (!e.ok) bubble(`${e.detail}${e.fix ? `\n\n${e.fix}` : ''}`, 'err');
+      else if (['device','wda','ready','launch','forward'].includes(e.step)) bubble(e.detail);
       break;
-    case 'connected': S.bridge = e.bridge || {}; loadDevices(); loadChecks(); break;
+    case 'connected':
+      S.bridge = e.bridge || {}; loadDevices(); loadChecks();
+      if (e.bridge && e.bridge.up) bubble('The phone is connected and I can see its screen.');
+      break;
     case 'run':
-      S.run = e.run; S.plan = e.plan; S.crawling = true; S.t0 = Date.now();
-      S.screens = []; S.edges = []; S.skipped = []; S.byId = {}; S.sel = null;
-      $('flowempty').hidden = true; $('flow').innerHTML = ''; $('screens').innerHTML = '';
-      $('logbox').innerHTML = ''; $('a-skip').innerHTML = '';
-      $('flowtitle').textContent = e.plan.label || e.plan.app || 'Whole phone';
-      $('flowpill').className = 'pill open'; $('flowpill').textContent = 'scanning';
+      S.run = e.run; S.plan = e.plan; S.crawling = true; S.t0 = Date.now(); S.taps = 0;
+      S.screens = []; S.byId = {}; S.skipped = []; S.sel = null;
+      $('flowempty').hidden = true; $('flowwrap').innerHTML = ''; $('screens').innerHTML = '';
+      $('a-skip').innerHTML = ''; $('s_taps').textContent = '0'; $('s_skip').textContent = '0';
+      $('pill').className = 'pill open'; $('pill').textContent = 'scanning';
       $('go').textContent = 'Stop'; $('go').className = 'go stop'; $('go').disabled = false;
-      showRun(); tick(); logline('scan', e.run);
+      $('t-chat').click(); tick(); thinking(true);
       break;
-    case 'preflight': logline('preflight', `${e.step}: ${e.detail}`, e.ok ? 'good' : 'bad'); break;
-    case 'open': logline('open', `${e.app}: ${e.detail}`, e.ok ? 'good' : 'bad'); break;
     case 'screen': addScreen(e); break;
     case 'viewport': addExtra(e.screen, e.shot, `scrolled ${e.viewport}`); break;
-    case 'tap': $('s_now').textContent = e.control.slice(0, 26); break;
+    case 'tap': S.taps++; $('s_taps').textContent = S.taps; $('s_now').textContent = String(e.control).slice(0, 30); break;
     case 'skip':
-      S.skipped.push(e);
-      $('s_skip').textContent = S.skipped.length;
+      S.skipped.push(e); $('s_skip').textContent = S.skipped.length;
       $('a-skip').insertAdjacentHTML('afterbegin',
-        `<div class="kv"><span class="k">${esc(e.control)}</span><span class="v" style="color:var(--faint)">${esc(e.why.split("'")[1] || 'unsafe')}</span></div>`);
+        `<div class="kv"><span class="k">${esc(e.control)}</span><span class="v" style="color:var(--faint)">${esc((e.why || '').split("'")[1] || 'unsafe')}</span></div>`);
       break;
-    case 'crossing':
-      S.edges.push({ frm: e.screen, to: '', label: e.control, kind: 'crossing', to_app: e.to });
-      addExtra(e.screen, e.shot, `left the app → ${e.to}`, true);
-      logline('crossing', `“${e.control}” → ${e.to}`);
-      break;
-    case 'alert': addExtra(S.sel || '', e.shot, 'system alert', true); logline('alert', e.text || ''); break;
+    case 'crossing': addExtra(e.screen, e.shot, `left the app → ${e.to}`, true); break;
+    case 'alert': addExtra(S.sel || '', e.shot, 'system alert', true); break;
+    case 'wedged': thinking(false); bubble(e.reason, 'err'); break;
     case 'done':
-      S.crawling = false;
-      $('flowpill').className = 'pill idle'; $('flowpill').textContent = 'done';
+      S.crawling = false; thinking(false);
+      $('pill').className = 'pill idle'; $('pill').textContent = 'done';
       $('go').textContent = 'Start'; $('go').className = 'go'; $('go').disabled = false;
-      $('flowsub').textContent = `${e.screens} screens · ${e.taps} taps · ${Math.round(e.seconds)}s`;
-      logline('done', `${e.screens} screens, ${e.shots} screenshots — ${e.reason}`);
+      $('midsub').textContent = `${e.screens} screens · ${e.taps} taps · ${Math.round(e.seconds)}s`;
+      $('s_now').textContent = '';
       loadRuns();
       break;
     case 'error':
-      logline('error', e.text, 'bad'); S.crawling = false;
+      S.crawling = false; thinking(false); bubble(e.text, 'err');
       $('go').textContent = 'Start'; $('go').className = 'go'; $('go').disabled = false;
-      $('flowpill').className = 'pill err'; $('flowpill').textContent = 'failed';
+      $('pill').className = 'pill err'; $('pill').textContent = 'failed';
       break;
-    default:
-      if (e.type) logline(e.type, e.reason || e.detail || e.text || e.control || e.screen || '');
   }
 }
 
@@ -619,50 +606,34 @@ const thumb = (shot) => `${API}/collected/${S.run}/${shot.replace('shots/', 'thu
 const full = (shot) => `${API}/collected/${S.run}/${shot}`;
 
 function addScreen(e) {
-  const rec = {
-    sid: e.sid, title: e.title || e.app || e.sid, app: e.app, depth: e.depth ?? 0,
-    path: e.path || [], shots: e.shots || (e.shot ? [e.shot] : []), elements: e.elements || 0,
-    at: Date.now(), extras: [],
-  };
+  const rec = { sid: e.sid, title: e.title || e.app || e.sid, depth: e.depth ?? 0, path: e.path || [],
+    shots: e.shots || (e.shot ? [e.shot] : []), elements: e.elements || 0, at: Date.now(), extras: [] };
   if (S.byId[rec.sid]) return;
   S.byId[rec.sid] = rec; S.screens.push(rec);
-  const via = rec.path.length ? rec.path[rec.path.length - 1].label : null;
-  if (via) {
-    const parentPath = rec.path.slice(0, -1);
-    const parent = S.screens.find(s => s.path.length === parentPath.length
-      && s.path.every((p, i) => p.label === parentPath[i].label));
-    S.edges.push({ frm: parent ? parent.sid : null, to: rec.sid, label: via, kind: 'tap' });
-  }
   $('s_screens').textContent = S.screens.length;
-  const cap = (S.plan && S.plan.max_screens) || 150;
-  $('b_screens').style.width = Math.min(100, 100 * S.screens.length / cap) + '%';
+  select(rec.sid);
   renderScreens(); renderFlow();
 }
-
 function addExtra(sid, shot, label, warn) {
   const rec = S.byId[sid] || S.screens[S.screens.length - 1];
   if (!rec || !shot) return;
   rec.extras.push({ shot, label, warn });
   renderScreens(); renderFlow();
 }
-
 function ago(t) {
+  if (!t) return '';
   const s = Math.max(0, (Date.now() - t) / 1000);
   return s < 60 ? `${Math.round(s)}s` : s < 3600 ? `${Math.round(s / 60)}m` : `${Math.round(s / 3600)}h`;
 }
-
 function ordered() {
   const a = S.screens.slice();
   if (S.order === 'new') a.reverse();
   else if (S.order === 'depth') a.sort((x, y) => x.depth - y.depth || x.sid.localeCompare(y.sid));
   return a;
 }
-
 function renderScreens() {
   $('scount').textContent = `${S.screens.length} screen${S.screens.length === 1 ? '' : 's'}`;
-  $('n-all').textContent = S.screens.length;
-  const wrap = $('screens');
-  wrap.innerHTML = '';
+  const wrap = $('screens'); wrap.innerHTML = '';
   for (const s of ordered()) {
     const trail = s.path.map(p => p.label).join(' › ') || 'app root';
     const b = document.createElement('button');
@@ -670,101 +641,153 @@ function renderScreens() {
     b.innerHTML = `${s.shots[0] ? `<img loading="lazy" src="${thumb(s.shots[0])}" alt="">` : ''}
       <span class="body">
         <span class="top"><span class="nm">${esc(s.title)}</span><span class="ago">${ago(s.at)}</span></span>
-        <span class="sub">${esc(s.sid)} · depth ${s.depth} · ${s.elements} elements${s.extras.length ? ` · +${s.extras.length}` : ''}</span>
-        <span class="trail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 10 4 15l5 5"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg><span>${esc(trail)}</span></span>
-      </span>`;
-    b.onclick = () => { S.sel = s.sid; renderScreens(); renderFlow(); openShot(s); };
+        <span class="dm">${esc(s.sid)} · depth ${s.depth} · ${s.elements} elements${s.extras.length ? ` · +${s.extras.length}` : ''}</span>
+        <span class="trail">${esc(trail)}</span></span>`;
+    b.onclick = () => select(s.sid);
     wrap.appendChild(b);
   }
 }
+/* The selected screen sits BESIDE the live phone, same size, so you can compare
+   what was collected with what the phone is showing right now. */
+function select(sid) {
+  S.sel = sid;
+  const s = S.byId[sid];
+  if (s && s.shots[0]) {
+    $('focuswrap').hidden = false;
+    $('focusimg').src = thumb(s.shots[0]);
+    $('focusimg').dataset.full = full(s.shots[0]);
+    $('focustag').textContent = `${s.sid} · ${s.title}`;
+  }
+  renderScreens(); renderFlow();
+}
+$('focus').onclick = () => {
+  const f = $('focusimg').dataset.full;
+  if (f) lightbox(f, $('focustag').textContent);
+};
 
 /* ------------------------------------------------------------------- flow */
 function renderFlow() {
-  const wrap = $('flow');
+  const wrap = $('flowwrap');
   if (!S.screens.length) { wrap.innerHTML = ''; return; }
   const kids = {};
   for (const s of S.screens) {
-    const key = s.path.length ? s.path.slice(0, -1).map(p => p.label).join('›') : null;
-    if (key === null) continue;
+    if (!s.path.length) continue;
+    const key = s.path.slice(0, -1).map(p => p.label).join('›');
     (kids[key] = kids[key] || []).push(s);
   }
-  const roots = S.screens.filter(s => !s.path.length);
-  const html = roots.map(r => nodeHtml(r, kids, true, true)).join('');
-  wrap.innerHTML = html;
-  for (const el of wrap.querySelectorAll('[data-sid]')) {
-    el.onclick = () => { const s = S.byId[el.dataset.sid]; S.sel = s.sid; renderScreens(); renderFlow(); openShot(s); };
-  }
+  wrap.innerHTML = S.screens.filter(s => !s.path.length).map(r => nodeHtml(r, kids, true, true)).join('');
+  for (const el of wrap.querySelectorAll('[data-sid]')) el.onclick = () => select(el.dataset.sid);
   for (const el of wrap.querySelectorAll('[data-shot]')) {
     el.onclick = (ev) => { ev.stopPropagation(); lightbox(full(el.dataset.shot), el.dataset.cap || ''); };
   }
 }
-
 function nodeHtml(s, kids, isRoot, isLast) {
   const key = s.path.map(p => p.label).join('›');
   const children = kids[key] || [];
   const via = s.path.length ? s.path[s.path.length - 1].label : '';
   const extras = s.extras.map(x =>
     `<span class="leaf ${x.warn ? 'cross' : ''}" data-shot="${x.shot}" data-cap="${esc(x.label)}">${esc(x.label)}</span>`).join('');
-  return `
-  <div class="node ${isRoot ? 'root' : ''} ${isLast ? 'last' : ''}">
-    <div class="gut"></div>
-    <div class="card">
-      <button class="nodebody ${S.sel === s.sid ? 'on' : ''}" data-sid="${s.sid}">
-        ${s.shots[0] ? `<img loading="lazy" src="${thumb(s.shots[0])}" alt="">` : ''}
-        <span class="meta">
-          <span class="ttl">${esc(s.title)}</span>
-          ${via ? `<span class="via">↳ ${esc(via)}</span>` : '<span class="via">app root</span>'}
-          <span class="dm">${esc(s.sid)} · depth ${s.depth} · ${s.elements} elements</span>
-        </span>
-      </button>
-      ${extras ? `<div class="leafwrap">${extras}</div>` : ''}
-      <div class="kids">${children.map((c, i) => nodeHtml(c, kids, false, i === children.length - 1)).join('')}</div>
-    </div>
-  </div>`;
-}
-
-function openShot(s) {
-  if (s.shots[0]) lightbox(full(s.shots[0]), `${s.sid} · ${s.title} · ${s.path.map(p => p.label).join(' › ') || 'app root'}`);
+  return `<div class="node ${isRoot ? 'root' : ''} ${isLast ? 'last' : ''}"><div class="gut"></div><div class="card">
+    <button class="nodebody ${S.sel === s.sid ? 'on' : ''}" data-sid="${s.sid}">
+      ${s.shots[0] ? `<img loading="lazy" src="${thumb(s.shots[0])}" alt="">` : ''}
+      <span class="meta"><span class="ttl">${esc(s.title)}</span>
+        ${via ? `<span class="via">↳ ${esc(via)}</span>` : '<span class="via">app root</span>'}
+        <span class="dm">${esc(s.sid)} · d${s.depth} · ${s.elements} el</span></span></button>
+    ${extras ? `<div class="leafwrap">${extras}</div>` : ''}
+    <div>${children.map((c, i) => nodeHtml(c, kids, false, i === children.length - 1)).join('')}</div>
+  </div></div>`;
 }
 function lightbox(src, cap) { $('boximg').src = src; $('boxcap').textContent = cap; $('box').className = 'on'; }
 $('box').onclick = () => { $('box').className = ''; $('boximg').src = ''; };
 
-/* -------------------------------------------------------------- past runs */
-function stamp(run) {
-  const m = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})/.exec(run);
-  return m ? `${m[3]}/${m[2]} ${m[4]}:${m[5]}` : '';
+/* ------------------------------------------------------- apps & their runs */
+function hue(name) { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
+
+async function loadApps() {
+  const r = await api('/api/apps');
+  if (!r) return;
+  S.apps = r.apps || [];
+  $('appcount').textContent = `${S.apps.length}`;
+  renderApps();
+}
+function renderApps() {
+  const q = ($('appfilter').value || '').trim().toLowerCase();
+  const list = S.apps.filter(a => !a.denied && (!q || a.name.toLowerCase().includes(q) || a.bundle.toLowerCase().includes(q)));
+  const counts = {};
+  for (const r of S.runs) counts[(r.plan || {}).app] = (counts[(r.plan || {}).app] || 0) + 1;
+  $('apps').innerHTML = list.map(a => `
+    <button class="nav ${S.app === a.bundle ? 'on' : ''}" data-app="${esc(a.bundle)}" data-name="${esc(a.name)}" title="${esc(a.bundle)}">
+      <span class="tile" style="background:hsl(${hue(a.name)} 58% 62%)">${esc((a.name[0] || '?').toUpperCase())}</span>
+      <span class="t">${esc(a.name)}</span>
+      ${counts[a.bundle] ? `<span class="badge" style="background:#1f4029;color:#8ff0ae">${counts[a.bundle]}</span>` : ''}
+    </button>`).join('') || '<div style="padding:6px 16px;font-size:11.5px;color:var(--faint)">no match</div>';
+  for (const el of $('apps').querySelectorAll('[data-app]')) {
+    el.onclick = () => selectApp(el.dataset.app, el.dataset.name);
+  }
+}
+
+/* Clicking an app rebuilds Screens and Flow for THAT app: its latest scan, or an
+   empty state that says it has not been scanned and offers to start one. */
+async function selectApp(bundle, name) {
+  S.app = bundle; S.appName = name;
+  $('prompt').value = `screenshot every screen in ${name}`;
+  renderApps(); renderScanned();
+  await readPlan({ scope: 'app', app: bundle, label: name });
+  const mine = S.runs.filter(r => (r.plan || {}).app === bundle);
+  if (mine.length) { await openRun(mine[0].run); bubble(`Showing the last scan of **${name}**: ${S.screens.length} screens.`); return; }
+  S.run = null; S.screens = []; S.byId = {}; S.sel = null; S.skipped = [];
+  $('screens').innerHTML = ''; $('flowwrap').innerHTML = ''; $('focuswrap').hidden = true;
+  $('flowempty').hidden = false;
+  $('scount').textContent = '0 screens'; $('s_screens').textContent = '0';
+  $('pill').className = 'pill idle'; $('pill').textContent = 'not scanned';
+  $('midsub').textContent = '';
+  $('go').disabled = !(S.status && S.status.connected);
+  bubble(`**${name}** has not been scanned yet. Press Start and I will open it on the phone and walk `
+       + `every screen I can reach, keeping a screenshot of each one. If it asks me to sign in, I will `
+       + `stop and ask you rather than typing anything into your account.`);
 }
 
 async function loadRuns() {
   const r = await api('/api/crawls');
   if (!r) return;
-  $('runs').innerHTML = (r.runs || []).slice(0, 14).map(run => `
-    <button class="nav" data-run="${esc(run.run)}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2.5"/></svg>
-      <span class="t">${esc(run.plan?.label || run.plan?.app || run.run)}
-        <span class="muted" style="font-size:10px"> ${esc(stamp(run.run))}</span></span>
-      <span class="badge">${run.screens}</span></button>`).join('')
-    || '<div class="chk"><span class="m"></span><span class="muted" style="font-size:11.5px">nothing scanned yet</span></div>';
-  for (const el of $('runs').querySelectorAll('[data-run]')) el.onclick = () => openRun(el.dataset.run);
+  S.runs = r.runs || [];
+  renderScanned(); renderApps();
+}
+function renderScanned() {
+  const byApp = {};
+  for (const r of S.runs) {
+    const b = (r.plan || {}).app || r.run;
+    if (!byApp[b] || byApp[b].run < r.run) byApp[b] = r;
+  }
+  const rows = Object.values(byApp).sort((a, b) => b.run.localeCompare(a.run));
+  $('n-scanned').textContent = rows.length || '';
+  $('scanned').innerHTML = rows.slice(0, 12).map(r => {
+    const name = String(r.plan?.label || r.plan?.app || r.run);
+    return `<button class="nav ${S.app === r.plan?.app ? 'on' : ''}" data-run="${esc(r.run)}"
+      data-app="${esc(r.plan?.app || '')}" data-name="${esc(name)}">
+      <span class="tile" style="background:hsl(${hue(name)} 58% 62%)">${esc(name[0].toUpperCase())}</span>
+      <span class="t">${esc(name)}</span><span class="badge">${r.screens}</span></button>`;
+  }).join('') || '<div style="padding:4px 16px;font-size:11.5px;color:var(--faint)">nothing scanned yet</div>';
+  for (const el of $('scanned').querySelectorAll('[data-run]')) {
+    el.onclick = () => { S.app = el.dataset.app; S.appName = el.dataset.name;
+      renderApps(); renderScanned(); openRun(el.dataset.run); };
+  }
 }
 
 async function openRun(run) {
   const m = await api(`/api/crawl/${encodeURIComponent(run)}/manifest`);
   if (!m || m.error) return;
-  S.run = run; S.plan = m.plan; S.byId = {}; S.screens = []; S.edges = m.edges || [];
-  S.skipped = m.skipped || []; S.sel = null;
+  S.run = run; S.plan = m.plan; S.byId = {}; S.screens = []; S.sel = null; S.skipped = m.skipped || [];
   for (const s of (m.screens || [])) {
-    const rec = { sid: s.sid, title: s.title || s.app || s.sid, app: s.app, depth: s.depth,
-      path: s.path || [], shots: s.shots || [], elements: s.elements || 0,
+    const rec = { sid: s.sid, title: s.title || s.app || s.sid, depth: s.depth, path: s.path || [],
+      shots: (s.shots || []).slice(0, 1), elements: s.elements || 0,
       at: (s.first_seen || 0) * 1000, extras: [] };
-    if (rec.shots.length > 1) rec.extras = rec.shots.slice(1).map((sh, i) => ({ shot: sh, label: `scrolled ${i + 1}` }));
-    rec.shots = rec.shots.slice(0, 1);
+    rec.extras = (s.shots || []).slice(1).map((sh, i) => ({ shot: sh, label: `scrolled ${i + 1}` }));
     S.byId[rec.sid] = rec; S.screens.push(rec);
   }
   $('flowempty').hidden = true;
-  $('flowtitle').textContent = m.plan?.label || m.plan?.app || run;
-  $('flowpill').className = 'pill idle'; $('flowpill').textContent = 'saved';
-  $('flowsub').textContent = `${m.summary?.screens || 0} screens · ${m.summary?.taps || 0} taps · ${Math.round(m.summary?.seconds || 0)}s`;
+  $('pill').className = 'pill idle'; $('pill').textContent = 'saved';
+  $('midsub').textContent = `${m.summary?.screens || 0} screens · ${m.summary?.taps || 0} taps · ${Math.round(m.summary?.seconds || 0)}s`;
   $('a-skip').innerHTML = S.skipped.slice(0, 60).map(k =>
     `<div class="kv"><span class="k">${esc(k.what)}</span><span class="v" style="color:var(--faint)">${esc((k.why || '').split("'")[1] || 'unsafe')}</span></div>`).join('');
   $('s_screens').textContent = S.screens.length;
@@ -772,62 +795,18 @@ async function openRun(run) {
   $('s_skip').textContent = S.skipped.length;
   $('s_time').textContent = `${Math.round(m.summary?.seconds || 0)}s`;
   renderScreens(); renderFlow();
+  if (S.screens.length) select(S.screens[0].sid);
 }
 
-/* ------------------------------------------------------------------- apps */
-async function loadApps() {
-  const r = await api('/api/apps');
-  if (!r) return;
-  S.apps = r.apps || [];
-  $('appcount').textContent = `${S.apps.length}`;
-  renderApps('');
+/* ------------------------------------------------------------------- tabs */
+function tab(which) {
+  $('t-chat').className = 'tab' + (which === 'chat' ? ' on' : '');
+  $('t-flow').className = 'tab' + (which === 'flow' ? ' on' : '');
+  $('chatpane').hidden = which !== 'chat';
+  $('flowpane').hidden = which !== 'flow';
 }
-
-/* Colour a tile from the name, so the list is scannable without real icons.
-   Pulling actual app icons off the device needs a private framework; a stable
-   hue per name gets most of the benefit for none of that. */
-function hue(name) { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
-
-function renderApps(q) {
-  const want = (q || '').trim().toLowerCase();
-  const list = S.apps.filter(a => !a.denied && (!want || a.name.toLowerCase().includes(want)
-    || a.bundle.toLowerCase().includes(want)));
-  $('apps').innerHTML = list.map(a => `
-    <button class="nav" data-app="${esc(a.bundle)}" data-name="${esc(a.name)}" title="${esc(a.bundle)}">
-      <span style="width:17px;height:17px;border-radius:5px;flex:none;display:flex;align-items:center;
-        justify-content:center;font-size:9px;font-weight:700;color:#0b0b0d;
-        background:hsl(${hue(a.name)} 58% 62%)">${esc((a.name[0] || '?').toUpperCase())}</span>
-      <span class="t">${esc(a.name)}</span>
-      ${a.apple ? '' : '<span class="badge" style="font-size:9px">3P</span>'}</button>`).join('')
-    || '<div style="padding:6px 16px;font-size:11.5px;color:var(--faint)">no match</div>';
-  for (const el of $('apps').querySelectorAll('[data-app]')) {
-    el.onclick = () => {
-      $('prompt').value = `screenshot every screen in ${el.dataset.name}`;
-      $('flowtitle').textContent = el.dataset.name;
-      readPlan({ scope: 'app', app: el.dataset.app, label: el.dataset.name });
-      for (const o of $('apps').querySelectorAll('.nav')) o.classList.remove('on');
-      el.classList.add('on');
-    };
-  }
-}
-
-function renderAppList(q) {
-  const list = S.apps.filter(a => !a.denied && (!q || a.name.toLowerCase().includes(q.toLowerCase())));
-  $('applist').innerHTML = list.slice(0, 60).map(a =>
-    `<button data-b="${esc(a.bundle)}" data-n="${esc(a.name)}" class="${S.appPick === a.bundle ? 'on' : ''}">${esc(a.name)}
-      <span class="muted" style="font-size:10.5px"> ${esc(a.bundle)}</span></button>`).join('');
-  for (const el of $('applist').querySelectorAll('[data-b]')) {
-    el.onclick = () => { S.appPick = el.dataset.b; S.appName = el.dataset.n; renderAppList(q); };
-  }
-}
-
-/* ---------------------------------------------------------------- run tabs */
-function showRun() { $('t-run').click(); }
-$('t-device').onclick = () => { $('t-device').className = 'tab2 on'; $('t-run').className = 'tab2';
-  $('devicepane').hidden = false; $('runpane').hidden = true; };
-$('t-run').onclick = () => { $('t-run').className = 'tab2 on'; $('t-device').className = 'tab2';
-  $('runpane').hidden = false; $('devicepane').hidden = true; };
-
+$('t-chat').onclick = () => tab('chat');
+$('t-flow').onclick = () => tab('flow');
 for (const h of document.querySelectorAll('.acchead')) {
   h.onclick = () => { h.classList.toggle('open'); $(h.dataset.acc).classList.toggle('open'); };
 }
@@ -836,69 +815,82 @@ function tick() {
   if (!S.crawling) return;
   const s = (Date.now() - S.t0) / 1000;
   $('s_time').textContent = s < 90 ? `${Math.round(s)}s` : `${Math.floor(s / 60)}m ${Math.round(s % 60)}s`;
-  $('b_time').style.width = Math.min(100, 100 * s / ((S.plan?.max_minutes || 30) * 60)) + '%';
-  $('s_taps').textContent = Number($('s_taps').textContent) || 0;
   setTimeout(tick, 1000);
 }
 
 /* ----------------------------------------------------------------- wiring */
 $('refresh').onclick = () => { loadDevices(); loadRuns(); loadApps(); loadChecks(); };
-$('connect').onclick = () => { $('t-run').click(); logline('connect', 'bringing the bridge up'); send({ type: 'connect', udid: S.selected }); };
-$('relaunch').onclick = () => send({ type: 'connect', udid: S.selected, relaunch: true });
+$('connect').onclick = () => { bubble('Bringing the bridge up…'); send({ type: 'connect', udid: S.selected }); };
+$('relaunch').onclick = () => { bubble('Restarting WebDriverAgent on the phone…'); send({ type: 'connect', udid: S.selected, relaunch: true }); };
 $('drop').onclick = () => send({ type: 'disconnect' });
-$('appfilter').oninput = () => renderApps($('appfilter').value);
 $('order').onchange = () => { S.order = $('order').value; renderScreens(); };
+$('appfilter').oninput = renderApps;
 $('gridtoggle').onclick = () => { if (S.run) window.open(`${API}/collected/${S.run}/index.html`, '_blank'); };
-$('tab-adv').onclick = () => $('newscan').click();
 
+/* One input, three jobs: answer a question, stop a scan, or start one. */
 $('go').onclick = async () => {
-  if (S.crawling) { send({ type: 'stop' }); logline('stop', 'finishing the step in flight'); return; }
+  const text = $('prompt').value.trim();
+  if (S.waiting) {
+    if (!text) return;
+    bubble(text, 'me');
+    send({ type: 'reply', text });
+    $('prompt').value = '';
+    return;
+  }
+  if (S.crawling) { send({ type: 'stop' }); bubble('Stopping after the step in flight.', 'me'); return; }
   const plan = S.plan || await readPlan();
   if (!plan) return;
   Object.assign(plan, limits());
+  bubble(text || `Scan ${plan.label || plan.app}`, 'me');
   send({ type: 'crawl', plan });
 };
 $('prompt').addEventListener('keydown', (ev) => {
   if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); $('go').click(); }
 });
-$('prompt').addEventListener('blur', () => readPlan());
+$('prompt').addEventListener('blur', () => { if (!S.waiting) readPlan(); });
 
 $('newscan').onclick = () => { $('modal').className = 'on'; renderAppList(''); $('appsearch').focus(); };
 $('mcancel').onclick = () => { $('modal').className = ''; };
 $('modal').onclick = (e) => { if (e.target.id === 'modal') $('modal').className = ''; };
 $('appsearch').oninput = () => renderAppList($('appsearch').value);
+function renderAppList(q) {
+  const list = S.apps.filter(a => !a.denied && (!q || a.name.toLowerCase().includes(q.toLowerCase())));
+  $('applist').innerHTML = list.slice(0, 60).map(a =>
+    `<button data-b="${esc(a.bundle)}" data-n="${esc(a.name)}" class="${S.pick === a.bundle ? 'on' : ''}">${esc(a.name)}
+      <span class="muted" style="font-size:10.5px"> ${esc(a.bundle)}</span></button>`).join('');
+  for (const el of $('applist').querySelectorAll('[data-b]')) {
+    el.onclick = () => { S.pick = el.dataset.b; S.pickName = el.dataset.n; renderAppList(q); };
+  }
+}
 $('mstart').onclick = async () => {
-  const bundle = S.appPick || $('appsearch').value.trim();
+  const bundle = S.pick || $('appsearch').value.trim();
   if (!bundle) return;
   $('modal').className = '';
-  $('prompt').value = `screenshot every screen in ${S.appName || bundle}`;
-  const plan = await readPlan({ scope: 'app', app: bundle, label: S.appName || bundle, ...limits() });
-  if (plan) send({ type: 'crawl', plan });
+  await selectApp(bundle, S.pickName || bundle);
+  const plan = S.plan;
+  if (plan) { Object.assign(plan, limits()); bubble(`Scan ${S.pickName || bundle}`, 'me'); send({ type: 'crawl', plan }); }
 };
 
 async function boot() {
-  const found = await findHelper();
-  if (!found) {
-    renderOffline();
-    if (!$('helpernote')) {
-      $('flowempty').insertAdjacentHTML('beforeend',
-        `<p id="helpernote" style="color:var(--warn)">Waiting for the AppScan helper on this Mac.
-         Start it with <code>bin/phoneshell serve</code> in the phoneshell folder.
-         The phone is driven over a USB cable from your own machine, so nothing about your device
-         or your screenshots ever leaves it — this page is only the window onto it.</p>`);
+  if (!await findHelper()) {
+    offline();
+    if (!$('chat').childElementCount) {
+      bubble('I cannot see the AppScan helper on this Mac yet. Start it with `bin/phoneshell serve` '
+           + 'in the phoneshell folder and I will pick it up. The phone is driven over a USB cable from '
+           + 'your own machine, so nothing about your device or your screenshots ever leaves it.', 'err');
     }
     setTimeout(boot, 5000);
     return;
   }
-  const note = $('helpernote');
-  if (note) note.remove();
   connectSocket();
-  loadDevices();
-  loadChecks();
-  loadApps();
-  loadRuns();
-  readPlan();
-  poll();
+  await loadRuns();
+  loadDevices(); loadChecks(); loadApps(); readPlan(); poll();
+  if (!$('chat').childElementCount) {
+    bubble('Pick an app on the left and press Start. I open it on your phone and tap my way through '
+         + 'every screen I can reach, keeping a screenshot of each one.\n\n'
+         + 'I only tap to navigate: never typing, never a switch, and never a control that sends, buys, '
+         + 'deletes or signs out. If an app wants a login, I stop and ask you here.');
+  }
 }
 boot();
 </script>

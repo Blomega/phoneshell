@@ -702,6 +702,20 @@ async def collect_ws(ws: WebSocket) -> None:
                 else:
                     await ws.send_json({"type": "error", "text": "nothing is running"})
 
+            elif kind == "reply":
+                # The other half of the chat: the scan asked a question and is
+                # blocked on a threading.Event waiting for this.
+                crawler = CRAWL.get("crawler")
+                text = str(msg.get("text") or "")
+                if isinstance(crawler, Crawler):
+                    crawler.answer(text)
+                else:
+                    await ws.send_json({
+                        "type": "say",
+                        "text": "No scan is running, so there is nothing waiting on an answer. "
+                                "Pick an app on the left and press Start.",
+                    })
+
     except WebSocketDisconnect:
         # A closed tab does NOT stop a crawl: it is a long job, and the page can
         # be reopened and reattached to the run that is still writing to disk.

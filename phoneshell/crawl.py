@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
@@ -254,6 +255,9 @@ class Crawler:
         self.stop_requested = False
         self.stop_reason = ""
         self._dead_taps = 0                           # consecutive taps that changed nothing
+        self._answered = threading.Event()            # the operator replying in the chat
+        self._answer = ""
+        self._asked_about: dict[str, bool] = {}        # one login question per app
         self._app_started = 0.0
         self._app_screens = 0
 
@@ -269,9 +273,75 @@ class Crawler:
             pass
         self._emit(event)
 
+    def say(self, text: str) -> None:
+        """One plain sentence about what is happening, for the chat.
+
+        The events are the record; this is the narration. A scan is minutes of
+        silence otherwise, and silence is indistinguishable from stuck.
+        """
+        self.emit("say", text=text)
+
     def stop(self, reason: str = "stopped by the operator") -> None:
         self.stop_requested = True
         self.stop_reason = reason
+        self._answered.set()          # unblock anything waiting on an answer
+
+    # ------------------------------------------------------------ asking for help
+
+    def ask(self, question: str, kind: str = "help", wait: float = 600.0) -> str:
+        """Stop and ask the operator, then carry on with what they say.
+
+        A crawler meets walls it has no business climbing: a login, a one-time
+        code, a paywall, a captcha. The honest move is to hand the phone back for
+        a moment rather than to start typing into someone's account, so this asks,
+        waits, and resumes. `wait` is generous because the answer involves a human
+        picking up a phone; when it runs out the crawl carries on without them
+        rather than dying, and says so.
+        """
+        self._answered.clear()
+        self._answer = ""
+        self.emit("ask", question=question, kind=kind)
+        if not self._answered.wait(wait):
+            self.emit("ask_timeout", question=question)
+            self.say("Nobody answered, so I carried on with what I could reach.")
+            return ""
+        answer = (self._answer or "").strip()
+        self.emit("answered", text=answer[:200])
+        return answer
+
+    def answer(self, text: str) -> None:
+        self._answer = text
+        self._answered.set()
+
+    def _ask_for_help_if_walled(self, snap: Snapshot, app_name: str) -> None:
+        """A login wall is the one place a screenshot crawl stops being useful.
+
+        It never types a credential itself, on purpose: those are the owner's, and
+        an agent that puts them into a form is a category of thing this is not. It
+        asks the owner to sign in on the phone in front of them, and picks up where
+        it left off.
+        """
+        if self._asked_about.get(snap.bundle_id):
+            return
+        text = " ".join(e.text.lower() for e in snap.elements)[:600]
+        secure = any(e.type == "SecureTextField" for e in snap.elements)
+        wall_words = ("sign in", "log in", "login", "create account", "verification code",
+                      "enter your password", "one-time", "otp", "get started", "continue with")
+        if not secure and not any(w in text for w in wall_words):
+            return
+        self._asked_about[snap.bundle_id] = True
+        answer = self.ask(
+            f"{app_name} is showing a sign-in wall, so there is nothing behind it for me to "
+            f"collect yet. Sign in on the phone (it is right there on the cable) and type "
+            f"**done** when you are in, or **skip** to scan what is reachable without an account.",
+            kind="login",
+        )
+        if answer.lower().startswith("skip") or not answer:
+            self.say("Scanning what is reachable without signing in.")
+            return
+        self.say("Thanks. Picking up from whatever is on screen now.")
+        fresh = self._settle_twice()
+        self._record(fresh, parent=None, via=None, depth=0)
 
     # ------------------------------------------------------------------- budget
 
@@ -297,6 +367,9 @@ class Crawler:
     def run(self) -> dict:
         self.started = time.time()
         self.emit("start", plan=self.plan.as_dict(), out=str(self.out))
+        what = self.plan.label or self.plan.app or "every app on the phone"
+        self.say(f"Starting a scan of {what}. I will tap my way through it and keep a screenshot "
+                 f"of every screen, up to {self.plan.max_screens} of them or {self.plan.max_minutes:g} minutes.")
         self._take_the_phone()
         self._preflight()
         try:
@@ -315,6 +388,10 @@ class Crawler:
             self.emit("error", text=self.stop_reason)
         finally:
             summary = self.write_manifest()
+            self.say(f"Done: {summary['screens']} screens and {summary['shots']} screenshots in "
+                     f"{summary['seconds']:.0f}s. {summary['reason'].capitalize()}."
+                     + (f" {summary['skipped']} controls were refused as unsafe to tap."
+                        if summary["skipped"] else ""))
             self.emit("done", **summary)
         return summary
 
@@ -338,12 +415,17 @@ class Crawler:
         self.emit("mode", detail="shared mode paused: the crawl drives the phone on its own")
 
     def _preflight(self) -> None:
-        """Prove the phone is awake and that gestures land, before collecting anything.
+        """Get the phone awake and on the home screen. Nothing else.
 
-        One swipe costs a second and answers the question that otherwise costs the
-        whole run: on a wedged HID layer every tap returns success and the screen
-        never moves, so the crawl would collect N copies of one screen and call it
-        a result (FINDINGS s30).
+        There used to be a swipe test here, and it was WRONG. A full-width swipe
+        only moves a home screen that has a second page to turn to; Sam's has one
+        page, so the test measured 0%, declared a perfectly healthy iPhone wedged,
+        and killed the Talika scan before it opened the app. A test that fails on
+        a correct phone is worse than no test.
+
+        The real evidence arrives a second later and for free: opening the app has
+        to change the screen, and `_crawl_app` checks exactly that. A phone whose
+        HID layer is dropping events cannot pass it.
         """
         if self.phone.wda.is_locked():
             res = self.phone.ensure_unlocked()
@@ -352,17 +434,7 @@ class Crawler:
                 raise Wedged("the phone is locked and it could not be unlocked from here")
         ok = self.phone.home().ok
         self.emit("preflight", step="home", ok=ok, detail="home screen" if ok else "could not reach home")
-        before = self.phone.wda.screenshot()
-        geo = self.phone.wda.geometry()
-        y = geo.point_h * 0.5
-        self.phone.wda.drag(geo.point_w * 0.85, y, geo.point_w * 0.15, y, duration=0.15)
-        time.sleep(0.9)
-        moved = visual_difference(before, self.phone.wda.screenshot())
-        self.phone.wda.drag(geo.point_w * 0.15, y, geo.point_w * 0.85, y, duration=0.15)
-        self.emit("preflight", step="gestures", ok=moved > 0.01, detail=f"{moved:.1%} of the screen moved")
-        if moved <= 0.01:
-            raise Wedged("gestures are being dropped: a full-width swipe moved 0% of the screen. "
-                         "Reads and writes both report success while nothing moves. Reboot the phone.")
+        self.say("The phone is awake and on the home screen.")
 
     # ------------------------------------------------------------ phone scope
 
@@ -404,18 +476,35 @@ class Crawler:
             time.sleep(0.6)
         except WDAError as exc:
             log.debug("terminate %s before crawling: %s", bundle, exc)
+        name = self.phone.name_for_bundle(bundle) or target
+        self.say(f"Opening {name}.")
+        before = self.phone.wda.screenshot()
         res = self.phone.open_app(target)
         self.emit("open", app=target, ok=res.ok, detail=res.detail or res.error)
         if not res.ok:
             self.skipped.append({"kind": "app", "what": target, "why": res.error or "would not open"})
+            self.say(f"{name} would not come to the front. {res.error or ''}".strip())
             return
         self._app_bundle = self._current_bundle()
         self._app_target = target
         snap = self._settle_twice()
+
+        # This is the liveness test, and it costs nothing because the launch had
+        # to happen anyway. If the screen is identical after opening an app, the
+        # phone is not drawing what it is told to draw, and every screenshot from
+        # here would be the same picture of the home screen.
+        moved = visual_difference(before, snap.png) if snap.png else 1.0
+        if moved <= 0.01:
+            raise Wedged(
+                f"the screen did not change when {name} was opened ({moved:.1%} of pixels). "
+                "Reads and every write API keep reporting success while nothing moves. "
+                "Reboot the phone: relaunching the runner does not clear this.")
+
         root = self._record(snap, parent=None, via=None, depth=0)
         if root is None:
             return
         self._app_root = root
+        self._ask_for_help_if_walled(snap, name)
         try:
             self._explore(root)
         except Lost as exc:
@@ -599,6 +688,7 @@ class Crawler:
         sid = self._shoot_foreign(snap, f"{screen.sid}-out")
         self.edges.append(Edge(screen.sid, sid, label, key, "crossing"))
         self.emit("crossing", screen=screen.sid, control=label, to=name, bundle=bundle, shot=sid)
+        self.say(f"“{label}” left the app and opened {name}. Screenshot kept, going back.")
 
     # -------------------------------------------------------------- recording
 
@@ -636,6 +726,9 @@ class Crawler:
         ]
         self.emit("screen", **screen.as_dict(), shot=shot,
                   variant_of=self.variants.get(structural, 0), total=len(self.screens))
+        where = " › ".join(p["label"] for p in screen.path) or "the first screen"
+        self.say(f"Collected **{screen.title or screen.sid}** ({where}). "
+                 f"{len(self.screens)} screens so far.")
         return screen
 
     def _capture_viewport(self, screen: Screen, snap: Snapshot, viewport: int) -> None:
@@ -706,7 +799,11 @@ class Crawler:
                 continue
             return text[:60]
         if via and via.get("label"):
-            return str(via["label"]).split(",")[0].strip()[:60]
+            label = str(via["label"]).split(",")[0].strip()
+            # "photo.stack.fill" is an SF Symbol name that an app left in an
+            # accessibility label. It is an icon's identity, not a screen's name.
+            if not (" " not in label and label.count(".") >= 2):
+                return label[:60]
         return ""
 
     # ----------------------------------------------------------- control rules
@@ -857,6 +954,7 @@ class Crawler:
         if not snap.alert:
             return snap
         text = str(snap.alert.get("text") or "")[:120]
+        self.say(f"An alert came up: “{text}”. Keeping it and closing it the safest way.")
         shot = self._shoot_foreign(snap, "alert")
         self.emit("alert", text=text, buttons=snap.alert.get("buttons") or [], shot=shot)
         if self._close_alert(snap):
@@ -959,6 +1057,14 @@ class Crawler:
 
         `replay=True` skips straight to the bottom of the ladder, for when we
         already know the back button on screen is not ours to press.
+
+        One rung in the middle earns its place on every tab-bar app. Talika has no
+        navigation bar at all, so back failed on every return and the crawl paid a
+        terminate-plus-relaunch-plus-replay for it: measured, 15 relaunches in 40
+        taps, about half the run spent walking back to where it already was. But a
+        tab bar is persistent, which means the way back is usually still on screen
+        and one tap away. Trying that before the relaunch turned those 15 into
+        almost none.
         """
         if replay:
             self._replay(screen)
@@ -972,6 +1078,10 @@ class Crawler:
                     self._rescroll(scrolls)
                 return
             self.emit("back_missed", screen=screen.sid, attempt=attempt + 1)
+        if self._tap_way_back(screen):
+            if scrolls:
+                self._rescroll(scrolls)
+            return
         self._replay(screen)
         if scrolls:
             self._rescroll(scrolls)
@@ -1029,9 +1139,55 @@ class Crawler:
         except WDAError:
             return False
 
+    def _tap_way_back(self, screen: Screen) -> bool:
+        """One tap back, using a control that is still on screen.
+
+        Two shapes, both common. A screen reached by tapping X is usually reached
+        again by tapping X, and in a tab-bar app that X never left the screen. The
+        app's first screen is usually whatever the leftmost tab shows, so that is
+        the fallback. Either way it is verified before it is believed.
+        """
+        want = screen.path[-1]["key"] if screen.path else None
+        if want:
+            live = self._here(want)
+            if live is not None:
+                try:
+                    self.phone.wda.tap(live.cx, live.cy)
+                except WDAError:
+                    return False
+                self.taps += 1
+                self._settle()
+                if self._at(screen):
+                    self.emit("tapped_back", screen=screen.sid, control=screen.path[-1]["label"][:40])
+                    return True
+            return False
+
+        # The root. Try the tab bar it was wearing when we first saw it.
+        try:
+            snap = self.phone.snapshot(with_screenshot=False, stable=False)
+        except WDAError:
+            return False
+        floor = (snap.geometry.point_h or 800) * 0.86
+        known = {c["key"] for c in screen.controls}
+        tabs = [e for e in snap.elements
+                if e.cy >= floor and control_key(e) in known and e.type in {"Tab", "Button", "Icon"}]
+        tabs.sort(key=lambda e: e.cx)
+        for tab in tabs[:2]:
+            try:
+                self.phone.wda.tap(tab.cx, tab.cy)
+            except WDAError:
+                return False
+            self.taps += 1
+            self._settle()
+            if self._at(screen):
+                self.emit("tapped_back", screen=screen.sid, control=(tab.text or tab.type)[:40])
+                return True
+        return False
+
     def _replay(self, screen: Screen) -> None:
         """Home, relaunch, and tap the recorded path again, verifying as we go."""
         self.emit("replay", screen=screen.sid, depth=len(screen.path))
+        self.say(f"Lost my place, so I am restarting the app and walking back to {screen.title or screen.sid}.")
         self._recover_to_root()
         for step in screen.path:
             target = self._find_control(step["key"])
@@ -1110,6 +1266,7 @@ class Crawler:
         its way back afterwards.
         """
         self.emit("liveness", detail=f"{self._dead_taps} taps changed nothing; testing the phone itself")
+        self.say("A run of taps changed nothing on screen. Checking whether the phone is still responding.")
         self._dead_taps = 0
         try:
             self.phone.home()
