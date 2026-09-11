@@ -127,17 +127,25 @@ def diagnose(bridge: "Bridge | None" = None) -> dict:
 
     if not live:
         if wifi and not over_wifi:
-            # This is the shape an unplugged phone actually takes: CoreDevice can
-            # still reach it on the LAN, so it looks present until you ask which
-            # transport. AppScan drives it over the cable, so the cable is the fix.
             names = ", ".join(c.name for c in wifi)
+            if cfg.wda.wifi_host:
+                return {
+                    "state": "wifi_available", "ok": False,
+                    "title": "The cable is out, but the phone is on this wifi",
+                    "detail": f"{names} is on the network at {cfg.wda.wifi_host}, so a cable is "
+                              f"not needed.",
+                    "fix": "Press Connect to carry on wirelessly. While that is up, anything on "
+                           "this wifi can drive the phone, so disconnect when you are done.",
+                    "action": "connect",
+                }
             return {
                 "state": "no_cable", "ok": False,
                 "title": "The cable is out",
-                "detail": f"{names} is reachable on wifi but not over USB, and AppScan drives "
-                          f"the phone over the cable.",
-                "fix": "Plug it back in. USB shows up even while the phone is locked, so if "
-                       "nothing appears it is the cable itself, not the phone.",
+                "detail": f"{names} is on this network, but I have never seen it on a cable, so "
+                          f"I do not know the address to reach it on. iOS only hands that out "
+                          f"over USB.",
+                "fix": "Plug it in once and press Connect. After that I can use wifi on its own, "
+                       "cable or not.",
                 "action": "",
             }
         names = ", ".join(f"{c.name} ({c.model})" for c in seen) or "none"
@@ -163,9 +171,10 @@ def diagnose(bridge: "Bridge | None" = None) -> dict:
     chosen = chosen or live[0]
 
     import socket
+    reach = cfg.wda.wifi_host if over_wifi and cfg.wda.wifi_host else cfg.wda.host
     port_open = False
     try:
-        with socket.create_connection((cfg.wda.host, cfg.wda.port), timeout=1.2):
+        with socket.create_connection((reach, cfg.wda.port), timeout=1.2):
             port_open = True
     except OSError:
         pass
@@ -174,8 +183,7 @@ def diagnose(bridge: "Bridge | None" = None) -> dict:
         return {
             "state": "no_tunnel", "ok": False,
             "title": "The phone is here but nothing is listening",
-            "detail": f"{chosen.name} is on the cable, but the tunnel to it on port "
-                      f"{cfg.wda.port} is closed.",
+            "detail": f"{chosen.name} is reachable, but nothing answers on {reach}:{cfg.wda.port}.",
             "fix": "Press Connect. (If AppScan's helper was restarted, this is expected: "
                    "the tunnel belongs to the helper and goes with it.)",
             "action": "connect",
@@ -346,6 +354,13 @@ class Bridge:
                 return
             self.udid = resolved
 
+            # No cable, but the phone is on this network: drive it over wifi
+            # instead of asking for a cable that is not needed.
+            on_cable = any(c.source == "usbmux" and c.udid == resolved for c in scan())
+            if not on_cable:
+                yield from self._connect_wifi(resolved, cfg, relaunch)
+                return
+
             # Pin the choice, so nothing later in this process can substitute a
             # different phone. device_check refuses to substitute only because the
             # config tells it which one to want.
@@ -355,6 +370,12 @@ class Bridge:
                 cfg.save()
                 yield _ev("pinned", True, f"config now pins {resolved}")
 
+            if cfg.wda.transport == "wifi":
+                # The cable is back. Prefer it: it is faster, and it does not put
+                # an unauthenticated automation server on the wifi.
+                cfg.wda.transport = "usb"
+                cfg.save()
+                yield _ev("transport", True, "the cable is back, so using it instead of wifi")
             if cfg.wda.transport != "wifi":
                 if self.forward:
                     self.forward.stop()
@@ -416,7 +437,91 @@ class Bridge:
 
             self.adopted = False
             self.started_at = time.time()
+            yield from self._learn_wifi_address(resolved, cfg)
             yield from self._finish(cfg)
+
+    def _connect_wifi(self, udid: str, cfg: Config, relaunch: bool) -> Iterator[dict]:
+        """Drive the phone over the network, with no cable in it.
+
+        Everything except the HTTP works without a cable already: CoreDevice keeps
+        its own tunnel to a paired phone on the same network, and `devicectl` can
+        launch the runner across it. What is missing is an address to talk to
+        WebDriverAgent on, and that is the part iOS will not hand over wirelessly:
+        lockdown answers it over usbmux, and mDNS only advertises the phone when
+        wifi sync is on. So the address is LEARNED during a cable connection and
+        remembered. One cable connection, ever; wifi from then on.
+
+        The runner also has to bind to something other than loopback to be
+        reachable at all, which means anything on this network can drive the phone
+        while the bridge is up: WebDriverAgent authenticates nothing. That is a
+        real trade and the page says so rather than burying it here.
+        """
+        host = cfg.wda.wifi_host
+        if not host:
+            yield _ev(
+                "wifi", False,
+                "I can see this phone on the network, but I have never seen it on a cable, "
+                "so I do not know its address.",
+                "Plug it in once and press Connect. I will learn the address and use wifi "
+                "from then on, cable or not.")
+            return
+
+        yield _ev("wifi", True, f"no cable, so going over the network to {host}")
+        cfg.wda.transport = "wifi"
+        cfg.wda.wifi_host = host
+        cfg.save()
+        self.udid = udid
+
+        client = WDAClient(base_url=cfg.wda_base_url, timeout=8)
+        if relaunch or not client.is_alive():
+            killed = dev.terminate_runner(udid)
+            if killed:
+                yield _ev("terminate", True, f"stopped {killed} running runner process(es)")
+            # bind_ip=None on purpose: loopback-only is unreachable over wifi.
+            res = dev.launch_wda(udid, cfg.wda.runner_bundle_id, cfg.wda.port,
+                                 cfg.wda.mjpeg_port, bind_ip=None)
+            yield _ev("launch", res.ok, res.detail, res.fix)
+            if not res.ok:
+                self.last_error = res.detail
+                return
+
+        for attempt in range(40):
+            if client.is_alive():
+                break
+            if attempt and attempt % 8 == 0:
+                yield _ev("wait", True, f"waiting for WebDriverAgent on {host}… {attempt}s")
+            time.sleep(1)
+
+        if not client.is_alive():
+            self.last_error = f"no answer from {host}:{cfg.wda.port}"
+            yield _ev("wifi", False, self.last_error,
+                      "The phone may have moved to another network, or its address changed. "
+                      "Plug it in once to relearn the address.")
+            return
+
+        yield _ev("exposure", True,
+                  "While this is up, anything on this wifi can drive the phone: WebDriverAgent "
+                  "has no password. Disconnect when you are done, or use the cable.")
+        self.adopted = False
+        self.started_at = time.time()
+        yield from self._finish(cfg)
+
+    def _learn_wifi_address(self, udid: str, cfg: Config) -> Iterator[dict]:
+        """Ask the phone its wifi address while the cable is in, and keep it.
+
+        This is the whole cost of wireless working later, and it is one lockdown
+        call on a connection that is already open.
+        """
+        try:
+            ip = dev.phone_lan_ip(udid)
+        except Exception as exc:                       # never fail a connect over this
+            log.debug("lan ip: %s", exc)
+            return
+        if ip and ip != cfg.wda.wifi_host:
+            cfg.wda.wifi_host = ip
+            cfg.save()
+            yield _ev("wifi", True, f"learned its wifi address ({ip}), so the cable is optional "
+                                    f"from now on")
 
     def _finish(self, cfg: Config) -> Iterator[dict]:
         client = WDAClient(base_url=cfg.wda_base_url, timeout=10)

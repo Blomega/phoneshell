@@ -211,8 +211,11 @@
   #box.on{display:flex}
   #box img{max-height:100%;border-radius:16px;box-shadow:0 26px 70px rgba(0,0,0,.75)}
   #box .cap{position:fixed;bottom:20px;left:0;right:0;text-align:center;color:var(--dim);font-size:12px;font-family:var(--mono)}
-  #modal{position:fixed;inset:0;background:rgba(5,5,7,.7);display:none;align-items:center;justify-content:center;z-index:70}
-  #modal.on{display:flex}
+  #modal,#ask{position:fixed;inset:0;background:rgba(5,5,7,.72);display:none;align-items:center;
+    justify-content:center;z-index:70;backdrop-filter:blur(3px)}
+  #modal.on,#ask.on{display:flex}
+  #ask .sheet{width:480px}
+  #ask p{color:var(--text);font-size:13.5px;line-height:1.65;margin-bottom:4px}
   .sheet{width:460px;max-width:92vw;background:var(--panel);border:1px solid var(--line2);border-radius:14px;
     padding:20px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
   .sheet h3{margin:0 0 4px;font-size:16px}
@@ -355,6 +358,12 @@
 </div>
 
 <div id="box"><img id="boximg" alt=""><div class="cap" id="boxcap"></div></div>
+
+<div id="ask"><div class="sheet">
+  <h3>One question before I carry on</h3>
+  <p id="askq"></p>
+  <div class="foot" id="askbtns"></div>
+</div></div>
 
 <div id="modal"><div class="sheet">
   <h3>New scan</h3>
@@ -583,9 +592,14 @@ function handle(e) {
     case 'ask':
       thinking(false); S.waiting = true;
       bubble(e.question, 'ask');
-      $('prompt').value = ''; $('prompt').placeholder = 'type your answer…';
-      $('prompt').classList.add('waiting'); $('prompt').focus();
-      $('go').textContent = 'Send'; $('go').className = 'go'; $('go').disabled = false;
+      // A question with options is a decision, not an essay. Show it as a dialog
+      // so the answer is one press and the phone is not left waiting on typing.
+      if ((e.options || []).length) askDialog(e.question, e.options);
+      else {
+        $('prompt').value = ''; $('prompt').placeholder = 'type your answer…';
+        $('prompt').classList.add('waiting'); $('prompt').focus();
+        $('go').textContent = 'Send'; $('go').className = 'go'; $('go').disabled = false;
+      }
       break;
     case 'answered': S.waiting = false; $('prompt').classList.remove('waiting');
       $('prompt').placeholder = 'screenshot every screen in…';
@@ -732,6 +746,25 @@ function nodeHtml(s, kids, isRoot, isLast) {
     <div>${children.map((c, i) => nodeHtml(c, kids, false, i === children.length - 1)).join('')}</div>
   </div></div>`;
 }
+function askDialog(question, options) {
+  $('askq').innerHTML = fmt(question);
+  $('askbtns').innerHTML = '';
+  options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'btn' + (i === 0 ? ' p' : '');
+    b.textContent = opt;
+    b.onclick = () => {
+      $('ask').className = '';
+      S.waiting = false;
+      bubble(opt, 'me');
+      send({ type: 'reply', text: opt });
+      thinking(true);
+    };
+    $('askbtns').appendChild(b);
+  });
+  $('ask').className = 'on';
+}
+
 function lightbox(src, cap) { $('boximg').src = src; $('boxcap').textContent = cap; $('box').className = 'on'; }
 $('box').onclick = () => { $('box').className = ''; $('boximg').src = ''; };
 

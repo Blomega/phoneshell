@@ -291,7 +291,8 @@ class Crawler:
 
     # ------------------------------------------------------------ asking for help
 
-    def ask(self, question: str, kind: str = "help", wait: float = 600.0) -> str:
+    def ask(self, question: str, kind: str = "help", wait: float = 600.0,
+            options: list[str] | None = None) -> str:
         """Stop and ask the operator, then carry on with what they say.
 
         A crawler meets walls it has no business climbing: a login, a one-time
@@ -303,7 +304,7 @@ class Crawler:
         """
         self._answered.clear()
         self._answer = ""
-        self.emit("ask", question=question, kind=kind)
+        self.emit("ask", question=question, kind=kind, options=options or [])
         if not self._answered.wait(wait):
             self.emit("ask_timeout", question=question)
             self.say("Nobody answered, so I carried on with what I could reach.")
@@ -375,6 +376,7 @@ class Crawler:
                  f"of every screen, up to {self.plan.max_screens} of them or {self.plan.max_minutes:g} minutes.")
         self._take_the_phone()
         self._preflight()
+        awake = self._keep_awake_if_allowed()
         try:
             if self.plan.scope == "phone":
                 self._crawl_phone()
@@ -390,6 +392,8 @@ class Crawler:
             self.stop_reason = f"the bridge went away: {exc}"
             self.emit("error", text=self.stop_reason)
         finally:
+            if awake is not None:
+                awake.__exit__(None, None, None)
             summary = self.write_manifest()
             for line in self.report(summary):
                 self.say(line)
@@ -472,6 +476,37 @@ class Crawler:
         except Exception as exc:                     # never fail a run over this
             log.debug("coexist.stop: %s", exc)
         self.emit("mode", detail="shared mode paused: the crawl drives the phone on its own")
+
+    def _keep_awake_if_allowed(self):
+        """Offer to stop the phone locking itself, and only do it if told to.
+
+        A lock ends a scan: iOS will not launch an app from the lock screen, so
+        the run stops producing screenshots and reports a failure that is really
+        a phone doing its job. This project has lost four runs that way. The
+        remedy is one setting on someone's personal phone, so it is asked for and
+        it is put back, and a scan short enough not to care does not ask at all.
+        """
+        if self.plan.max_minutes < 3:
+            return None
+        from .autolock import KeepAwake, read as read_autolock
+        current = read_autolock(self.phone)
+        if current is None or current.lower() == "never":
+            return None
+        answer = self.ask(
+            f"Your phone locks itself after **{current}**, and a locked phone stops a scan dead: "
+            f"iOS will not open an app from the lock screen. Shall I set Auto-Lock to Never for "
+            f"this scan and put it back to {current} when I finish?",
+            kind="autolock",
+            options=["Keep it awake", "Leave it alone"],
+            wait=180.0,
+        )
+        if not answer or answer.strip().lower().startswith(("leave", "no", "skip")):
+            self.say(f"Leaving Auto-Lock at {current}. If the phone locks mid-scan I will stop "
+                     f"and tell you.")
+            return None
+        keeper = KeepAwake(self.phone, emit=self.say)
+        keeper.__enter__()
+        return keeper
 
     def _preflight(self) -> None:
         """Get the phone awake and on the home screen. Nothing else.
