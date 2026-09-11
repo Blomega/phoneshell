@@ -25,3 +25,6 @@ graphify-out/
 # The held-out task split. A benchmark whose entire answer key is public becomes
 # training data, so these never leave this machine.
 environments-private/
+
+# Collected screenshots are a run artifact and belong to the phone's owner.
+runtime/crawls/

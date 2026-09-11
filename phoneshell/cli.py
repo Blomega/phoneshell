@@ -644,14 +644,79 @@ def mcp_config(claude_code: bool = typer.Option(True, help="print the `claude mc
 
 
 @app.command()
-def serve(port: int = typer.Option(8765, help='port for the local app')) -> None:
+def serve(port: int = typer.Option(8765, help='port for the local app'),
+          collect: bool = typer.Option(False, help='open the screenshot collector instead of the chat')) -> None:
     """Open the phoneshell app: live phone screen, click to control, chat to delegate."""
     import uvicorn
     from .server import app as api, write_mcp_config
     write_mcp_config()
-    console.print(Panel.fit(f'phoneshell app on http://127.0.0.1:{port}', style='green'))
-    subprocess.Popen(['open', f'http://127.0.0.1:{port}'])
+    page = '/collect' if collect else '/'
+    console.print(Panel.fit(f'phoneshell app on http://127.0.0.1:{port}{page}\n'
+                            f'  /          chat and click-to-control\n'
+                            f'  /collect   connect a phone and screenshot every screen it can reach',
+                            style='green'))
+    subprocess.Popen(['open', f'http://127.0.0.1:{port}{page}'])
     uvicorn.run(api, host='127.0.0.1', port=port, log_level='warning')
+
+
+@app.command()
+def collect(
+    target: str = typer.Argument("", help='app name or bundle id, or "phone" for every app'),
+    screens: int = typer.Option(150, help='stop after this many distinct screens'),
+    depth: int = typer.Option(4, help='how many taps deep to go from the app root'),
+    minutes: float = typer.Option(30.0, help='stop after this long'),
+    variants: int = typer.Option(3, help='screens per layout worth exploring (a 200-row list is one layout)'),
+    full_res: bool = typer.Option(True, help='keep the full-resolution PNG as well as a thumbnail'),
+) -> None:
+    """Walk an app's screens and collect a screenshot of every one.
+
+    Deterministic: no model, no API cost, roughly a second and a half per screen.
+    It taps to navigate and does nothing else, so it never types, never flips a
+    switch and never touches a control that sends, buys or deletes anything.
+    """
+    from .actions import Phone
+    from .crawl import Crawler, Plan, new_run_dir, plan_from_prompt
+    from .lock import DeviceBusy, device_lock
+
+    cfg = _cfg()
+    if target.lower() in {"phone", "everything", "all"}:
+        plan = Plan(scope="phone", max_depth=min(depth, 2), per_app_screens=8)
+    elif target:
+        plan, notes = plan_from_prompt(target, cfg)
+        for note in notes:
+            console.print(f"[dim]{escape(note)}[/dim]")
+    else:
+        plan = Plan(scope="app", app="com.apple.Preferences", label="Settings")
+        console.print("[dim]no target given, so: Settings[/dim]")
+    plan.max_screens, plan.max_depth, plan.max_minutes = screens, depth, minutes
+    plan.variant_cap, plan.full_res = variants, full_res
+
+    out = new_run_dir(plan)
+    console.print(Panel.fit(f"collecting into {out}", style="bold"))
+    phone = Phone(cfg)
+
+    def show(event: dict) -> None:
+        kind = event.get("type")
+        if kind == "screen":
+            console.print(f"[green]{event['sid']}[/green] {escape(str(event.get('title') or event.get('app') or ''))} "
+                          f"[dim]depth {event.get('depth')}[/dim]")
+        elif kind == "tap":
+            console.print(f"[dim]  tap {escape(str(event.get('control'))[:48])}[/dim]")
+        elif kind in {"skip", "crossing", "lost", "budget", "wedged", "error", "alert"}:
+            console.print(f"[yellow]{kind}[/yellow] "
+                          f"{escape(str(event.get('why') or event.get('reason') or event.get('text') or event.get('to') or ''))}")
+
+    try:
+        with device_lock(f"collect {out.name}"):
+            summary = Crawler(phone, plan, out, emit=show).run()
+    except DeviceBusy as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise typer.Exit(1)
+    console.print(Panel.fit(
+        f"{summary['screens']} screens, {summary['shots']} screenshots, {summary['taps']} taps "
+        f"in {summary['seconds']}s\nstopped because {summary['reason']}\n\n{out / 'index.html'}",
+        title="collected", style="green"))
+    subprocess.Popen(["open", str(out / "index.html")])
 
 
 @app.command()

@@ -22,12 +22,19 @@ from pathlib import Path
 
 import httpx
 import signal
+import threading
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from .actions import Phone
+from .apps import installed_apps
+from .bringup import Bridge, checks_for, scan as scan_devices
 from .config import Config, ROOT, RUNTIME
+from .crawl import (CRAWLS, DENY_BUNDLES, Crawler, Plan as CrawlPlan, is_user_app,
+                    list_runs, new_run_dir, plan_from_prompt)
+from .lock import DeviceBusy, device_lock
 from .safety import Guard
 from .wda.client import WDAError, WDAUnreachable
 
@@ -78,6 +85,56 @@ an action because it looks irreversible, stop and ask the user in one sentence.
 """
 
 app = FastAPI(title="phoneshell")
+
+# The collect page is also published at appscan.blolabel.ai, and a page served from
+# there has to reach this process on the loopback of the Mac holding the phone.
+# Two separate rules stand in the way and both have to be answered: ordinary CORS,
+# and Chrome's Private Network Access preflight, which asks a private-address
+# server to opt in explicitly before a public page may talk to it.
+#
+# The origin list is exact, never "*": this server can drive a phone, so anything
+# that can call it can drive the phone.
+ALLOWED_ORIGINS = [
+    "https://appscan.blolabel.ai",
+    "http://127.0.0.1:8765", "http://localhost:8765",
+    "http://127.0.0.1:8766", "http://localhost:8766",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["content-type"],
+)
+
+
+@app.middleware("http")
+async def private_network_access(request, call_next):
+    """Answer Chrome's private-network preflight.
+
+    Without this header a page on https://appscan.blolabel.ai cannot even ask
+    127.0.0.1 a question: the preflight is refused before the request is made, and
+    the page looks like the helper is not running when it is.
+    """
+    if (request.method == "OPTIONS"
+            and request.headers.get("access-control-request-private-network") == "true"):
+        from starlette.responses import Response
+        origin = request.headers.get("origin", "")
+        headers = {"Access-Control-Allow-Private-Network": "true"}
+        if origin in ALLOWED_ORIGINS:
+            headers |= {
+                "Access-Control-Allow-Origin": origin,
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "content-type",
+                "Access-Control-Max-Age": "600",
+            }
+        return Response(status_code=204, headers=headers)
+    response = await call_next(request)
+    if request.headers.get("origin") in ALLOWED_ORIGINS:
+        response.headers["Access-Control-Allow-Private-Network"] = "true"
+    return response
+
+
 SPEND = {"tasks": 0, "usd": 0.0, "turns": 0}
 _cfg = Config.load()
 _phone: Phone | None = None
@@ -464,6 +521,194 @@ async def websocket(ws: WebSocket) -> None:
             await run.kill()
         if task_handle:
             task_handle.cancel()
+
+
+# ---------------------------------------------------------------- collect page
+#
+# A second page, for one job: connect a phone from the browser and have it walk
+# every screen it can reach, collecting a screenshot of each. The chat page above
+# delegates a TASK to a model; this one runs a deterministic crawl with no model
+# in it at all, which is why it can run for an hour for nothing.
+
+BRIDGE = Bridge()
+CRAWL: dict[str, object] = {"crawler": None, "thread": None, "run": None}
+
+
+@app.get("/collect")
+def collect_page() -> FileResponse:
+    return FileResponse(UI_DIR / "collect.html")
+
+
+@app.get("/api/devices")
+def devices() -> dict:
+    """Every phone this Mac can see, and what this process has a hold on."""
+    return {"devices": [c.as_dict() for c in scan_devices()], "bridge": BRIDGE.state()}
+
+
+@app.get("/api/checks")
+def device_checks(udid: str = "") -> dict:
+    return {"checks": checks_for(udid or None)}
+
+
+@app.post("/api/disconnect")
+async def disconnect(payload: dict | None = None) -> dict:
+    stop_runner = bool((payload or {}).get("stop_runner"))
+    return {"ok": True, "bridge": BRIDGE.disconnect(stop_runner=stop_runner)}
+
+
+@app.get("/api/apps")
+def apps_list() -> dict:
+    """The app catalog, for the picker. Cheap enough to ask for on page load."""
+    try:
+        catalog = installed_apps(Config.load())
+    except Exception as exc:
+        return {"apps": [], "error": str(exc)[:200]}
+    deny = DENY_BUNDLES | set(Config.load().safety.denied_bundle_ids)
+    apps = [
+        {"name": name, "bundle": bundle, "denied": bundle in deny,
+         "apple": bundle.startswith("com.apple.")}
+        for name, bundle in sorted(catalog.items(), key=lambda kv: kv[0].lower())
+        if is_user_app(name, bundle)
+    ]
+    return {"apps": apps, "total": len(catalog)}
+
+
+@app.post("/api/plan")
+async def plan_endpoint(payload: dict) -> dict:
+    """Turn a plain-language prompt into a plan, and say what was understood.
+
+    Separate from starting the crawl on purpose: the page shows you the plan it
+    read out of your sentence before anything touches the phone.
+    """
+    prompt = str(payload.get("prompt") or "")
+    try:
+        catalog = installed_apps(Config.load())
+    except Exception:
+        catalog = None
+    plan, notes = plan_from_prompt(prompt, Config.load(), catalog)
+    for key in ("max_screens", "max_depth", "max_minutes", "variant_cap", "scroll_cap",
+                "per_app_screens", "per_app_minutes", "scope", "app", "label"):
+        if key in payload and payload[key] not in (None, ""):
+            setattr(plan, key, type(getattr(plan, key))(payload[key]))
+    if payload.get("apps"):
+        plan.apps = [str(a) for a in payload["apps"]]
+    return {"plan": plan.as_dict(), "notes": notes}
+
+
+@app.get("/api/crawls")
+def crawls() -> dict:
+    return {"runs": list_runs()}
+
+
+@app.get("/api/crawl/{run}/manifest")
+def crawl_manifest(run: str) -> dict:
+    path = (CRAWLS / run / "manifest.json").resolve()
+    if not str(path).startswith(str(CRAWLS.resolve())) or not path.is_file():
+        return {"error": "no such run"}
+    return json.loads(path.read_text())
+
+
+if CRAWLS.exists() or CRAWLS.mkdir(parents=True, exist_ok=True) is None:
+    # The collected screenshots, served to the gallery straight off disk.
+    app.mount("/collected", StaticFiles(directory=str(CRAWLS)), name="collected")
+
+
+@app.websocket("/ws/collect")
+async def collect_ws(ws: WebSocket) -> None:
+    """One socket for the whole page: bring the bridge up, then run a crawl.
+
+    The crawler is synchronous and blocking by design (it is a loop of HTTP calls
+    to the phone), so it runs in a worker thread and posts its events back onto
+    the event loop. That keeps the socket answering `stop` while a tap is in
+    flight, which a plain `await to_thread(...)` would not.
+    """
+    await ws.accept()
+    loop = asyncio.get_running_loop()
+    queue: asyncio.Queue = asyncio.Queue()
+    pump: asyncio.Task | None = None
+
+    async def drain() -> None:
+        while True:
+            event = await queue.get()
+            try:
+                await ws.send_json(event)
+            except Exception:
+                return
+
+    pump = asyncio.create_task(drain())
+
+    def push(event: dict) -> None:
+        loop.call_soon_threadsafe(queue.put_nowait, event)
+
+    try:
+        while True:
+            msg = await ws.receive_json()
+            kind = msg.get("type")
+
+            if kind == "connect":
+                udid = msg.get("udid") or None
+                relaunch = bool(msg.get("relaunch"))
+                await ws.send_json({"type": "connecting", "udid": udid})
+
+                def bring_up() -> None:
+                    try:
+                        for event in BRIDGE.connect(udid, relaunch=relaunch):
+                            push(event)
+                    except Exception as exc:           # noqa: BLE001 - reported, never raised at a socket
+                        push({"type": "step", "step": "error", "ok": False, "detail": str(exc)[:300]})
+                    push({"type": "connected", "bridge": BRIDGE.state()})
+
+                await asyncio.to_thread(bring_up)
+
+            elif kind == "disconnect":
+                BRIDGE.disconnect(stop_runner=bool(msg.get("stop_runner")))
+                await ws.send_json({"type": "connected", "bridge": BRIDGE.state()})
+
+            elif kind == "crawl":
+                thread = CRAWL.get("thread")
+                if isinstance(thread, threading.Thread) and thread.is_alive():
+                    await ws.send_json({"type": "error", "text": "a crawl is already running"})
+                    continue
+                plan = CrawlPlan(**{k: v for k, v in (msg.get("plan") or {}).items()
+                                    if k in CrawlPlan.__dataclass_fields__})
+                out = new_run_dir(plan)
+                CRAWL["run"] = out.name
+                _guard.audit("crawl_start", run=out.name, plan=plan.as_dict())
+                await ws.send_json({"type": "run", "run": out.name, "plan": plan.as_dict()})
+
+                def work() -> None:
+                    try:
+                        with device_lock(f"collect {out.name}"):
+                            crawler = Crawler(phone(), plan, out, emit=push)
+                            CRAWL["crawler"] = crawler
+                            crawler.run()
+                    except DeviceBusy as exc:
+                        push({"type": "error", "text": str(exc)})
+                    except Exception as exc:           # noqa: BLE001
+                        log.exception("crawl failed")
+                        push({"type": "error", "text": f"{type(exc).__name__}: {exc}"[:400]})
+                    finally:
+                        CRAWL["crawler"] = None
+
+                worker = threading.Thread(target=work, name=f"crawl-{out.name}", daemon=True)
+                CRAWL["thread"] = worker
+                worker.start()
+
+            elif kind == "stop":
+                crawler = CRAWL.get("crawler")
+                if isinstance(crawler, Crawler):
+                    crawler.stop("stopped from the page")
+                    await ws.send_json({"type": "stopping"})
+                else:
+                    await ws.send_json({"type": "error", "text": "nothing is running"})
+
+    except WebSocketDisconnect:
+        # A closed tab does NOT stop a crawl: it is a long job, and the page can
+        # be reopened and reattached to the run that is still writing to disk.
+        pass
+    finally:
+        if pump:
+            pump.cancel()
 
 
 if UI_DIR.exists():
