@@ -94,6 +94,141 @@ def scan() -> list[Candidate]:
     return sorted(found.values(), key=lambda c: (not c.configured, c.source != "usbmux", c.name))
 
 
+def diagnose(bridge: "Bridge | None" = None) -> dict:
+    """One sentence about why the phone is not usable, and what to do about it.
+
+    This exists because the answers used to live in my head and in a terminal.
+    The person using AppScan never sees either: they see a page that stopped
+    working. Every failure this rig has produced is one of a small number of
+    shapes, each with a different remedy, and telling them apart is cheap:
+
+      no phone in usbmux        -> the cable, always. USB enumeration is
+                                   kernel-level and happens before trust and
+                                   before the lock screen, so a phone that is
+                                   powered on and plugged into a DATA cable is
+                                   visible here even locked and untrusted.
+      phone present, port shut  -> the tunnel died, usually because the helper
+                                   was restarted and iproxy was its child.
+      port open, WDA silent     -> the runner stopped. Relaunch it.
+      WDA fine, phone locked    -> iOS refuses to launch apps from the lock
+                                   screen, and every launch fails with an
+                                   unhelpful error until it is unlocked.
+    """
+    cfg = Config.load()
+    want = cfg.device.udid
+    seen = scan()
+    # usbmux is the authority on "is it on the cable". CoreDevice keeps reporting
+    # a transport for a phone that was unplugged a moment ago, which had this
+    # calling an absent phone a dead runner and sending people to Relaunch.
+    cabled = [c for c in seen if c.source == "usbmux"]
+    wifi = [c for c in seen if c.connected and c.transport.lower() in {"wifi", "localnetwork"}]
+    over_wifi = cfg.wda.transport == "wifi"
+    live = cabled or (wifi if over_wifi else [])
+
+    if not live:
+        if wifi and not over_wifi:
+            # This is the shape an unplugged phone actually takes: CoreDevice can
+            # still reach it on the LAN, so it looks present until you ask which
+            # transport. AppScan drives it over the cable, so the cable is the fix.
+            names = ", ".join(c.name for c in wifi)
+            return {
+                "state": "no_cable", "ok": False,
+                "title": "The cable is out",
+                "detail": f"{names} is reachable on wifi but not over USB, and AppScan drives "
+                          f"the phone over the cable.",
+                "fix": "Plug it back in. USB shows up even while the phone is locked, so if "
+                       "nothing appears it is the cable itself, not the phone.",
+                "action": "",
+            }
+        names = ", ".join(f"{c.name} ({c.model})" for c in seen) or "none"
+        return {
+            "state": "no_device", "ok": False,
+            "title": "No iPhone on the cable",
+            "detail": f"This Mac cannot see a connected iPhone. Paired but not here: {names}.",
+            "fix": "Plug the phone in with a cable that carries data, and unlock it. "
+                   "If it was working a moment ago, the cable has come out.",
+            "action": "",
+        }
+
+    chosen = next((c for c in live if c.udid == want), None)
+    if want and chosen is None:
+        present = ", ".join(f"{c.name} ({c.model})" for c in live)
+        return {
+            "state": "wrong_device", "ok": False,
+            "title": "A different iPhone is plugged in",
+            "detail": f"AppScan is set to {want[:8]}…, and what is here is {present}.",
+            "fix": "Pick the phone that is actually connected under Devices, then press Connect.",
+            "action": "connect",
+        }
+    chosen = chosen or live[0]
+
+    import socket
+    port_open = False
+    try:
+        with socket.create_connection((cfg.wda.host, cfg.wda.port), timeout=1.2):
+            port_open = True
+    except OSError:
+        pass
+
+    if not port_open:
+        return {
+            "state": "no_tunnel", "ok": False,
+            "title": "The phone is here but nothing is listening",
+            "detail": f"{chosen.name} is on the cable, but the tunnel to it on port "
+                      f"{cfg.wda.port} is closed.",
+            "fix": "Press Connect. (If AppScan's helper was restarted, this is expected: "
+                   "the tunnel belongs to the helper and goes with it.)",
+            "action": "connect",
+        }
+
+    client = WDAClient(base_url=cfg.wda_base_url, timeout=5)
+    try:
+        status = client.status()
+    except WDAError as exc:
+        text = str(exc)
+        # An iproxy from a previous helper outlives it, keeps the port, accepts
+        # the connection and resets it. The port looks open and nothing is behind
+        # it, and no amount of relaunching the runner helps (FINDINGS s29).
+        if "reset by peer" in text or "Connection reset" in text:
+            return {
+                "state": "stale_tunnel", "ok": False,
+                "title": "The tunnel to the phone is a leftover",
+                "detail": f"Port {cfg.wda.port} is held by a tunnel from an earlier session that "
+                          f"accepts connections and answers nothing.",
+                "fix": "Press Connect. It clears the old tunnel before opening a new one.",
+                "action": "connect",
+            }
+        return {
+            "state": "runner_dead", "ok": False,
+            "title": "The runner on the phone stopped answering",
+            "detail": text[:160],
+            "fix": "Press Relaunch. If two of those do not fix it, the phone needs a restart.",
+            "action": "relaunch",
+        }
+
+    try:
+        if client.is_locked():
+            return {
+                "state": "locked", "ok": False,
+                "title": "The phone is locked",
+                "detail": "iOS refuses to launch apps from the lock screen, so a scan would "
+                          "fail on its first step.",
+                "fix": "Unlock the phone. To keep it from locking during long scans, set "
+                       "Settings > Display & Brightness > Auto-Lock to Never.",
+                "action": "",
+            }
+    except WDAError:
+        pass
+
+    return {
+        "state": "ready", "ok": True,
+        "title": f"{status.get('device') or chosen.name} is ready",
+        "detail": f"iOS {status.get('os', {}).get('version')} · "
+                  f"WebDriverAgent {status.get('build', {}).get('version')}",
+        "fix": "", "action": "",
+    }
+
+
 def checks_for(udid: str | None) -> list[dict]:
     """The doctor ladder for one phone, as data the page can render.
 
@@ -155,6 +290,28 @@ class Bridge:
             "since": self.started_at or None,
             "error": self.last_error,
         }
+
+    def heal(self) -> list[dict]:
+        """Put the bridge back without being asked.
+
+        The helper owns the usbmux tunnel as a child process, so restarting the
+        helper takes the tunnel with it and the phone goes dark through no fault
+        of the person using it. Telling them to press Connect is not a fix, it is
+        a chore invented by an implementation detail. So on startup: if a phone is
+        there and the runner is installed, connect.
+
+        Silent on purpose when there is nothing to do, and it never fights a
+        healthy bridge: `connect` adopts one that already answers.
+        """
+        try:
+            state = diagnose(self)
+        except Exception as exc:                       # never block startup
+            log.debug("heal: diagnose failed: %s", exc)
+            return []
+        if state["state"] in {"ready", "no_device", "wrong_device", "locked"}:
+            return [state]
+        log.info("healing the bridge: %s", state["title"])
+        return list(self.connect(Config.load().device.udid))
 
     # ---------------------------------------------------------------- connect
 

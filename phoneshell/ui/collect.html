@@ -254,6 +254,7 @@
       <div class="navsec"><span class="grow">Scanned</span><span id="n-scanned" class="muted"></span></div>
       <div id="scanned"></div>
       <div class="navsec"><span class="grow">Apps on this phone</span><span id="appcount" class="muted"></span></div>
+      <div id="appnote" hidden style="padding:0 16px 6px;font-size:11px;color:var(--warn);line-height:1.45">Common apps only. Connect the phone to list the ones actually on it.</div>
       <div id="apps"></div>
     </div>
   </div>
@@ -310,7 +311,7 @@
     </div>
 
     <div id="devbar">
-      <span class="dotm" id="livedot"></span>
+      <span class="dotm" id="livedot"></span><span class="dotm" id="healthdot" hidden></span>
       <span style="min-width:0"><span class="n" id="devname">—</span>
         <span class="s" id="devsub">not connected</span></span>
       <div class="grow"></div>
@@ -476,6 +477,40 @@ async function loadChecks() {
     <div class="chk ${c.ok ? 'ok' : 'bad'}"><span class="m">${c.ok ? 'ok' : 'fail'}</span>
     <span><b style="color:var(--dim);font-weight:500">${esc(c.name)}</b> ${esc(c.detail)}
     ${!c.ok && c.fix ? `<span class="fix">${esc(c.fix)}</span>` : ''}</span></div>`).join('');
+}
+
+/* The app tells you what is wrong, because nobody using it is reading a terminal.
+   Only CHANGES are spoken, so a phone that stays unplugged says so once. */
+let lastHealth = null;
+async function health() {
+  const h = await api('/api/health');
+  if (!h) { lastHealth = null; setTimeout(health, 6000); return; }
+  if (h.state !== lastHealth) {
+    const first = lastHealth === null;
+    lastHealth = h.state;
+    if (!h.ok) {
+      bubble(`**${h.title}.** ${h.detail}\n\n${h.fix}`, 'err');
+      if (h.action === 'connect') showAction('Connect', () => $('connect').click());
+      if (h.action === 'relaunch') showAction('Relaunch', () => $('relaunch').click());
+    } else if (!first) {
+      bubble(`**${h.title}.** ${h.detail}`);
+    }
+  }
+  $('healthdot').className = 'dotm' + (h.ok ? ' on' : '');
+  setTimeout(health, h.ok ? 8000 : 5000);
+}
+/* A one-press button attached to the last message, so the remedy is not a
+   sentence telling you to go and find a control. */
+function showAction(label, fn) {
+  const last = $('chat').lastElementChild;
+  if (!last) return;
+  const b = document.createElement('button');
+  b.className = 'btn p';
+  b.style.cssText = 'margin-top:9px;display:block';
+  b.textContent = label;
+  b.onclick = () => { b.disabled = true; fn(); };
+  last.appendChild(b);
+  $('chatpane').scrollTop = $('chatpane').scrollHeight;
 }
 
 async function poll() {
@@ -707,7 +742,9 @@ async function loadApps() {
   const r = await api('/api/apps');
   if (!r) return;
   S.apps = r.apps || [];
+  S.appsLive = r.live !== false;
   $('appcount').textContent = `${S.apps.length}`;
+  $('appnote').hidden = S.appsLive;
   renderApps();
 }
 function renderApps() {
@@ -874,7 +911,7 @@ $('mstart').onclick = async () => {
 async function boot() {
   if (!await findHelper()) {
     offline();
-    if (!$('chat').childElementCount) {
+    if (!$('chat').querySelector('.msg.err')) {
       bubble('I cannot see the AppScan helper on this Mac yet. Start it with `bin/phoneshell serve` '
            + 'in the phoneshell folder and I will pick it up. The phone is driven over a USB cable from '
            + 'your own machine, so nothing about your device or your screenshots ever leaves it.', 'err');
@@ -884,7 +921,7 @@ async function boot() {
   }
   connectSocket();
   await loadRuns();
-  loadDevices(); loadChecks(); loadApps(); readPlan(); poll();
+  loadDevices(); loadChecks(); loadApps(); readPlan(); poll(); health();
   if (!$('chat').childElementCount) {
     bubble('Pick an app on the left and press Start. I open it on your phone and tap my way through '
          + 'every screen I can reach, keeping a screenshot of each one.\n\n'

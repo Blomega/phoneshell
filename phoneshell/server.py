@@ -30,7 +30,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .actions import Phone
 from .apps import installed_apps
-from .bringup import Bridge, checks_for, scan as scan_devices
+from .bringup import Bridge, checks_for, diagnose, scan as scan_devices
 from .config import Config, ROOT, RUNTIME
 from .crawl import (CRAWLS, DENY_BUNDLES, Crawler, Plan as CrawlPlan, is_user_app,
                     list_runs, new_run_dir, plan_from_prompt)
@@ -221,7 +221,8 @@ def status() -> dict:
             "passcode_stored": _passcode_stored(),
         }
     except WDAUnreachable as exc:
-        return {"connected": False, "error": str(exc), "hint": "run `phoneshell up` in a terminal"}
+        return {"connected": False, "error": str(exc),
+                "hint": "not connected to a phone yet"}
     except Exception as exc:
         # A locked phone makes SpringBoard stop answering accessibility queries,
         # which surfaced here as a 500 and took the whole UI down. Status must
@@ -229,7 +230,7 @@ def status() -> dict:
         return {
             "connected": True, "degraded": True, "locked": _locked_now(),
             "error": str(exc)[:200],
-            "hint": "the phone is probably locked; unlock it or run `phoneshell set-passcode`",
+            "hint": "the phone is locked; unlock it to carry on",
             "spend_usd": round(SPEND["usd"], 4), "spend_tasks": SPEND["tasks"],
             "mode": Config.load().session.mode, "memory": Config.load().memory.enabled,
             "mjpeg": "/stream.mjpeg",
@@ -550,6 +551,29 @@ def device_checks(udid: str = "") -> dict:
     return {"checks": checks_for(udid or None)}
 
 
+@app.get("/api/health")
+def health() -> dict:
+    """Why the phone is not usable, in one sentence, with the remedy.
+
+    The page turns a CHANGE in this into a message in the chat, so the person
+    using AppScan finds out that the cable came out from AppScan, rather than
+    from a scan that quietly stops producing screenshots.
+    """
+    return diagnose(BRIDGE)
+
+
+@app.on_event("startup")
+async def _heal_on_startup() -> None:
+    """Reconnect a bridge the last helper took with it when it exited."""
+    def work() -> None:
+        try:
+            for event in BRIDGE.heal():
+                log.info("heal: %s", event.get("detail") or event.get("title"))
+        except Exception as exc:                       # a failed heal is not fatal
+            log.warning("heal failed: %s", exc)
+    threading.Thread(target=work, name="bridge-heal", daemon=True).start()
+
+
 @app.post("/api/disconnect")
 async def disconnect(payload: dict | None = None) -> dict:
     stop_runner = bool((payload or {}).get("stop_runner"))
@@ -562,7 +586,11 @@ def apps_list() -> dict:
     try:
         catalog = installed_apps(Config.load())
     except Exception as exc:
-        return {"apps": [], "error": str(exc)[:200]}
+        return {"apps": [], "error": str(exc)[:200], "live": False}
+    # With no phone attached, installed_apps falls back to a short list of common
+    # bundle ids. That is a useful default and a terrible thing to present as
+    # "apps on this phone", so the page is told which one it is holding.
+    live = diagnose(BRIDGE).get("state") in {"ready", "locked", "runner_dead", "stale_tunnel", "no_tunnel"}
     deny = DENY_BUNDLES | set(Config.load().safety.denied_bundle_ids)
     apps = [
         {"name": name, "bundle": bundle, "denied": bundle in deny,
@@ -570,7 +598,7 @@ def apps_list() -> dict:
         for name, bundle in sorted(catalog.items(), key=lambda kv: kv[0].lower())
         if is_user_app(name, bundle)
     ]
-    return {"apps": apps, "total": len(catalog)}
+    return {"apps": apps, "total": len(catalog), "live": live}
 
 
 @app.post("/api/plan")

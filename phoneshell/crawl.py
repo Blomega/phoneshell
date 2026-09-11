@@ -250,6 +250,9 @@ class Crawler:
         self.apps_done: list[dict] = []
 
         self.taps = 0
+        self.relaunches = 0          # terminate + launch + replay the path
+        self.tapbacks = 0            # one verified tap back, the cheap route
+        self.crossings = 0           # taps that left the app
         self.shot_count = 0
         self.started = 0.0
         self.stop_requested = False
@@ -388,12 +391,68 @@ class Crawler:
             self.emit("error", text=self.stop_reason)
         finally:
             summary = self.write_manifest()
-            self.say(f"Done: {summary['screens']} screens and {summary['shots']} screenshots in "
-                     f"{summary['seconds']:.0f}s. {summary['reason'].capitalize()}."
-                     + (f" {summary['skipped']} controls were refused as unsafe to tap."
-                        if summary["skipped"] else ""))
+            for line in self.report(summary):
+                self.say(line)
             self.emit("done", **summary)
         return summary
+
+    def report(self, summary: dict) -> list[str]:
+        """What happened, in the words someone would use who had watched it.
+
+        A number on its own is not a report. "40 taps" is fine; "15 of those 40
+        were spent walking back to where I already was, because this app has no
+        navigation bar" is the thing that tells you whether to trust the result
+        and what it would take to improve it. This is the only place that
+        knowledge reaches the person using AppScan, so it goes here and not into
+        a log file.
+        """
+        out = [
+            f"**Done.** {summary['screens']} screens, {summary['shots']} screenshots, "
+            f"{summary['taps']} taps, {summary['seconds']:.0f}s. "
+            f"Stopped because {summary['reason']}."
+        ]
+        recovery = summary.get("relaunches", 0) + summary.get("tapbacks", 0)
+        if summary.get("relaunches"):
+            share = summary["relaunches"] / max(summary["taps"], 1)
+            out.append(
+                f"Getting back cost {summary['relaunches']} restart"
+                f"{'s' if summary['relaunches'] != 1 else ''} of the app"
+                + (f" and {summary['tapbacks']} one-tap returns" if summary.get("tapbacks") else "")
+                + ". "
+                + ("That is a lot, and it is what this app's shape costs: it has no navigation bar, "
+                   "so there is no back button to press and I have to reopen it and walk the path "
+                   "again. The screenshots are still correct, it is just slower."
+                   if share > 0.2 else
+                   "That is normal: a tap occasionally goes somewhere unexpected and the safest "
+                   "way back is to start the app again.")
+            )
+        elif summary.get("tapbacks"):
+            out.append(f"Every return was a single tap ({summary['tapbacks']} of them), so nothing "
+                       f"was spent reopening the app.")
+        if summary.get("crossings"):
+            out.append(f"{summary['crossings']} tap{'s' if summary['crossings'] != 1 else ''} led "
+                       f"out of the app entirely. I kept the screenshot of where it landed and came "
+                       f"back, because you asked for this app and not the whole phone.")
+        if summary.get("skipped"):
+            reasons: dict[str, int] = {}
+            for item in self.skipped:
+                raw = str(item.get("why", ""))
+                if "'" in raw:
+                    why = raw.split("'")[1]
+                elif raw.startswith("a ") and "changes a setting" in raw:
+                    why = raw.split()[1].lower() + "es"     # "a Switch ..." -> "switches"
+                else:
+                    why = raw[:28] or "unsafe"
+                reasons[why] = reasons.get(why, 0) + 1
+            top = ", ".join(f"{k} ({v})" for k, v in sorted(reasons.items(), key=lambda kv: -kv[1])[:4])
+            out.append(f"I refused {summary['skipped']} controls as unsafe to tap: {top}. "
+                       f"They are listed under Refused controls, each with its reason.")
+        if summary["screens"] <= 1:
+            out.append("That is barely anything, which usually means one of three things: the app "
+                       "opened onto a login wall, its first screen has nothing tappable that I am "
+                       "willing to touch, or it draws itself in a way iOS does not describe to me. "
+                       "Open the one screenshot I did get and you will see which.")
+        return out
 
     def _take_the_phone(self) -> None:
         """Stop shared mode for the length of the crawl.
@@ -687,6 +746,7 @@ class Crawler:
         name = self.phone.name_for_bundle(bundle) or bundle
         sid = self._shoot_foreign(snap, f"{screen.sid}-out")
         self.edges.append(Edge(screen.sid, sid, label, key, "crossing"))
+        self.crossings += 1
         self.emit("crossing", screen=screen.sid, control=label, to=name, bundle=bundle, shot=sid)
         self.say(f"“{label}” left the app and opened {name}. Screenshot kept, going back.")
 
@@ -1158,7 +1218,9 @@ class Crawler:
                 self.taps += 1
                 self._settle()
                 if self._at(screen):
-                    self.emit("tapped_back", screen=screen.sid, control=screen.path[-1]["label"][:40])
+                    self.tapbacks += 1
+                    self.emit("tapped_back", screen=screen.sid,
+                              control=screen.path[-1]["label"][:40])
                     return True
             return False
 
@@ -1180,12 +1242,14 @@ class Crawler:
             self.taps += 1
             self._settle()
             if self._at(screen):
+                self.tapbacks += 1
                 self.emit("tapped_back", screen=screen.sid, control=(tab.text or tab.type)[:40])
                 return True
         return False
 
     def _replay(self, screen: Screen) -> None:
         """Home, relaunch, and tap the recorded path again, verifying as we go."""
+        self.relaunches += 1
         self.emit("replay", screen=screen.sid, depth=len(screen.path))
         self.say(f"Lost my place, so I am restarting the app and walking back to {screen.title or screen.sid}.")
         self._recover_to_root()
@@ -1311,6 +1375,9 @@ class Crawler:
             "edges": len(self.edges),
             "skipped": len(self.skipped),
             "seconds": round(time.time() - self.started, 1),
+            "relaunches": self.relaunches,
+            "tapbacks": self.tapbacks,
+            "crossings": self.crossings,
             "reason": self.stop_reason or "the crawl ran out of new screens",
         }
         manifest = {
