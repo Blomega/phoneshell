@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Creating a WebDriverAgent session terminates the last session's app, so our verification step moved the phone it was measuring &mdash; Blolabel</title>
+<meta name="description" content="POST /session calls killActiveSessionAndWaitForTeardown, and the teardown terminates the tested application by default. A benchmark check that needed a session therefore sent the phone to the home screen before reading it, and every task failed with foreground is springboard.">
+<link rel="canonical" href="https://blolabel.ai/blog/wda-session-creation-moves-the-phone/">
+<meta property="og:title" content="Creating a WebDriverAgent session terminates the last session's app, so our verification step moved the phone it was measuring &mdash; Blolabel">
+<meta property="og:description" content="POST /session calls killActiveSessionAndWaitForTeardown, and the teardown terminates the tested application by default. A benchmark check that needed a session therefore sent the phone to the home screen before reading it, and every task failed with foreground is springboard.">
+<meta property="og:url" content="https://blolabel.ai/blog/wda-session-creation-moves-the-phone/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Creating a WebDriverAgent session terminates the last session's app, so our verification step moved the phone it was measuring","description":"POST /session calls killActiveSessionAndWaitForTeardown, and the teardown terminates the tested application by default. A benchmark check that needed a session therefore sent the phone to the home screen before reading it, and every task failed with foreground is springboard.",
+ "datePublished":"2026-09-16","dateModified":"2026-09-16",
+ "url":"https://blolabel.ai/blog/wda-session-creation-moves-the-phone/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/wda-session-creation-moves-the-phone/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Does creating a WebDriverAgent session change what is on the phone?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes. POST /session calls killActiveSessionAndWaitForTeardown, and the teardown terminates the previous session's tested application by default, which leaves SpringBoard in front."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Which WebDriverAgent calls work without a session?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "GET /source, GET /screenshot, GET /wda/activeAppInfo, GET /wda/locked, GET /window/size, the alert routes and POST /wda/homescreen. Twenty-two route registrations in FBCustomCommands.m alone carry the withoutSession flag."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do you grade an agent task without disturbing the phone?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Read through the sessionless routes: activeAppInfo at 43 ms, a screenshot at 72 ms and a tree read at 159 to 210 ms, which is 325 ms for an observation that cannot move the phone."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind foundational">foundational</span>
+    <time datetime="2026-09-16">16 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>Creating a WebDriverAgent session terminates the last session's app, so our verification step moved the phone it was measuring</h1>
+  <p class="standfirst">Session creation is a write, not a handshake. WebDriverAgent publishes most of its read path as withoutSession routes for exactly this reason, and an observation loop built from them costs 325 milliseconds and disturbs nothing.</p>
+
+    <p>In WebDriverAgent, <code>POST /session</code> begins by killing the session that was already
+active, and killing a session terminates the application that session was bound to. The phone then
+shows SpringBoard. So a client that creates a session in the middle of a task closes whatever the
+agent just opened, and a verification step that needs a session destroys the state it was about to
+measure. Ours did: every task in one benchmark run failed with "foreground is springboard", and
+the phone had been in the right state until the moment we looked at it.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/wda-session-creation-moves-the-phone-hero.png" alt="Abstract technical illustration of an instrument probe touching a surface and the pattern it was measuring collapsing at the point of contact" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">The three statements that do it</h2>
+
+<p>The path is short enough to read. In <code>WebDriverAgentLib/Commands/FBSessionCommands.m</code>,
+<code>handleCreateSession:</code> opens with <code>[FBSession killActiveSessionAndWaitForTeardown]</code>
+before it looks at a single capability. In <code>WebDriverAgentLib/Routing/FBSession.m</code>,
+<code>-kill</code> ends by terminating the tested application when four conditions hold: there is a
+tested application, <code>FBConfiguration.sharedInstance.shouldTerminateApp</code> is set, the app
+is running, and it is not the same as the system application.
+<code>shouldTerminateApp</code> is set to <code>YES</code> in <code>resetSessionSettings</code>,
+which is to say it is the default.</p>
+
+<p>Nothing here is a bug. A WebDriver session owns an application under test, and tearing it down
+means putting that application away; the specification's session model assumes one client driving
+one app. It stops matching reality when the thing being driven is a phone, the state under test is
+the phone's state rather than one app's, and more than one process wants to look.</p>
+
+<p>The observations below were measured on a physical iPhone 17 Pro Max running iOS 26.6 from
+macOS 26.5, against WebDriverAgent v16.12.4 (released 6 September 2026), and are recorded in
+<code>FINDINGS.md</code> section 6 of the phoneshell repository, published 15 September 2026. The
+code references are to WebDriverAgent's current main branch, which still registers the routes the
+same way as of v16.12.8 on 11 September 2026.</p>
+
+<h2 id="evidence">Which calls need a session, and what they cost</h2>
+
+<p>The useful detail, and the one that makes a fix possible, is that WebDriverAgent already
+publishes most of its read path twice: once under a session and once as
+<code>.withoutSession</code>. Twenty-two route registrations in
+<code>FBCustomCommands.m</code> alone carry that flag.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>call</th><th>session</th><th>measured cost</th><th>what it is for</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td><code>GET /source</code></td><td>not required</td><td>159 to 210 ms at depth 20</td><td>the accessibility tree</td><td>FBDebugCommands.m</td></tr>
+    <tr><td><code>GET /screenshot</code></td><td>not required</td><td>72 ms</td><td>pixels</td><td>FBScreenshotCommands.m</td></tr>
+    <tr><td><code>GET /wda/activeAppInfo</code></td><td>not required</td><td>43 ms</td><td>which app is in front</td><td>FBCustomCommands.m</td></tr>
+    <tr><td><code>GET /wda/locked</code></td><td>not required</td><td>not reported</td><td>is the phone awake</td><td>FBCustomCommands.m</td></tr>
+    <tr><td><code>GET /alert/text</code>, <code>POST /alert/accept</code>, <code>/alert/dismiss</code></td><td>not required</td><td>1,360 ms on a heavy screen</td><td>system dialogs</td><td>FBAlertViewCommands.m</td></tr>
+    <tr><td><code>POST /wda/homescreen</code></td><td>not required</td><td>not reported</td><td>go home</td><td>FBCustomCommands.m</td></tr>
+    <tr><td><code>POST /wda/apps/launchUnattached</code></td><td>not required</td><td>not reported</td><td>open an app without owning it</td><td>FBCustomCommands.m</td></tr>
+    <tr><td><code>GET /window/size</code></td><td>not required</td><td>not reported</td><td>screen geometry</td><td>FBElementCommands.m</td></tr>
+    <tr><td><strong><code>POST /session</code></strong></td><td><strong>creates one, kills the last</strong></td><td>not reported</td><td>attach to an app</td><td>FBSessionCommands.m</td></tr>
+    <tr><td><code>POST /session/:id/actions</code></td><td>required</td><td>500 ms tap, 19,000 ms drag</td><td>W3C gestures</td><td>FBElementCommands.m</td></tr>
+    <tr><td><code>POST /wda/dragfromtoforduration</code></td><td>required</td><td>1,400 ms</td><td>native drag</td><td>FBElementCommands.m</td></tr>
+    <tr><td><code>POST /session/:id/wda/apps/activate</code></td><td>required</td><td>returns OK with the app still in the background</td><td>bring an app forward</td><td>FBSessionCommands.m</td></tr>
+    <tr><td><code>POST /wda/pickerwheel/:uuid/select</code></td><td>required</td><td>550 ms per tap</td><td>picker wheels</td><td>FBElementCommands.m</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Reading is cheap and safe. Writing is neither. An observation loop built only from the first
+group never creates a session, so looking at the phone cannot disturb it, and the three calls that
+make up a full observation add to 325 ms.</p>
+
+<figure>
+<svg viewBox="0 0 900 360" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of what happens when a WebDriverAgent client creates a session. POST slash session calls killActiveSessionAndWaitForTeardown, which calls kill on the previous session. Kill terminates the tested application when four conditions hold: a tested application exists, shouldTerminateApp is yes by default, the app is running, and it is not the system application. Terminating the foreground application leaves SpringBoard in front, so the phone is on the home screen and any task state in that app is gone.">
+  <rect x="0" y="0" width="900" height="360" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">What creating a session does before it reads a single capability</text>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <rect x="40" y="64" width="200" height="60" rx="8" fill="#334155" stroke="#38bdf8"/>
+    <text x="58" y="90" fill="#e2e8f0" font-weight="600">POST /session</text>
+    <text x="58" y="110" fill="#94a3b8">from any client</text>
+
+    <rect x="290" y="64" width="270" height="60" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="308" y="90" fill="#e2e8f0" font-weight="600">killActiveSessionAndWait</text>
+    <text x="308" y="110" fill="#94a3b8">first line of handleCreateSession:</text>
+
+    <rect x="610" y="64" width="250" height="60" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="628" y="90" fill="#e2e8f0" font-weight="600">[session kill]</text>
+    <text x="628" y="110" fill="#94a3b8">FBSession.m</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2"><line x1="240" y1="94" x2="290" y2="94"/><line x1="560" y1="94" x2="610" y2="94"/><line x1="735" y1="124" x2="735" y2="150"/></g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12">
+    <rect x="300" y="150" width="560" height="112" rx="8" fill="#111c33" stroke="#334155"/>
+    <text x="320" y="176" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">terminate the tested app, if all four hold</text>
+    <text x="320" y="202" fill="#94a3b8">testedApplication != nil</text>
+    <text x="600" y="202" fill="#94a3b8">shouldTerminateApp (default YES)</text>
+    <text x="320" y="226" fill="#94a3b8">testedApplication.running</text>
+    <text x="600" y="226" fill="#94a3b8">not the system application</text>
+    <text x="320" y="250" fill="#f59e0b">fb_terminateTestedApplicationWithTimeout:</text>
+  </g>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <rect x="40" y="272" width="380" height="60" rx="8" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="58" y="298" fill="#fbbf24" font-weight="600">foreground app is gone</text>
+    <text x="58" y="318" fill="#94a3b8">SpringBoard is in front: the home screen</text>
+    <rect x="450" y="272" width="410" height="60" rx="8" fill="#1e293b" stroke="#475569"/>
+    <text x="468" y="298" fill="#e2e8f0" font-weight="600">everything the agent had navigated to</text>
+    <text x="468" y="318" fill="#94a3b8">is unwound, and no call reported an error</text>
+  </g>
+  <line x1="300" y1="262" x2="230" y2="272" stroke="#64748b" stroke-width="2"/>
+</svg>
+<figcaption>Session creation is a write, not a handshake. Read it as "close whatever is open, then
+attach", because that is what it does.</figcaption>
+</figure>
+
+<h2 id="mechanism">Three bugs, one cause</h2>
+
+<p>Each of these was a real failure on this rig, and all three are the same sentence applied in a
+different place.</p>
+
+<ul>
+  <li><strong>Recovery that closed apps.</strong> Stale-session handling pressed home and then
+  re-attached. Re-attaching created a session, which closed whatever was open, every few
+  seconds.</li>
+  <li><strong>Verification that destroyed its own measurement.</strong> The benchmark's check
+  called <code>set_settings</code>, which needs a session. Creating it navigated the phone away
+  before the check read anything, so every task in the run failed with "foreground is springboard".
+  The scores were consistent, confident and entirely about our checking code.</li>
+  <li><strong>Two clients evicting each other.</strong> WebDriverAgent holds one active session.
+  When the phone-side app and the agent both create one, each eviction tears down the other's app
+  under test, continuously.</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Two timelines of the same benchmark task. In the broken loop the agent opens Settings, navigates to Auto-Lock and sets it to Never, then the verification step creates a session to call set_settings, which terminates Settings and leaves SpringBoard in front, so the check reads the home screen and the task is scored a failure even though the phone was correct. In the fixed loop the agent acts through the session it already has and the check reads through source, screenshot and activeAppInfo without a session, so the phone is never disturbed and the check reads the real state.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="40" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">The same task, measured two ways</text>
+
+  <text x="40" y="70" fill="#fbbf24" font-family="Montserrat,sans-serif" font-size="14" font-weight="700">verification that creates a session</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <rect x="40" y="84" width="160" height="52" rx="6" fill="#1e293b" stroke="#64748b"/>
+    <text x="54" y="106" fill="#e2e8f0">open Settings</text><text x="54" y="124" fill="#94a3b8">agent acts</text>
+    <rect x="215" y="84" width="170" height="52" rx="6" fill="#1e293b" stroke="#64748b"/>
+    <text x="229" y="106" fill="#e2e8f0">Auto-Lock: Never</text><text x="229" y="124" fill="#94a3b8">phone is now correct</text>
+    <rect x="400" y="84" width="200" height="52" rx="6" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="414" y="106" fill="#fbbf24">check calls set_settings</text><text x="414" y="124" fill="#94a3b8">which needs a session</text>
+    <rect x="615" y="84" width="245" height="52" rx="6" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="629" y="106" fill="#fbbf24">Settings terminated, home screen</text><text x="629" y="124" fill="#94a3b8">"foreground is springboard": FAIL</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2"><line x1="200" y1="110" x2="215" y2="110"/><line x1="385" y1="110" x2="400" y2="110"/><line x1="600" y1="110" x2="615" y2="110"/></g>
+  <text x="40" y="164" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">Every task in the run failed identically, and the failure was in the last 200 milliseconds of each one.</text>
+
+  <line x1="40" y1="186" x2="860" y2="186" stroke="#334155"/>
+
+  <text x="40" y="218" fill="#38bdf8" font-family="Montserrat,sans-serif" font-size="14" font-weight="700">verification that reads without one</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <rect x="40" y="232" width="160" height="52" rx="6" fill="#1e293b" stroke="#64748b"/>
+    <text x="54" y="254" fill="#e2e8f0">open Settings</text><text x="54" y="272" fill="#94a3b8">agent acts</text>
+    <rect x="215" y="232" width="170" height="52" rx="6" fill="#1e293b" stroke="#64748b"/>
+    <text x="229" y="254" fill="#e2e8f0">Auto-Lock: Never</text><text x="229" y="272" fill="#94a3b8">phone is now correct</text>
+    <rect x="400" y="232" width="200" height="52" rx="6" fill="#1e293b" stroke="#38bdf8"/>
+    <text x="414" y="254" fill="#38bdf8">GET /source, /screenshot</text><text x="414" y="272" fill="#94a3b8">withoutSession, 325 ms total</text>
+    <rect x="615" y="232" width="245" height="52" rx="6" fill="#1e293b" stroke="#38bdf8"/>
+    <text x="629" y="254" fill="#38bdf8">Settings still in front</text><text x="629" y="272" fill="#94a3b8">the check reads the real state</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2"><line x1="200" y1="258" x2="215" y2="258"/><line x1="385" y1="258" x2="400" y2="258"/><line x1="600" y1="258" x2="615" y2="258"/></g>
+
+  <text x="40" y="320" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">The rule: the channel that measures must not be a channel that can act.</text>
+  <text x="40" y="346" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">A benchmark that destroys the state it measures still produces numbers. They are consistent, they look like capability, and they are about the harness.</text>
+  <text x="40" y="374" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">Session-scoped calls: actions, dragfromtoforduration, apps/activate, pickerwheel/select. Sessionless: source, screenshot, activeAppInfo, locked, alert, homescreen.</text>
+</svg>
+<figcaption>The failing run was not a model result. It was the checker walking in front of the
+camera, once per task, at exactly the moment of measurement.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 900 300" role="img" style="width:100%;height:auto"
+  aria-label="Bar chart of the cost of one full observation of a heavy third-party app on a physical iPhone. The three sessionless reads that make up a minimal observation are 43 milliseconds for activeAppInfo, 72 for a screenshot and 210 for a tree read at depth 20, totalling 325 milliseconds. A full tuned observation of a heavy app costs 0.99 seconds. Before the tuning the same observation cost 7 to 13 seconds.">
+  <rect x="0" y="0" width="900" height="300" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">What one look at the phone costs, when looking cannot change it</text>
+  <g stroke="#1e293b"><line x1="300" y1="60" x2="300" y2="230"/><line x1="440" y1="60" x2="440" y2="230"/><line x1="580" y1="60" x2="580" y2="230"/><line x1="720" y1="60" x2="720" y2="230"/><line x1="860" y1="60" x2="860" y2="230"/></g>
+  <g font-family="Montserrat,sans-serif" font-size="13" fill="#e2e8f0" text-anchor="end">
+    <text x="288" y="94">3 sessionless reads</text>
+    <text x="288" y="148">tuned full observation</text>
+    <text x="288" y="202">the same, before tuning</text>
+  </g>
+  <rect x="300" y="78" width="45" height="22" rx="3" fill="#38bdf8"/>
+  <rect x="300" y="132" width="139" height="22" rx="3" fill="#38bdf8"/>
+  <rect x="300" y="186" width="420" height="22" rx="3" fill="#f59e0b"/>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#e2e8f0">
+    <text x="355" y="95">0.325 s  (43 + 72 + 210 ms)</text>
+    <text x="449" y="149">0.99 s</text>
+    <text x="730" y="203" fill="#fbbf24">7 to 13 s</text>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="middle">
+    <text x="300" y="250">0</text><text x="440" y="250">2 s</text><text x="580" y="250">4 s</text><text x="720" y="250">6 s</text><text x="860" y="250">8 s</text>
+  </g>
+  <text x="580" y="274" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5" text-anchor="middle">wall clock per observation, heavy third-party app</text>
+</svg>
+<figcaption>Measured on a heavy third-party screen. The bar at the bottom is the version that also
+asked for the expensive attributes and the alert text on every read.</figcaption>
+</figure>
+
+<h2 id="consequences">What this changes if you build a rig or grade a run</h2>
+
+<p>Separate the channel that measures from the channel that acts, and prefer the sessionless routes
+for everything that only looks. That is not a workaround; it is what the <code>.withoutSession</code>
+registrations are for, and WebDriverAgent has them for the tree, the screenshot, the foreground app,
+the lock state, the window size, the alert and the home button.</p>
+
+<p>Two further consequences are worth stating for anyone running a benchmark rather than a test
+suite. First, a check that mutates is not a check, and the mutation here is invisible because every
+call returns success. Second, one WebDriverAgent holds one session, so a rig that also runs a
+companion app on the same phone needs a rule about who may create one, or the two will keep
+evicting each other and both will report healthy while doing it.</p>
+
+<p>The judgement, marked as one: the WebDriver session model is a poor fit for device-level agents,
+and the sessionless read path is the part of WebDriverAgent that admits it. A protocol designed for
+this job would separate "attach to an app" from "look at the device" explicitly, which is close to
+what the MCP accessibility-tree proposal (arXiv:2608.24898, 13 July 2026) is arguing for on the
+assistive side.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>Two terminals, one phone, about a minute. Open an app, confirm it is in front, create a session
+that owns it, then create another one and watch the first app disappear.</p>
+
+<pre><code>git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+bin/phoneshell up
+
+# no session anywhere in this line
+curl -s localhost:8100/wda/activeAppInfo | python3 -m json.tool   # bundleId of what is in front
+
+# session one: attach to Settings, which brings it forward
+S1=$(curl -s -X POST localhost:8100/session -H 'content-type: application/json' \
+  -d '{"capabilities":{"alwaysMatch":{"bundleId":"com.apple.Preferences"}}}' \
+  | python3 -c 'import json,sys;print(json.load(sys.stdin)["sessionId"])')
+curl -s localhost:8100/wda/activeAppInfo        # com.apple.Preferences
+
+# session two, from any other client. Session one's app is terminated by the teardown
+curl -s -X POST localhost:8100/session -H 'content-type: application/json' \
+  -d '{"capabilities":{"alwaysMatch":{}}}' &gt; /dev/null
+curl -s localhost:8100/wda/activeAppInfo        # com.apple.springboard</code></pre>
+
+<p>To see the other half, leave the phone on any screen and hammer the read path:
+<code>/source</code>, <code>/screenshot</code>, <code>/wda/activeAppInfo</code> in a loop for a
+minute. Nothing moves. The code is
+<code>handleCreateSession:</code> in <code>FBSessionCommands.m</code> and <code>-kill</code> in
+<code>FBSession.m</code>, both in <a href="https://github.com/appium/WebDriverAgent">appium/WebDriverAgent</a>,
+and the client side is <code>phoneshell/device.py</code> plus the observation loop in
+<code>phoneshell/actions.py</code>.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>Run the sequence above on WebDriverAgent v16.12.x and find the first app still in the
+  foreground after the second <code>POST /session</code>. That would mean the termination is
+  conditional on something we have not identified, and our reading of <code>-kill</code> is wrong.
+  We predict the home screen, on any iOS 26 device, through 31 December 2026.</li>
+  <li>Set <code>shouldTerminateApp</code> to false in the session settings and the teardown should
+  stop closing the app. We have not tested that path and would treat a report either way as new
+  information rather than confirmation.</li>
+  <li>The narrow claim we are least sure of: our note records that a session created with <em>no</em>
+  bundle id also sends the phone home. The code path we can point at is the teardown of the
+  previous session, not the creation of the empty one, so if you see the home screen with no prior
+  session in existence, the cause is something else and we would want to know.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2 id="sources">Sources</h2>
+    <ol>
+      <li>Appium WebDriverAgent, WebDriverAgentLib/Commands/FBSessionCommands.m, handleCreateSession: and its first statement. <a href="https://github.com/appium/WebDriverAgent/blob/master/WebDriverAgentLib/Commands/FBSessionCommands.m">https://github.com/appium/WebDriverAgent/blob/master/WebDriverAgentLib/Commands/FBSessionCommands.m</a></li>
+      <li>Appium WebDriverAgent, WebDriverAgentLib/Routing/FBSession.m, the kill teardown and its four termination conditions. <a href="https://github.com/appium/WebDriverAgent/blob/master/WebDriverAgentLib/Routing/FBSession.m">https://github.com/appium/WebDriverAgent/blob/master/WebDriverAgentLib/Routing/FBSession.m</a></li>
+      <li>Appium WebDriverAgent, WebDriverAgentLib/Commands/FBCustomCommands.m, twenty-two withoutSession route registrations. <a href="https://github.com/appium/WebDriverAgent/blob/master/WebDriverAgentLib/Commands/FBCustomCommands.m">https://github.com/appium/WebDriverAgent/blob/master/WebDriverAgentLib/Commands/FBCustomCommands.m</a></li>
+      <li>W3C, WebDriver Level 2, the session model. <a href="https://www.w3.org/TR/webdriver2/">https://www.w3.org/TR/webdriver2/</a></li>
+      <li>phoneshell, FINDINGS.md sections 2, 6 and 18, published 15 September 2026. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>Ramineni et al., MCP-Driven Accessibility Tree Standardization for AI-Powered Screen Reader Agents, arXiv:2608.24898, 13 July 2026. <a href="https://arxiv.org/abs/2608.24898">https://arxiv.org/abs/2608.24898</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
