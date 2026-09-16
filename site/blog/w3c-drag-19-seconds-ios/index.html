@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A moving W3C pointer chain costs 19 seconds on a real iPhone, and the identical drag costs 1.4 &mdash; Blolabel</title>
+<meta name="description" content="Measured on a physical iPhone 17 Pro Max on iOS 26.6 with WebDriverAgent v16.12.4: a W3C actions drag takes about 19 seconds regardless of its shape, while the native dragFromToForDuration endpoint performs the same gesture in 1.4 seconds. A tap through the same W3C endpoint takes 500 ms.">
+<link rel="canonical" href="https://blolabel.ai/blog/w3c-drag-19-seconds-ios/">
+<meta property="og:title" content="A moving W3C pointer chain costs 19 seconds on a real iPhone, and the identical drag costs 1.4 &mdash; Blolabel">
+<meta property="og:description" content="Measured on a physical iPhone 17 Pro Max on iOS 26.6 with WebDriverAgent v16.12.4: a W3C actions drag takes about 19 seconds regardless of its shape, while the native dragFromToForDuration endpoint performs the same gesture in 1.4 seconds. A tap through the same W3C endpoint takes 500 ms.">
+<meta property="og:url" content="https://blolabel.ai/blog/w3c-drag-19-seconds-ios/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"A moving W3C pointer chain costs 19 seconds on a real iPhone, and the identical drag costs 1.4","description":"Measured on a physical iPhone 17 Pro Max on iOS 26.6 with WebDriverAgent v16.12.4: a W3C actions drag takes about 19 seconds regardless of its shape, while the native dragFromToForDuration endpoint performs the same gesture in 1.4 seconds. A tap through the same W3C endpoint takes 500 ms.",
+ "datePublished":"2026-09-16","dateModified":"2026-09-16",
+ "url":"https://blolabel.ai/blog/w3c-drag-19-seconds-ios/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/w3c-drag-19-seconds-ios/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How long does a W3C pointer drag take on a real iPhone?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "About 19 seconds on iOS 26.6 with WebDriverAgent v16.12.4: 19.2 s with one move step, 19.8 s with twelve, and 18.9 s with every pause removed."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "What is the fastest way to send a one-finger drag to an iPhone?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "WebDriverAgent's native /wda/dragfromtoforduration endpoint, which performs the same gesture in 1.4 seconds against 19 seconds for the W3C actions chain."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "What does the duration argument of mobile: dragFromToForDuration mean?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "It is how long the press at the starting drag point lasts before the drag begins, not the travel time, in a documented range of 0.5 to 60 seconds."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-16">16 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>A moving W3C pointer chain costs 19 seconds on a real iPhone, and the identical drag costs 1.4</h1>
+  <p class="standfirst">The specification-compliant path is the slow one, and the cost does not scale with the number of points in the chain. Here is the per-call table, the mechanism, and what it does to an agent's step budget.</p>
+
+    <p>A W3C pointer chain that moves costs a flat 19 seconds on a physical iPhone. The same
+one-finger drag sent to WebDriverAgent's native <code>/wda/dragfromtoforduration</code> endpoint
+costs 1.4 seconds, a factor of 13.6. It is dragging specifically: a tap through the same W3C
+<code>/actions</code> endpoint returns in 500 ms. The 19 seconds does not move with the shape of
+the chain either, measured at 19.2 s for one move step, 19.8 s for twelve, and 18.9 s with every
+pause removed.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/w3c-drag-19-seconds-ios-hero.png" alt="Abstract technical illustration of two parallel signal paths of very different thickness carrying the same gesture, one dense and slow, the other thin and fast, over a dark grid" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">What was measured, and why it is the standard path that is slow</h2>
+
+<p>Every figure below was measured best of three on a physical iPhone 17 Pro Max running iOS 26.6,
+driven from macOS 26.5 through Appium's WebDriverAgent at tag v16.12.4, released 6 September 2026.
+They are recorded in <code>FINDINGS.md</code> section 2 of the phoneshell repository, published in
+the 15 September 2026 commit. Four WebDriverAgent releases have shipped since, v16.12.5 on
+7 September through v16.12.8 on 11 September, and we have not re-measured against them.</p>
+
+<p>The awkward part is which path is which. <code>POST /session/:id/actions</code> is the W3C
+WebDriver standard, so it is what a portable client emits: Selenium, WebdriverIO and Appium's own
+action builders all compose pointer chains. The fast route is a WebDriverAgent extension with no
+place in the specification, documented by Appium as
+<code>mobile: dragFromToForDuration</code>, whose <code>duration</code> argument is not the travel
+time at all. The docs define it as "how long the tap gesture at starting drag point should be
+before to start dragging", in the range 0.5 to 60 seconds. Appium's own documentation says of the
+neighbouring scroll extension that it "relies on several undocumented XCTest features, which might
+not always be reliable". So the trade is a standard interface at 19 seconds against a
+vendor-specific one at 1.4.</p>
+
+<h2 id="evidence">What each call costs on a real device</h2>
+
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>call</th><th>endpoint</th><th>measured</th><th>needs a session</th><th>source</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>foreground app info</td><td><code>GET /wda/activeAppInfo</code></td><td>43 ms</td><td>no</td><td>FINDINGS s.2</td></tr>
+    <tr><td>screenshot</td><td><code>GET /screenshot</code></td><td>72 ms</td><td>no</td><td>FINDINGS s.2</td></tr>
+    <tr><td>accessibility tree, depth 20</td><td><code>GET /source</code></td><td>159 to 210 ms</td><td>no</td><td>FINDINGS s.2</td></tr>
+    <tr><td>tap</td><td><code>POST /session/:id/actions</code></td><td>500 ms</td><td>yes</td><td>FINDINGS s.2</td></tr>
+    <tr><td>swipe</td><td><code>POST /wda/swipe</code></td><td>1,000 ms</td><td>yes</td><td>FINDINGS s.2</td></tr>
+    <tr><td><strong>drag</strong></td><td><code>POST /wda/dragfromtoforduration</code></td><td><strong>1,400 ms</strong></td><td>yes</td><td>FINDINGS s.2</td></tr>
+    <tr><td>scroll</td><td><code>POST /wda/scroll</code></td><td>7,350 ms</td><td>yes</td><td>FINDINGS s.2</td></tr>
+    <tr><td><strong>drag</strong></td><td><code>POST /session/:id/actions</code></td><td><strong>19,000 ms</strong></td><td>yes</td><td>FINDINGS s.2</td></tr>
+    <tr><td>same drag, 1 move step</td><td><code>POST /session/:id/actions</code></td><td>19.2 s</td><td>yes</td><td>FINDINGS s.2</td></tr>
+    <tr><td>same drag, 12 move steps</td><td><code>POST /session/:id/actions</code></td><td>19.8 s</td><td>yes</td><td>FINDINGS s.2</td></tr>
+    <tr><td>same drag, no pauses</td><td><code>POST /session/:id/actions</code></td><td>18.9 s</td><td>yes</td><td>FINDINGS s.2</td></tr>
+    <tr><td>picker wheel tap, round trip</td><td><code>POST /session/:id/actions</code></td><td>550 ms</td><td>yes</td><td>FINDINGS s.15</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The read path is the cheap part and it does not need a session, which matters for a different
+reason: observing the phone through a session can disturb the phone. The write path is where the
+seconds are, and one call on it is worth 90 reads of the foreground app.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Log-scale bar chart of WebDriverAgent call costs measured on a physical iPhone 17 Pro Max running iOS 26.6. Foreground app info takes 43 milliseconds, a screenshot 72 milliseconds, an accessibility tree read at depth 20 about 210 milliseconds, a W3C actions tap 500 milliseconds, a native swipe 1000 milliseconds, a native drag 1400 milliseconds, a native scroll 7350 milliseconds, and a W3C actions drag 19000 milliseconds.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">One gesture costs more than ninety reads, log scale</text>
+  <text x="40" y="56" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">iPhone 17 Pro Max, iOS 26.6, WebDriverAgent v16.12.4, best of three</text>
+  <g stroke="#1e293b"><line x1="190" y1="72" x2="190" y2="340"/><line x1="360" y1="72" x2="360" y2="340"/><line x1="530" y1="72" x2="530" y2="340"/><line x1="700" y1="72" x2="700" y2="340"/><line x1="870" y1="72" x2="870" y2="340"/></g>
+  <g font-family="Montserrat,sans-serif" font-size="12.5" fill="#e2e8f0" text-anchor="end">
+    <text x="178" y="98">activeAppInfo</text><text x="178" y="132">screenshot</text><text x="178" y="166">source, depth 20</text>
+    <text x="178" y="200">tap, W3C actions</text><text x="178" y="234">swipe, native</text>
+    <text x="178" y="268">drag, native</text><text x="178" y="302">scroll, native</text>
+    <text x="178" y="336" fill="#fbbf24">drag, W3C actions</text>
+  </g>
+  <g>
+    <rect x="190" y="86" width="107" height="16" rx="3" fill="#38bdf8"/>
+    <rect x="190" y="120" width="146" height="16" rx="3" fill="#38bdf8"/>
+    <rect x="190" y="154" width="225" height="16" rx="3" fill="#38bdf8"/>
+    <rect x="190" y="188" width="289" height="16" rx="3" fill="#64748b"/>
+    <rect x="190" y="222" width="340" height="16" rx="3" fill="#64748b"/>
+    <rect x="190" y="256" width="365" height="16" rx="3" fill="#64748b"/>
+    <rect x="190" y="290" width="487" height="16" rx="3" fill="#64748b"/>
+    <rect x="190" y="324" width="557" height="16" rx="3" fill="#f59e0b"/>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#e2e8f0">
+    <text x="305" y="99">43 ms</text><text x="344" y="133">72 ms</text><text x="423" y="167">210 ms</text>
+    <text x="487" y="201">500 ms</text><text x="538" y="235">1,000 ms</text><text x="563" y="269">1,400 ms</text>
+    <text x="685" y="303">7,350 ms</text><text x="755" y="337" fill="#fbbf24">19,000 ms</text>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="middle">
+    <text x="190" y="362">10 ms</text><text x="360" y="362">100 ms</text><text x="530" y="362">1 s</text><text x="700" y="362">10 s</text><text x="870" y="362">100 s</text>
+  </g>
+  <text x="530" y="386" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5" text-anchor="middle">round-trip wall clock, logarithmic</text>
+</svg>
+<figcaption>The same one-finger drag appears twice: 1,400 ms through the native endpoint and
+19,000 ms through the W3C chain that produces the identical gesture.</figcaption>
+</figure>
+
+<h2 id="mechanism">Why the standard path is the expensive one</h2>
+
+<p>A W3C pointer chain is a sequence the client composes and the runner replays: pointerMove,
+pointerDown, pauses, a run of interpolated pointerMove steps, pointerUp. XCTest synthesises that
+as an event record and waits on it. The native endpoint asks XCTest for one canned gesture instead,
+the coordinate press-and-drag that <code>XCUICoordinate</code> exposes, and XCTest performs it as a
+unit. That is why the cost does not scale with the number of points: the 19 seconds is the
+synthesis and settle path, not the travel. A chain with one move step and a chain with twelve
+differ by 0.6 s, which is noise beside the constant.</p>
+
+<p>Our routing rule follows the measurement exactly. In <code>phoneshell/gestures.py</code>,
+<code>perform()</code> checks whether the gesture is one finger with two points, and if so sends it
+to the native endpoint with <code>press_ms</code> mapped onto the endpoint's press-before-drag
+argument. Everything else, meaning genuinely multi-finger paths and multi-waypoint paths, goes
+through W3C and still costs about 20 seconds. Pinch is expensive and there is no way around it
+today.</p>
+
+<figure>
+<svg viewBox="0 0 900 420" role="img" style="width:100%;height:auto"
+  aria-label="Diagram comparing two ways to send the same drag to an iPhone. The W3C actions path composes pointerMove, pointerDown, pauses, interpolated move steps and pointerUp, hands the chain to XCTest event synthesis, and costs about 19 seconds regardless of whether the chain has 1 or 12 move steps. The native dragFromToForDuration path sends four coordinates and a press duration to XCUICoordinate press and drag, and costs 1.4 seconds. The routing rule sends one-finger two-point gestures to the native path and everything multi-finger to W3C.">
+  <rect x="0" y="0" width="900" height="420" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Two routes to the same finger movement</text>
+  <g font-family="Montserrat,sans-serif" font-size="12.5">
+    <rect x="40" y="62" width="390" height="150" rx="8" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="58" y="88" fill="#fbbf24" font-size="14" font-weight="700">POST /session/:id/actions (W3C)</text>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11.5" fill="#94a3b8">
+      <text x="58" y="112">pointerMove d=0 -> pointerDown -> pause</text>
+      <text x="58" y="132">8 interpolated pointerMove steps</text>
+      <text x="58" y="152">pause -> pointerUp</text>
+    </g>
+    <text x="58" y="178" fill="#e2e8f0">XCTest synthesises and settles the record</text>
+    <text x="58" y="200" fill="#fbbf24" font-weight="700">19.2 s at 1 step, 19.8 s at 12, 18.9 s with no pauses</text>
+
+    <rect x="470" y="62" width="390" height="150" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+    <text x="488" y="88" fill="#38bdf8" font-size="14" font-weight="700">POST /wda/dragfromtoforduration</text>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11.5" fill="#94a3b8">
+      <text x="488" y="112">fromX, fromY, toX, toY, duration</text>
+      <text x="488" y="132">duration = the press BEFORE the drag</text>
+      <text x="488" y="152">one XCUICoordinate press-and-drag</text>
+    </g>
+    <text x="488" y="178" fill="#e2e8f0">XCTest performs one canned gesture</text>
+    <text x="488" y="200" fill="#38bdf8" font-weight="700">1.4 s, the same pixels moved</text>
+  </g>
+  <line x1="450" y1="137" x2="470" y2="137" stroke="#334155" stroke-width="2"/>
+  <text x="450" y="126" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">same gesture</text>
+
+  <line x1="40" y1="244" x2="860" y2="244" stroke="#334155"/>
+  <text x="40" y="272" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="14" font-weight="700">the routing rule in phoneshell/gestures.py</text>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12">
+    <rect x="40" y="290" width="250" height="60" rx="6" fill="#111c33" stroke="#334155"/>
+    <text x="56" y="316" fill="#e2e8f0">len(paths) == 1 and</text><text x="56" y="336" fill="#e2e8f0">len(points) == 2</text>
+    <rect x="330" y="290" width="240" height="60" rx="6" fill="#111c33" stroke="#38bdf8"/>
+    <text x="346" y="316" fill="#38bdf8">native endpoint</text><text x="346" y="336" fill="#94a3b8">1.4 s</text>
+    <rect x="610" y="290" width="250" height="60" rx="6" fill="#111c33" stroke="#f59e0b"/>
+    <text x="626" y="316" fill="#fbbf24">multi-finger or waypoints</text><text x="626" y="336" fill="#94a3b8">W3C, about 20 s</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2"><line x1="290" y1="320" x2="330" y2="320"/><line x1="570" y1="320" x2="610" y2="320"/></g>
+  <text x="40" y="382" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">Both write paths require a session. The read path (source, screenshot, activeAppInfo, window size) is registered withoutSession upstream,</text>
+  <text x="40" y="404" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">so observing the phone costs 43 to 210 ms and never creates one.</text>
+</svg>
+<figcaption>The specification-compliant route is the slow one. The fast one is a WebDriverAgent
+extension, and its duration argument means the press before the drag, not the travel.</figcaption>
+</figure>
+
+<h2 id="consequences">What this changes if you are costing an agent's step budget</h2>
+
+<p>Device latency is usually not the lever. Measured across the tasks that passed on our
+benchmark, a turn takes 4.1 to 6.8 seconds end to end and the phone accounts for about one second
+of that; the rest is the model round trip. OSWorld-Human (arXiv:2506.16042) reports the same shape
+on desktop, where large model calls for planning and reflection dominate latency and the best
+agents still take 1.4 to 2.7 times more steps than necessary. So the ordinary optimisation is to
+ask the model fewer times, not to shave milliseconds off the device.</p>
+
+<p>A 19-second gesture is the exception that breaks that rule. It is three to four turns' worth of
+wall clock inside a single action, and a task with a 240-second budget that needs six drags has
+spent almost half of it before the model has thought about anything. Two rules follow, and they
+are independent.</p>
+
+<ul>
+  <li><strong>Route single-finger drags off the standard path.</strong> Same gesture, same pixels,
+  1.4 s instead of 19 s. If your client only speaks W3C actions, this is the cost of portability
+  and it is worth knowing you are paying it.</li>
+  <li><strong>Batch the turns, not the milliseconds.</strong> Our tool design used to force two
+  turns per action, an <code>observe</code> to learn element ids and then a <code>tap</code> using
+  one, so a three-screen navigation cost six round trips and roughly thirty seconds for work the
+  engine could do deterministically in three. A compound call that runs a list of steps and stops
+  at the first failure removed that floor. On an identical three-turn shape, returning one line
+  for an unchanged screen instead of a full tree took a task from $0.1011 to $0.0345, with
+  cache-write tokens falling from 18,584 to 1,278.</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 900 380" role="img" style="width:100%;height:auto"
+  aria-label="Diagram contrasting two ways to run a three-screen navigation on a phone. The two-turn-per-action shape costs six model round trips, an observe and a tap for each of three screens, at 4.1 to 6.8 seconds per turn, roughly thirty seconds in total. The compound call sends the three steps as one list, the engine verifies each one and returns control only when reality diverges, which is one round trip. On an identical three-turn shape, returning one line for an unchanged screen took the cost from 0.1011 dollars to 0.0345 dollars and cache-write tokens from 18,584 to 1,278.">
+  <rect x="0" y="0" width="900" height="380" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">The turn is the unit of cost, so the fix is fewer turns</text>
+  <text x="40" y="58" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">4.1 to 6.8 s per turn measured end to end, of which the phone is about 1 s</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <text x="40" y="92" fill="#fbbf24" font-size="13.5" font-weight="700">observe, then act: six round trips</text>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11.5">
+      <rect x="40" y="104" width="120" height="40" rx="5" fill="#1e293b" stroke="#64748b"/><text x="52" y="129" fill="#94a3b8">observe</text>
+      <rect x="175" y="104" width="120" height="40" rx="5" fill="#1e293b" stroke="#f59e0b"/><text x="187" y="129" fill="#fbbf24">tap Settings</text>
+      <rect x="310" y="104" width="120" height="40" rx="5" fill="#1e293b" stroke="#64748b"/><text x="322" y="129" fill="#94a3b8">observe</text>
+      <rect x="445" y="104" width="120" height="40" rx="5" fill="#1e293b" stroke="#f59e0b"/><text x="457" y="129" fill="#fbbf24">tap General</text>
+      <rect x="580" y="104" width="120" height="40" rx="5" fill="#1e293b" stroke="#64748b"/><text x="592" y="129" fill="#94a3b8">observe</text>
+      <rect x="715" y="104" width="120" height="40" rx="5" fill="#1e293b" stroke="#f59e0b"/><text x="727" y="129" fill="#fbbf24">tap About</text>
+    </g>
+    <text x="40" y="170" fill="#fbbf24" font-family="ui-monospace,Menlo,monospace" font-size="12">6 turns, about 30 s, and every tree read stays in the conversation and is re-read on every later turn</text>
+
+    <text x="40" y="214" fill="#38bdf8" font-size="13.5" font-weight="700">one compound call: one round trip</text>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11.5">
+      <rect x="40" y="226" width="525" height="44" rx="5" fill="#111c33" stroke="#38bdf8"/>
+      <text x="56" y="253" fill="#e2e8f0">[{"open_app": "Settings"}, {"tap": "General"}, {"tap": "About"}]</text>
+      <rect x="590" y="226" width="245" height="44" rx="5" fill="#1e293b" stroke="#38bdf8"/>
+      <text x="606" y="246" fill="#38bdf8">engine verifies each step</text>
+      <text x="606" y="264" fill="#94a3b8">returns at the first divergence</text>
+    </g>
+  </g>
+  <line x1="40" y1="292" x2="860" y2="292" stroke="#334155"/>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <text x="40" y="320" fill="#e2e8f0" font-weight="600">Same three-turn shape, unchanged screens returned as one line instead of a full tree:</text>
+    <text x="40" y="346" fill="#38bdf8" font-family="ui-monospace,Menlo,monospace" font-size="13">$0.1011  -&gt;  $0.0345</text>
+    <text x="300" y="346" fill="#38bdf8" font-family="ui-monospace,Menlo,monospace" font-size="13">cache-write 18,584  -&gt;  1,278 tokens</text>
+    <text x="40" y="370" fill="#94a3b8" font-size="12.5">A failed run costs the same as a successful one, so preventing avoidable failures is the cheapest optimisation available.</text>
+  </g>
+</svg>
+<figcaption>Device milliseconds are the small term. The tool shape that forces two turns per action
+is the large one, and a 19-second gesture is the case where both bite at once.</figcaption>
+</figure>
+
+<p>The two interact in one place worth naming. Picker wheels are turned by tapping, 550 ms per tap
+round trip, and a drag carries about nine rows for 1.4 s. Nine taps cost five seconds, so the
+native drag wins for long distances and taps win for the last few rows. That arithmetic only
+exists because the drag is 1.4 s. At 19 s it would never be worth taking.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>You need a Mac, an iPhone, a cable and a free Apple developer account. Both write endpoints need
+a session, so create one first and reuse its id.</p>
+
+<pre><code>git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+bin/phoneshell doctor &amp;&amp; bin/phoneshell up     # bridge on localhost:8100
+
+SID=$(curl -s -X POST localhost:8100/session -H 'content-type: application/json' \
+  -d '{"capabilities":{"alwaysMatch":{}}}' | python3 -c 'import json,sys;print(json.load(sys.stdin)["sessionId"])')
+
+# native, one canned gesture
+time curl -s -X POST localhost:8100/wda/dragfromtoforduration -H 'content-type: application/json' \
+  -d '{"fromX":200,"fromY":600,"toX":200,"toY":200,"duration":0.1}' &gt; /dev/null
+
+# W3C, the identical movement as a pointer chain
+time curl -s -X POST localhost:8100/session/$SID/actions -H 'content-type: application/json' \
+  -d '{"actions":[{"type":"pointer","id":"finger1","parameters":{"pointerType":"touch"},
+       "actions":[{"type":"pointerMove","duration":0,"x":200,"y":600},{"type":"pointerDown","button":0},
+       {"type":"pointerMove","duration":300,"x":200,"y":200},{"type":"pointerUp","button":0}]}]}' &gt; /dev/null</code></pre>
+
+<p>Run each three times and take the best, because the first call after a session is created pays
+for the session. Then vary the chain: add ten more interpolated <code>pointerMove</code> steps, or
+remove the pauses, and watch the total stay near 19 seconds. For contrast, swap
+<code>pointerDown</code> plus <code>pointerUp</code> with no movement between them, which is a tap,
+and the same endpoint answers in about half a second. The routing code that reacts to all of this
+is <code>Gestures.perform</code> in <code>phoneshell/gestures.py</code>.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<p>The claim is that on iOS 26.6 with WebDriverAgent v16.12.4, a moving W3C pointer chain costs
+about 19 seconds independent of its shape, and the native drag endpoint performs the same gesture
+in 1.4 seconds.</p>
+
+<ul>
+  <li>If anyone times a moving <code>/actions</code> chain on iOS 26.6 at under 5 seconds with a
+  stock WebDriverAgent build, our number is an artifact of this rig rather than a property of the
+  path, and the routing rule should be dropped. We predict it holds on WebDriverAgent v16.12.x and
+  iOS 26.6 through 31 December 2026.</li>
+  <li>If a later WebDriverAgent or Xcode release changes the synthesis path and the gap closes, the
+  rule expires rather than being wrong. That is the likeliest way this note ages, and the version
+  numbers are on it for exactly that reason.</li>
+  <li>The multi-finger claim is the weakest one here. We measured that multi-finger paths still
+  cost about 20 seconds, but we did not measure a pinch as carefully as we measured the drag, and
+  a reader who does should not treat our 20 as precise.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2 id="sources">Sources</h2>
+    <ol>
+      <li>phoneshell, FINDINGS.md sections 2, 8 and 9, published 15 September 2026. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>phoneshell, phoneshell/gestures.py, the routing rule that sends one-finger drags to the native endpoint. <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/gestures.py">https://github.com/Blomega/phoneshell/blob/main/phoneshell/gestures.py</a></li>
+      <li>Appium XCUITest driver, Execute Methods reference, including mobile: dragFromToForDuration and its duration argument. <a href="https://appium.github.io/appium-xcuitest-driver/latest/reference/execute-methods/">https://appium.github.io/appium-xcuitest-driver/latest/reference/execute-methods/</a></li>
+      <li>W3C, WebDriver Level 2, the Actions interface. <a href="https://www.w3.org/TR/webdriver2/">https://www.w3.org/TR/webdriver2/</a></li>
+      <li>Appium WebDriverAgent release v16.12.4, 6 September 2026, the build every measurement was taken against. <a href="https://github.com/appium/WebDriverAgent/releases/tag/v16.12.4">https://github.com/appium/WebDriverAgent/releases/tag/v16.12.4</a></li>
+      <li>Wu et al., OSWorld-Human: Benchmarking the Efficiency of Computer-Use Agents, arXiv:2506.16042. <a href="https://arxiv.org/abs/2506.16042">https://arxiv.org/abs/2506.16042</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
