@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WebDriverAgent turns an iOS picker wheel with one tap, and on the Clock timer that tap moves two rows &mdash; Blolabel</title>
+<meta name="description" content="The default picker offset of 0.2 lands two rows away on the 292 point iOS Clock timer wheel, so half the values are unreachable: asking for 20 minutes walked 40 taps from 5 to 35. Agents that drag the wheel do worse, and clock.timer.set is the hardest task in our suite.">
+<link rel="canonical" href="https://blolabel.ai/blog/picker-wheel-tap-not-drag/">
+<meta property="og:title" content="WebDriverAgent turns an iOS picker wheel with one tap, and on the Clock timer that tap moves two rows &mdash; Blolabel">
+<meta property="og:description" content="The default picker offset of 0.2 lands two rows away on the 292 point iOS Clock timer wheel, so half the values are unreachable: asking for 20 minutes walked 40 taps from 5 to 35. Agents that drag the wheel do worse, and clock.timer.set is the hardest task in our suite.">
+<meta property="og:url" content="https://blolabel.ai/blog/picker-wheel-tap-not-drag/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"WebDriverAgent turns an iOS picker wheel with one tap, and on the Clock timer that tap moves two rows","description":"The default picker offset of 0.2 lands two rows away on the 292 point iOS Clock timer wheel, so half the values are unreachable: asking for 20 minutes walked 40 taps from 5 to 35. Agents that drag the wheel do worse, and clock.timer.set is the hardest task in our suite.",
+ "datePublished":"2026-09-16","dateModified":"2026-09-16",
+ "url":"https://blolabel.ai/blog/picker-wheel-tap-not-drag/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/picker-wheel-tap-not-drag/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How does WebDriverAgent move an iOS picker wheel?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "With a single tap at normalized offset (0.5, 0.5 + offset) on the wheel, then a wait of up to two seconds for the element's value to change."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why do phone agents fail to set an iOS timer?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "A drag carries momentum and lands approximately, so the agent overshoots and corrects. clock.timer.set was passed by one of six frontier models, and one run spent 26 turns and 228 seconds producing nothing."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "What offset should be used for an iOS picker wheel?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "The documented default of 0.2 moves two rows on the 292 point iOS Clock timer wheel, so the offset has to be calibrated against the wheel in front of you rather than assumed."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind foundational">foundational</span>
+    <time datetime="2026-09-16">16 September 2026</time>
+    <span>8 min read</span>
+  </div>
+  <h1>WebDriverAgent turns an iOS picker wheel with one tap, and on the Clock timer that tap moves two rows</h1>
+  <p class="standfirst">A wheel is moved by tapping beside the selected row, not by dragging it. The default offset is a guess about row height, and when the guess is wrong the arithmetic makes the target unreachable while every call reports success.</p>
+
+    <p>WebDriverAgent turns an iOS picker wheel with a single tap placed a fraction of the wheel's
+height from its centre, not with a drag. The default fraction is 0.2, and on the iOS Clock timer
+wheel, which is 292 points tall, that tap lands two rows away, so the wheel advances two rows per
+tap. Asking for 20 minutes from a wheel sitting on 5 therefore walked 40 taps from 5 to 35 and
+could never have arrived, because every value it can reach is odd. Agents that try to swipe the
+wheel instead do worse: <code>clock.timer.set</code> is the hardest task in our suite, passed by
+one of six frontier models, and one run spent 26 turns and 228 seconds on it and produced
+nothing.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/picker-wheel-tap-not-drag-hero.png" alt="Abstract technical illustration of a vertical cylinder of evenly spaced bands with a single bright point of contact above its midline, and a blurred momentum arc overshooting past it" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">Where the tap comes from</h2>
+
+<p>The mechanism is in Appium's WebDriverAgent, in
+<code>WebDriverAgentLib/Categories/XCUIElement+FBPickerWheel.m</code>. The whole adjustment is
+three statements: take a coordinate at normalized offset <code>(0.5, 0.5 + relativeHeightOffset)</code>
+on the wheel, tap it, then spin the run loop until the element's <code>value</code> differs from
+what it was, giving up after <code>VALUE_CHANGE_TIMEOUT</code>, which the file sets to 2 seconds.
+There is no loop over rows and no check of what the tap landed on. A commit on 9 September 2026,
+"rescale gesture coordinates for compatibility-mode window mismatches", moved the calculation to
+normalized offsets end to end, citing appium/appium#16185.</p>
+
+<p>Appium's driver documentation exposes the same thing as
+<code>mobile: selectPickerWheelValue</code>, with <code>offset</code> in the range 0.01 to 0.5,
+default 0.2, described as how far from the wheel's centre the click should happen, and
+<code>maxAttempts</code> defaulting to 25. The documentation warns in the abstract about exactly
+the failure we measured: too small an offset may not change the value, too high an offset "may
+cause the wheel to switch two or more values at once". What it cannot tell you is which offset
+does which on the screen in front of you, because that depends on the wheel's pixel height and its
+row height, and both are per-screen properties.</p>
+
+<p>Everything below was measured on a physical iPhone 17 Pro Max running iOS 26.6 from macOS 26.5,
+through WebDriverAgent v16.12.4, and is recorded in <code>FINDINGS.md</code> sections 15 and 22 of
+the phoneshell repository, published 15 September 2026.</p>
+
+<h2 id="evidence">The measurements</h2>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>fact</th><th>value</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>how a wheel is moved</td><td>one tap at normalized offset (0.5, 0.5 + offset)</td><td>WebDriverAgent <code>XCUIElement+FBPickerWheel.m</code></td></tr>
+    <tr><td>wait for the value to change</td><td>2 s, then an error</td><td>same file, <code>VALUE_CHANGE_TIMEOUT</code></td></tr>
+    <tr><td>default offset, allowed range</td><td>0.2, in [0.01, 0.5]</td><td>Appium XCUITest driver docs</td></tr>
+    <tr><td>default attempts when a value is given</td><td>25</td><td>Appium XCUITest driver docs</td></tr>
+    <tr><td>Clock timer wheel height</td><td>292 pt</td><td>FINDINGS s.15</td></tr>
+    <tr><td>rows moved per tap at offset 0.2 on that wheel</td><td><strong>2</strong></td><td>FINDINGS s.15</td></tr>
+    <tr><td>asking for 20 minutes from 5</td><td>40 taps, reached 35, target unreachable</td><td>FINDINGS s.15</td></tr>
+    <tr><td>cost of one tap, round trip</td><td>550 ms</td><td>FINDINGS s.2</td></tr>
+    <tr><td>cost of reading the wheel's row back</td><td>154 ms</td><td>FINDINGS s.18</td></tr>
+    <tr><td>rows carried by one native drag</td><td>about 9, in 1.4 s</td><td>FINDINGS s.15</td></tr>
+    <tr><td>drag spanning more than half the wheel height</td><td>grabs nothing; 20 rows moved 0</td><td>FINDINGS s.15</td></tr>
+    <tr><td><code>clock.timer.set</code>, worst observed run</td><td>26 turns, 228 s, no result</td><td>FINDINGS s.12</td></tr>
+    <tr><td><code>clock.timer.set</code>, six-model sweep</td><td>passed by 1 of 6</td><td>FINDINGS s.30</td></tr>
+  </tbody>
+</table>
+</div>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Line chart of the Clock timer minute wheel walking two rows per tap from 5 minutes upward. Because each tap moves two rows, the reachable values are 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33 and 35, all odd. The target of 20 minutes, drawn as a dashed line between 19 and 21, is never touched, which is why the run spent 40 taps and stopped at 35.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Two rows per tap cannot reach an even minute from an odd one</text>
+  <text x="40" y="56" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">iOS 26.6 Clock timer wheel, 292 pt tall, WebDriverAgent default offset 0.2</text>
+  <g stroke="#1e293b"><line x1="90" y1="338" x2="860" y2="338"/><line x1="90" y1="100" x2="90" y2="338"/></g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="end">
+    <text x="82" y="334">5</text><text x="82" y="264">15</text><text x="82" y="194">25</text><text x="82" y="124">35</text>
+  </g>
+  <text x="46" y="220" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" transform="rotate(-90 46 220)" text-anchor="middle">minutes on the wheel</text>
+  <line x1="90" y1="225" x2="860" y2="225" stroke="#f59e0b" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="600" y="217" fill="#fbbf24" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">target: 20 minutes, never touched</text>
+  <polyline points="110,330 158,316 206,302 254,288 302,274 350,260 398,246 446,232 494,218 542,204 590,190 638,176 686,162 734,148 782,134 830,120" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+  <g fill="#38bdf8"><circle cx="110" cy="330" r="4"/><circle cx="158" cy="316" r="4"/><circle cx="206" cy="302" r="4"/><circle cx="254" cy="288" r="4"/><circle cx="302" cy="274" r="4"/><circle cx="350" cy="260" r="4"/><circle cx="398" cy="246" r="4"/><circle cx="446" cy="232" r="4"/><circle cx="494" cy="218" r="4"/><circle cx="542" cy="204" r="4"/><circle cx="590" cy="190" r="4"/><circle cx="638" cy="176" r="4"/><circle cx="686" cy="162" r="4"/><circle cx="734" cy="148" r="4"/><circle cx="782" cy="134" r="4"/><circle cx="830" cy="120" r="4"/></g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#94a3b8"><text x="104" y="352">5</text><text x="200" y="352">9</text><text x="296" y="352">13</text><text x="392" y="352">17</text><text x="440" y="352" fill="#f59e0b">19</text><text x="488" y="352" fill="#f59e0b">21</text><text x="584" y="352">25</text><text x="680" y="352">29</text><text x="776" y="352">33</text></g>
+  <text x="475" y="376" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5" text-anchor="middle">wheel value after each tap, first tap on the left</text>
+  <text x="40" y="408" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13">The wheel steps 19 to 21 without stopping at 20. Forty taps later the run gave up on 35, having never been wrong about any single tap.</text>
+</svg>
+<figcaption>The failure is parity, not precision. A fixed offset that happens to move two rows
+makes half the wheel unreachable, and nothing in the stack reports that.</figcaption>
+</figure>
+
+<h2 id="mechanism">Why a swipe never converges and a tap does</h2>
+
+<p>A wheel advances exactly one row per tap beside the selected row, and it lands on a row because
+that is what the control does when tapped. A drag carries momentum, so it decelerates into an
+approximate position: the agent overshoots, corrects, overshoots the other way, and spends its
+budget narrating the correction. That is what a 240-second timeout with zero completed turns looks
+like from the outside. Every frontier model we have run does it, because a wheel looks like
+something you scroll.</p>
+
+<p>The fix has to calibrate rather than assume, because the row height is a per-screen property and
+the offset is a fraction of the wheel. Our implementation probes offsets 0.10, 0.16, 0.24 and 0.34,
+each in both directions, and derives the offset that moves exactly one row from how many rows the
+probe actually moved. Probing both directions is not optional: a wheel already sitting on its last
+row cannot move further that way, and an AM/PM wheel is exactly that shape, a two-row list with PM
+at the end, so a downward-only probe reports it immovable every time.</p>
+
+<figure>
+<svg viewBox="0 0 900 450" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of how a picker wheel is driven. On the left, WebDriverAgent taps once at normalized offset 0.5 plus 0.2 of the wheel height, which on the 292 point Clock timer wheel is 58 points below the centre and lands two rows away, and it then waits up to 2 seconds for the value to change. In the middle, an agent drags the wheel and momentum carries it past the target so it oscillates. On the right, the calibrated routine probes offsets 0.10, 0.16, 0.24 and 0.34 in both directions to learn rows per tap, drags when more than five rows away because one drag carries about nine rows in 1.4 seconds, then fires the remaining taps as arithmetic and reads the row once at the end.">
+  <rect x="0" y="0" width="900" height="450" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Three ways to move a wheel, one of which lands</text>
+
+  <g font-family="Montserrat,sans-serif" font-size="12.5">
+    <rect x="40" y="62" width="250" height="340" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="58" y="88" fill="#e2e8f0" font-size="14" font-weight="700">WebDriverAgent default</text>
+    <rect x="80" y="110" width="110" height="200" rx="10" fill="#111c33" stroke="#334155"/>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="middle">
+      <text x="135" y="140">17</text><text x="135" y="170">18</text>
+      <text x="135" y="215" fill="#e2e8f0" font-size="13">19</text>
+      <text x="135" y="255">20</text><text x="135" y="285">21</text>
+    </g>
+    <line x1="80" y1="196" x2="190" y2="196" stroke="#334155"/><line x1="80" y1="232" x2="190" y2="232" stroke="#334155"/>
+    <circle cx="135" cy="273" r="7" fill="#f59e0b"/>
+    <text x="200" y="278" fill="#fbbf24" font-family="ui-monospace,Menlo,monospace" font-size="11">tap here</text>
+    <text x="200" y="294" fill="#94a3b8" font-family="ui-monospace,Menlo,monospace" font-size="11">0.2 x 292 pt</text>
+    <text x="58" y="336" fill="#94a3b8">lands 2 rows below, so the wheel</text>
+    <text x="58" y="354" fill="#94a3b8">steps 19 to 21 and skips 20</text>
+    <text x="58" y="380" fill="#94a3b8">waits up to 2 s for any change</text>
+
+    <rect x="320" y="62" width="250" height="340" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="338" y="88" fill="#e2e8f0" font-size="14" font-weight="700">what agents try: drag</text>
+    <path d="M400 130 C440 190, 470 250, 420 300" fill="none" stroke="#f59e0b" stroke-width="2.5"/>
+    <path d="M420 300 C380 330, 470 350, 440 210" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5 4"/>
+    <text x="338" y="360" fill="#94a3b8">momentum lands approximately,</text>
+    <text x="338" y="378" fill="#94a3b8">so it overshoots and corrects</text>
+    <text x="338" y="396" fill="#fbbf24">26 turns, 228 s, no result</text>
+
+    <rect x="600" y="62" width="260" height="340" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+    <text x="618" y="88" fill="#38bdf8" font-size="14" font-weight="700">calibrate, then arithmetic</text>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="11.5" fill="#94a3b8">
+      <text x="618" y="118">1. probe 0.10 / 0.16 / 0.24 / 0.34</text>
+      <text x="618" y="140">   both directions, every time</text>
+      <text x="618" y="168">2. rows moved -&gt; offset for 1 row</text>
+      <text x="618" y="196">3. more than 5 rows away: drag</text>
+      <text x="618" y="218">   about 9 rows in 1.4 s, clamped</text>
+      <text x="618" y="240">   to half the wheel's height</text>
+      <text x="618" y="268">4. remaining rows = arithmetic</text>
+      <text x="618" y="290">   fire them, read once at the end</text>
+      <text x="618" y="318">5. match digits AND letters</text>
+    </g>
+    <text x="618" y="352" fill="#e2e8f0">tap 550 ms, read 154 ms, so the</text>
+    <text x="618" y="370" fill="#e2e8f0">expensive thing is taps, not looking</text>
+    <text x="618" y="396" fill="#38bdf8">9 taps cost 5 s; one drag costs 1.4 s</text>
+  </g>
+  <text x="40" y="430" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">Every iOS date, time, duration, country and unit control is an XCUIElementTypePickerWheel, so one calibrated primitive covers Clock, Calendar, Health and every date-of-birth form.</text>
+</svg>
+<figcaption>The default assumes a row height. The agent assumes a scroll. Only the calibrated
+routine measures the wheel it is actually looking at.</figcaption>
+</figure>
+
+<p>None of this is obscure to people who automate iOS for a living. The standard practitioner
+answer to a picker wheel is the driver's own value-selection call rather than a gesture: Rahul
+Shetty Academy's walkthrough below drives one that way, and the argument it passes is the offset
+this note measures.</p>
+
+<figure class="embed">
+  <div style="position:relative;width:100%;aspect-ratio:16/9">
+    <iframe src="https://www.youtube-nocookie.com/embed/4m_1Y-UC_3E" title="Appium IOS Automation Part 5 - Automate Picker Wheels (Dropdowns)" loading="lazy" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:10px"></iframe>
+  </div>
+  <figcaption>"Appium IOS Automation Part 5: Automate Picker Wheels (Dropdowns)",
+  <a href="https://www.youtube.com/@RahulShettyAcademy">@RahulShettyAcademy</a>, 20 December 2020.
+  Supports the claim that a picker wheel is handled through the driver's value-selection call,
+  whose <code>offset</code> argument assumes a row height it never measures.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 900 300" role="img" style="width:100%;height:auto"
+  aria-label="Bar chart of what it costs to move a picker wheel nine rows on a physical iPhone. Nine taps at 550 milliseconds each cost 4.95 seconds. Nine taps with a tree read after each, at 154 milliseconds per read, cost 6.34 seconds. One native drag carries about nine rows in 1.4 seconds. The measured unit costs are 550 milliseconds per tap, 154 milliseconds per read and 1400 milliseconds per drag.">
+  <rect x="0" y="0" width="900" height="300" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Moving nine rows, three ways</text>
+  <text x="40" y="56" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">Arithmetic on measured unit costs: 550 ms per tap, 154 ms per tree read, 1,400 ms per native drag</text>
+  <g stroke="#1e293b"><line x1="330" y1="72" x2="330" y2="230"/><line x1="462" y1="72" x2="462" y2="230"/><line x1="594" y1="72" x2="594" y2="230"/><line x1="726" y1="72" x2="726" y2="230"/><line x1="858" y1="72" x2="858" y2="230"/></g>
+  <g font-family="Montserrat,sans-serif" font-size="13" fill="#e2e8f0" text-anchor="end">
+    <text x="318" y="102">9 taps, read once at the end</text>
+    <text x="318" y="156">9 taps, a read after each</text>
+    <text x="318" y="210">one native drag</text>
+  </g>
+  <rect x="330" y="86" width="327" height="22" rx="3" fill="#38bdf8"/>
+  <rect x="330" y="140" width="418" height="22" rx="3" fill="#f59e0b"/>
+  <rect x="330" y="194" width="92" height="22" rx="3" fill="#38bdf8"/>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#e2e8f0">
+    <text x="667" y="103">4.95 s</text><text x="758" y="157" fill="#fbbf24">6.34 s</text><text x="432" y="211">1.40 s</text>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="middle">
+    <text x="330" y="250">0</text><text x="462" y="250">2 s</text><text x="594" y="250">4 s</text><text x="726" y="250">6 s</text><text x="858" y="250">8 s</text>
+  </g>
+  <text x="594" y="274" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5" text-anchor="middle">wall clock to cover nine rows</text>
+</svg>
+<figcaption>Why the routine drags for distance and taps for the last few rows. The middle bar is
+the naive loop that reads the wheel after every single tap.</figcaption>
+</figure>
+
+<h2 id="matching">The second way a wheel reports success it did not achieve</h2>
+
+<p>Reading the row back is not enough on its own, because comparing rows by their digits throws
+away everything else on the row. That comparison was introduced for a real reason, so that "5"
+would stop matching "15 min", and it was wrong for every wheel that carries letters.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>row shows</th><th>asked for</th><th>digits-only verdict</th><th>truth</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td><code>9:00 AM</code></td><td><code>9:00 PM</code></td><td>match</td><td>different by twelve hours</td><td>FINDINGS s.22</td></tr>
+    <tr><td><code>Fri Oct 9</code></td><td><code>Mon Sep 9</code></td><td>match</td><td>different by a month</td><td>FINDINGS s.22</td></tr>
+    <tr><td><code>1 hour before</code></td><td><code>1 day before</code></td><td>match</td><td>different by a day</td><td>FINDINGS s.22</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>On a combined date wheel that returns success having fired no taps at all, and the caller saves
+the wrong date. The rule that survives is that the numbers must agree and whatever letters were
+asked for must be present on the row.</p>
+
+<h2 id="consequences">What this changes if you build or evaluate phone agents</h2>
+
+<p>A picker is not a hard reasoning problem. It is a control with a mechanical contract that
+neither the model nor the default automation primitive knows, and the gap between them is where the
+task dies. Three consequences follow.</p>
+
+<ul>
+  <li><strong>Put the primitive in the harness, not in the prompt.</strong> An agent asked to reason
+  about a wheel burns its budget on corrections. An agent handed <code>set_picker("20 minutes")</code>
+  spends one call. Every iOS date, time, duration, country and unit control is an
+  <code>XCUIElementTypePickerWheel</code>, so one calibrated implementation covers Clock, Calendar,
+  Health, Alarms and every sign-up form that asks for a date of birth.</li>
+  <li><strong>A benchmark item that fails mechanically is measuring your harness.</strong> Until we
+  built the calibrated version, <code>clock.timer.set</code> was scoring model capability on
+  whether the model could beat a fixed offset it was never told about. That is worth remembering
+  when reading any mobile agent leaderboard: a task that every model fails is at least as likely to
+  be a harness gap as a capability gap.</li>
+  <li><strong>Do not trust a fixed offset on a wheel you have not measured.</strong> 0.2 of a
+  292-point wheel is two rows. On a taller wheel with the same row height it is more. Appium's own
+  guidance suggests 0.15 to 0.3 as a usual range, which is a prior, not a measurement.</li>
+</ul>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>Open the Clock app on the Timer tab, then find the wheel and tap it through WebDriverAgent's own
+endpoint at the default offset, twice, reading the value in between:</p>
+
+<pre><code>git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+bin/phoneshell up
+
+# the wheel's element id, from the tree
+curl -s "localhost:8100/source?format=json" | python3 -c \
+ 'import json,sys;print([e for e in json.dumps(json.load(sys.stdin)).split(chr(34)) if "PickerWheel" in e][:3])'
+
+# one adjustment at the documented default offset
+curl -s -X POST localhost:8100/session/$SID/wda/pickerwheel/$UUID/select \
+  -H 'content-type: application/json' -d '{"order":"next","offset":0.2}'</code></pre>
+
+<p>Read the wheel's <code>value</code> before and after. On the iOS 26.6 Clock timer minute wheel
+it moves two rows, not one. Repeat at <code>"offset":0.10</code> and it moves one. The calibrated
+version that does this for you is <code>Phone.set_picker</code> in
+<code>phoneshell/actions.py</code>, and the probe loop is the block commented "calibrate: find the
+offset that moves this wheel exactly one row". The task itself is <code>clock.timer.set</code> in
+the public task set at
+<a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">huggingface.co/datasets/blolabel/phoneshell-bench</a>.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>Measure the Clock timer minute wheel on iOS 26.6 at offset 0.2 and find it moving one row per
+  tap. That would make our two-row figure a property of this device's display scaling rather than
+  of the wheel, and the parity argument would go with it. We predict two rows on any iPhone running
+  iOS 26.6 with the same wheel height of 292 points.</li>
+  <li>Show a frontier model passing <code>clock.timer.set</code> in four or more of six runs with
+  no picker primitive in the tool set, before 31 December 2026. That would mean the gesture is not
+  the blocker and the models simply needed better prompting.</li>
+  <li>A WebDriverAgent release that calibrates the offset itself, or an iOS release that reports
+  the selected row's index, would make the whole routine unnecessary. As of v16.12.8, released
+  11 September 2026, the file still taps once and waits 2 seconds for any change.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2 id="sources">Sources</h2>
+    <ol>
+      <li>Appium WebDriverAgent, WebDriverAgentLib/Categories/XCUIElement+FBPickerWheel.m, the tap and the two second value-change timeout. <a href="https://github.com/appium/WebDriverAgent/blob/master/WebDriverAgentLib/Categories/XCUIElement%2BFBPickerWheel.m">https://github.com/appium/WebDriverAgent/blob/master/WebDriverAgentLib/Categories/XCUIElement%2BFBPickerWheel.m</a></li>
+      <li>Appium XCUITest driver, Execute Methods reference, mobile: selectPickerWheelValue, offset range 0.01 to 0.5 with default 0.2 and maxAttempts 25. <a href="https://appium.github.io/appium-xcuitest-driver/latest/reference/execute-methods/">https://appium.github.io/appium-xcuitest-driver/latest/reference/execute-methods/</a></li>
+      <li>appium/appium issue 16185, cited in the WebDriverAgent source for the normalized-offset rewrite of 9 September 2026. <a href="https://github.com/appium/appium/issues/16185">https://github.com/appium/appium/issues/16185</a></li>
+      <li>phoneshell, FINDINGS.md sections 2, 12, 15, 18, 22 and 30, published 15 September 2026. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>phoneshell, phoneshell/actions.py, Phone.set_picker and its calibration loop. <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/actions.py">https://github.com/Blomega/phoneshell/blob/main/phoneshell/actions.py</a></li>
+      <li>Appium WebDriverAgent releases, v16.12.4 on 6 September 2026 through v16.12.8 on 11 September 2026. <a href="https://github.com/appium/WebDriverAgent/releases">https://github.com/appium/WebDriverAgent/releases</a></li>
+      <li>phoneshell-bench, the public task set containing clock.timer.set. <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">https://huggingface.co/datasets/blolabel/phoneshell-bench</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
