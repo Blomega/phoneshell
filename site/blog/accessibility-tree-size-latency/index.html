@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>640 leftover alarms turned a 154 ms screen read into 24 seconds, and the tree came back 218 switches short | Blolabel</title>
+<meta name="description" content="On a physical iPhone 17 Pro Max, WebDriverAgent&#x27;s /source took 154 ms on the Clock timer screen, 2,612 ms on an alarm list of 640 rows left by earlier benchmark runs, and 24,195 ms with the Add Alarm sheet open. At that size one read returned 631 cells and 413 switches, with no error.">
+<link rel="canonical" href="https://blolabel.ai/blog/accessibility-tree-size-latency/">
+<meta property="og:title" content="640 leftover alarms turned a 154 ms screen read into 24 seconds, and the tree came back 218 switches short | Blolabel">
+<meta property="og:description" content="On a physical iPhone 17 Pro Max, WebDriverAgent&#x27;s /source took 154 ms on the Clock timer screen, 2,612 ms on an alarm list of 640 rows left by earlier benchmark runs, and 24,195 ms with the Add Alarm sheet open. At that size one read returned 631 cells and 413 switches, with no error.">
+<meta property="og:url" content="https://blolabel.ai/blog/accessibility-tree-size-latency/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"640 leftover alarms turned a 154 ms screen read into 24 seconds, and the tree came back 218 switches short","description":"On a physical iPhone 17 Pro Max, WebDriverAgent's /source took 154 ms on the Clock timer screen, 2,612 ms on an alarm list of 640 rows left by earlier benchmark runs, and 24,195 ms with the Add Alarm sheet open. At that size one read returned 631 cells and 413 switches, with no error.",
+ "datePublished":"2026-09-15","image":"https://blolabel.ai/images/blog/accessibility-tree-size-latency-hero.png","dateModified":"2026-09-15",
+ "url":"https://blolabel.ai/blog/accessibility-tree-size-latency/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/accessibility-tree-size-latency/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-15">15 September 2026</time>
+    <span>6 min read</span>
+  </div>
+  <h1>640 leftover alarms turned a 154 ms screen read into 24 seconds, and the tree came back 218 switches short</h1>
+  <p class="standfirst">A benchmark task failed because of the residue of earlier runs of the same task. The mechanism is general: WebDriverAgent&#x27;s cost per request grows with the accessibility tree, and past a few hundred rows the tree it returns is incomplete and says nothing.</p>
+
+  <p>On a physical iPhone 17 Pro Max on 8 September 2026, WebDriverAgent read the Clock timer screen
+in 154 ms, the alarm list in 2,612 ms, and the Add Alarm sheet over that list in 24,195 ms, a 6.1
+MB response. The list held 640 alarms, 621 of them identical unlabelled artefacts saved by agents
+on earlier runs of a task that says "do not save it". At that size one read returned 631 cells and
+413 switches with HTTP 200. There is one switch per alarm, so 218 were missing and nothing said so.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/accessibility-tree-size-latency-hero.png" alt="Abstract illustration of a very long column of repeated identical rows receding into darkness, with gaps where rows are missing" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">What happened, and what it broke</h2>
+
+<p><code>clock.alarm.set_time</code> has a 240-second budget. At 24 seconds per observation it
+produced zero completed turns, then, before a guard was added, passed both of its checks from
+whatever the list behind the sheet happened to show: its pattern for 30 matched
+<code>10:30AM, Alarm</code>. The task failed, and briefly passed, because of residue from earlier
+runs of itself. The measurement and the fixes are in <code>FINDINGS.md</code> sections 18 to 21,
+committed 8 September 2026 in the change that added a <code>clean_alarms</code> teardown to the
+three Clock tasks. The pre-registration for the next experiment then made a Clock tree read under
+0.5 s a hard gate before any run could start.</p>
+
+<p>For comparison, iOSWorld (arXiv:2606.09764, 8 June 2026) passes its agents a cleaned XCUITest
+tree capped at 200 elements and 15 levels. A cap like that keeps observation cost bounded. Applied
+to a 640-row list it would also hide most rows, by design rather than by accident, and an agent
+would have to scroll to see them.</p>
+
+<h2 id="evidence">The measurements</h2>
+
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>operation</th><th class="r">Clock timer screen</th><th class="r">alarm list, 640 rows</th><th class="r">Add Alarm sheet open</th><th>source</th>
+  </tr></thead>
+  <tbody>
+    <tr><td><code>/source</code>, full tree</td><td class="r num">154 ms</td><td class="r num">2,612 ms</td><td class="r num">24,195 ms (6.1 MB)</td><td>FINDINGS s.18, 8 Sep 2026</td></tr>
+    <tr><td><code>tap</code></td><td class="r num">550 ms</td><td class="r num">2,290 ms</td><td class="r">not reported</td><td>FINDINGS s.18</td></tr>
+    <tr><td><code>drag</code></td><td class="r num">1,400 ms</td><td class="r num">4,200 ms</td><td class="r">not reported</td><td>FINDINGS s.18</td></tr>
+    <tr><td>elements in one read</td><td class="r">not reported</td><td class="r num">631 cells, 413 switches</td><td class="r">not reported</td><td>FINDINGS s.19</td></tr>
+  </tbody>
+</table>
+</div>
+
+<figure>
+<svg viewBox="0 0 900 460" role="img" style="width:100%;height:auto"
+  aria-label="Log-scale bar chart of WebDriverAgent latency on a physical iPhone as the Clock app's accessibility tree grows. The source read took 154 milliseconds on the timer screen, 2,612 on an alarm list of 640 rows and 24,195 with the Add Alarm sheet open. A tap took 550 milliseconds on the timer screen and 2,290 on the 640-row list. A drag took 1,400 and 4,200 milliseconds.">
+  <rect x="0" y="0" width="900" height="460" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Same app, same phone: cost follows the tree</text>
+  <text x="40" y="60" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="13">Milliseconds per request, log scale. Grey: timer screen. Blue: 640-row alarm list.</text>
+  <g stroke="#1e293b"><line x1="300" y1="80" x2="300" y2="400"/><line x1="518" y1="80" x2="518" y2="400"/><line x1="736" y1="80" x2="736" y2="400"/></g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="middle">
+    <text x="300" y="418">100 ms</text><text x="518" y="418">1,000 ms</text><text x="736" y="418">10,000 ms</text>
+  </g>
+  <g font-family="Montserrat,sans-serif" font-size="13" fill="#e2e8f0">
+    <text x="40" y="110">/source, timer screen</text>
+    <text x="40" y="150">/source, 640 alarms</text>
+    <text x="40" y="190">/source, sheet open</text>
+    <text x="40" y="250">tap, timer screen</text>
+    <text x="40" y="290">tap, 640 alarms</text>
+    <text x="40" y="350">drag, timer screen</text>
+    <text x="40" y="390">drag, 640 alarms</text>
+  </g>
+  <rect x="300" y="94" width="40.9" height="22" fill="#64748b"/>
+  <rect x="300" y="134" width="308.9" height="22" fill="#38bdf8"/>
+  <rect x="300" y="174" width="519.7" height="22" fill="#38bdf8"/>
+  <rect x="300" y="234" width="161.4" height="22" fill="#64748b"/>
+  <rect x="300" y="274" width="296.4" height="22" fill="#38bdf8"/>
+  <rect x="300" y="334" width="249.9" height="22" fill="#64748b"/>
+  <rect x="300" y="374" width="353.9" height="22" fill="#38bdf8"/>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12.5" font-weight="600">
+    <text x="350" y="110" fill="#e2e8f0">154</text>
+    <text x="618" y="150" fill="#38bdf8">2,612</text>
+    <text x="828" y="190" fill="#38bdf8" text-anchor="end" dy="-14">24,195</text>
+    <text x="470" y="250" fill="#e2e8f0">550</text>
+    <text x="605" y="290" fill="#38bdf8">2,290</text>
+    <text x="559" y="350" fill="#e2e8f0">1,400</text>
+    <text x="663" y="390" fill="#38bdf8">4,200</text>
+  </g>
+</svg>
+<figcaption>A read on the sheet over 640 alarms costs 157 times the timer screen's read. A task
+with a 240-second budget gets about ten observations at that rate.</figcaption>
+</figure>
+
+<p>Depth is the other lever, and it has a knee. On a heavy third-party food list, raising
+<code>snapshotMaxDepth</code> added elements and time until depth 25, then only time.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th class="r">snapshotMaxDepth</th><th class="r">seconds per read</th><th class="r">elements returned</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td class="r num">12</td><td class="r num">0.09</td><td class="r num">4</td><td>FINDINGS s.2, Grab food list</td></tr>
+    <tr><td class="r num">16</td><td class="r num">0.15</td><td class="r num">29</td><td>FINDINGS s.2</td></tr>
+    <tr><td class="r num">20 (phoneshell default)</td><td class="r num">0.21</td><td class="r num">59</td><td>FINDINGS s.2; <code>phoneshell/config.py</code></td></tr>
+    <tr><td class="r num">25</td><td class="r num">1.27</td><td class="r num">78</td><td>FINDINGS s.2</td></tr>
+    <tr><td class="r">30 and above</td><td class="r">no gain over 25</td><td class="r">no gain over 25</td><td>FINDINGS s.2</td></tr>
+  </tbody>
+</table>
+</div>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Line chart of WebDriverAgent read time against snapshot depth on a heavy third-party list on a physical iPhone. Depth 12 read 4 elements in 0.09 seconds, depth 16 read 29 elements in 0.15 seconds, depth 20 read 59 elements in 0.21 seconds, and depth 25 read 78 elements in 1.27 seconds. Going from depth 20 to 25 cost six times the time for 19 more elements.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Depth 20 to 25: six times the time for 19 more elements</text>
+  <line x1="150" y1="330" x2="820" y2="330" stroke="#334155"/>
+  <line x1="150" y1="90" x2="150" y2="330" stroke="#334155"/>
+  <g stroke="#1e293b"><line x1="150" y1="158.6" x2="820" y2="158.6"/><line x1="150" y1="244.3" x2="820" y2="244.3"/></g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="end">
+    <text x="140" y="334">0 s</text><text x="140" y="248">0.5 s</text><text x="140" y="162">1.0 s</text>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="middle">
+    <text x="150" y="352">12</text><text x="350" y="352">16</text><text x="550" y="352">20</text><text x="800" y="352">25</text>
+  </g>
+  <text x="475" y="378" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">snapshotMaxDepth</text>
+  <text x="30" y="210" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" transform="rotate(-90 30 210)" text-anchor="middle">seconds per read</text>
+  <polyline points="150,314.6 350,304.3 550,294 800,112.3" fill="none" stroke="#38bdf8" stroke-width="3"/>
+  <g fill="#38bdf8"><circle cx="150" cy="314.6" r="6"/><circle cx="350" cy="304.3" r="6"/><circle cx="550" cy="294" r="6"/><circle cx="800" cy="112.3" r="6"/></g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#e2e8f0">
+    <text x="160" y="296">0.09 s, 4 el.</text>
+    <text x="330" y="284">0.15 s, 29 el.</text>
+    <text x="530" y="274">0.21 s, 59 el.</text>
+    <text x="700" y="100">1.27 s, 78 el.</text>
+  </g>
+</svg>
+<figcaption>Grab's food list, one read per depth. Excluding the <code>visible</code> and
+<code>accessible</code> attributes, which XCTest computes by hit-testing every node, separately
+cut one read from 5.82 s to 0.89 s for a difference of one element out of 24.</figcaption>
+</figure>
+
+<h2 id="mechanism">Why a big tree is slow, and why it lies by omission</h2>
+
+<p>WebDriverAgent resolves a request by snapshotting the element hierarchy through XCTest, so a
+tap, a drag and a read each pay for the tree as it stands. That is our reading of the numbers
+above rather than something the runner documents: every operation we timed on the 640-row screen
+got slower together, by 4.2 times for a tap and 3.0 times for a drag. At the large end the
+snapshot also stops being complete, and it does so without an error, a truncation marker or a
+status change.</p>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of how tree size drives cost and truncation. Earlier benchmark runs saved 621 artefact alarms, growing the Clock list to 640 rows. Every WebDriverAgent request walks that tree, so source rose from 154 to 2,612 milliseconds and to 24,195 with a sheet open. One read returned 631 cells and 413 switches with HTTP 200, so 218 switches were absent. Presence checks stay sound; absence checks become unsafe, and a cleanup guard fired on all twenty protected alarms at once. A batched delete re-anchored the scroll offset and removed a real 7:00 AM weekday alarm.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">From residue to slow reads to wrong conclusions</text>
+  <g font-family="Montserrat,sans-serif">
+    <rect x="40" y="70" width="200" height="90" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="55" y="98" fill="#e2e8f0" font-size="13" font-weight="600">agents save alarms</text>
+    <text x="55" y="120" fill="#94a3b8" font-size="12">621 artefacts</text>
+    <text x="55" y="140" fill="#94a3b8" font-size="12">640 rows in the list</text>
+    <rect x="300" y="70" width="240" height="90" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="315" y="98" fill="#e2e8f0" font-size="13" font-weight="600">every request walks the tree</text>
+    <text x="315" y="120" fill="#94a3b8" font-size="12">/source 154 to 2,612 ms</text>
+    <text x="315" y="140" fill="#94a3b8" font-size="12">24,195 ms with the sheet open</text>
+    <rect x="600" y="70" width="260" height="90" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+    <text x="615" y="98" fill="#e2e8f0" font-size="13" font-weight="600">the read comes back short</text>
+    <text x="615" y="120" fill="#38bdf8" font-size="12">631 cells, 413 switches, HTTP 200</text>
+    <text x="615" y="140" fill="#38bdf8" font-size="12">218 switches absent, no marker</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2"><line x1="240" y1="115" x2="300" y2="115"/><line x1="540" y1="115" x2="600" y2="115"/></g>
+  <line x1="730" y1="160" x2="730" y2="200" stroke="#38bdf8" stroke-width="2"/>
+  <line x1="200" y1="200" x2="730" y2="200" stroke="#38bdf8" stroke-width="2"/>
+  <line x1="200" y1="200" x2="200" y2="230" stroke="#38bdf8" stroke-width="2"/>
+  <line x1="640" y1="200" x2="640" y2="230" stroke="#38bdf8" stroke-width="2"/>
+  <g font-family="Montserrat,sans-serif">
+    <rect x="40" y="230" width="360" height="110" rx="8" fill="#1e293b" stroke="#334155"/>
+    <text x="55" y="258" fill="#e2e8f0" font-size="13" font-weight="600">a check for presence</text>
+    <text x="55" y="282" fill="#94a3b8" font-size="12">stays sound: a short read cannot</text>
+    <text x="55" y="300" fill="#94a3b8" font-size="12">invent an element that is not there</text>
+    <rect x="460" y="230" width="400" height="110" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+    <text x="475" y="258" fill="#e2e8f0" font-size="13" font-weight="600">a check for absence</text>
+    <text x="475" y="282" fill="#94a3b8" font-size="12">breaks: a cleanup guard fired on all 20</text>
+    <text x="475" y="300" fill="#94a3b8" font-size="12">protected alarms at once, none deleted</text>
+    <text x="475" y="322" fill="#38bdf8" font-size="12">needs several agreeing reads, or a scroll</text>
+  </g>
+  <line x1="40" y1="366" x2="860" y2="366" stroke="#334155"/>
+  <text x="40" y="392" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">and a position is not valid after a mutation</text>
+  <text x="40" y="414" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">A batch of seven deletes re-anchored the list's scroll offset and removed a real, weekday-repeating 7:00 AM alarm.</text>
+</svg>
+<figcaption>Residue makes reads slow; size makes them incomplete; incomplete reads make absence
+unprovable. The delete incident is what that looks like when a program acts on it.</figcaption>
+</figure>
+
+<p>The asymmetry is the useful rule. A truncated tree can make something look gone. It cannot
+make something appear. Checks for presence survive a short read; checks for absence need the
+read to be settled, repeated or scrolled, and our <code>element_exists</code> check with
+<code>negate: true</code> now requires exactly that before it will score a pass.</p>
+
+<h2 id="what-it-means">What this changes if you run agents on real phones</h2>
+
+<p>Cleanup is throughput. A suite that mutates the device has to undo it, or its latency drifts
+upward run by run and the numbers drift with it. The alarm task did not get harder; its screen
+got 17 times more expensive to read.</p>
+
+<p>Budget per observation, not per task. A fixed 240-second budget is ten observations at 24 s
+and more than a thousand at 154 ms. If observation cost is not logged per step, a timeout on a
+bloated screen reads as a model failure.</p>
+
+<p>Set depth deliberately and escalate. Depth 20 read 59 of the 78 reachable elements in 0.21 s;
+depth 25 read all 78 in 1.27 s. phoneshell defaults to 20 and re-reads deeper only when the
+shallow read looks under-described. Drop <code>visible</code> and <code>accessible</code> from
+the snapshot unless a check needs them.</p>
+
+<p>Never act twice on one read. Judgement from the delete incident: deciding each deletion from
+the row's own label and switch state, one delete per fresh read, was slower and correct; the
+batched plan was faster and removed an alarm belonging to the phone's owner.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<p>With <code>bin/phoneshell up</code> running from
+<a href="https://github.com/Blomega/phoneshell">github.com/Blomega/phoneshell</a>, open Clock on
+a screen of your choice and time a full read:</p>
+
+<pre><code># time and size of one full tree read, session-free
+curl -s -o /tmp/src.json -w '%{time_total}s %{size_download} bytes\n' \
+  'http://127.0.0.1:8100/source?format=json'
+
+# count switches and cells in that read
+python3 -c "
+import json
+def walk(n):
+    yield n
+    for c in n.get('children') or []: yield from walk(c)
+t = json.load(open('/tmp/src.json'))['value']
+k = [n.get('type') for n in walk(t)]
+print('cells', k.count('XCUIElementTypeCell'), 'switches', k.count('XCUIElementTypeSwitch'))"
+
+# the same read without the two hit-tested attributes
+curl -s -o /dev/null -w '%{time_total}s\n' \
+  'http://127.0.0.1:8100/source?format=json&amp;excluded_attributes=visible,accessible'</code></pre>
+
+<p>Depth is set per session through WebDriverAgent's settings endpoint,
+<code>POST /session/&lt;id&gt;/appium/settings</code> with
+<code>{"settings":{"snapshotMaxDepth":25}}</code>, which is what <code>set_settings</code> in
+<code>phoneshell/wda/client.py</code> sends. Creating that session sends the phone to the home
+screen, so set depth before opening the app you want to time. The cleanup that removes artefact
+alarms one verified row at a time is <code>scripts/clean_alarms.py</code> and
+<code>Runner.remove_artifact_alarms</code>. Reproducing the 640-row figures needs 640 alarms, and
+we do not recommend creating them on a phone you use.</p>
+
+<h2 id="falsification">What would prove this wrong</h2>
+
+<p>The claim is that WebDriverAgent's per-request cost scales with accessibility tree size, and
+that very large trees come back incomplete without signalling it. The prediction, with a date:
+<b>before 31 March 2027, on the then-current WebDriverAgent release and a physical iPhone, a full
+<code>/source</code> read of a Clock alarm list with at least 600 rows will still take more than
+ten times the read of the timer screen on the same phone.</b> A release that brings it within
+three times falsifies the scaling claim. A release that returns every switch on a 600-row list in
+five consecutive reads falsifies the truncation claim.</p>
+
+<p>The limit: every number here comes from one phone, one app state and single reads rather than
+distributions. The depth table is one third-party app. Treat the ratios as measured and the
+precise milliseconds as one sample each.</p>
+
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Why do phone agents get slower on some iPhone screens?", "acceptedAnswer": {"@type": "Answer", "text": "Because WebDriverAgent's per-request cost scales with the size of the accessibility tree. Blolabel measured /source at 154 ms on the Clock timer screen, 2,612 ms on an alarm list with 640 rows, and 24,195 ms with a sheet open over that list; taps went from 550 ms to 2,290 ms and drags from 1,400 ms to 4,200 ms on the same screens."}}, {"@type": "Question", "name": "Can the iOS accessibility tree be incomplete?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, silently. On 8 September 2026 one /source read of a 640-alarm screen returned 631 cells and 413 switches with HTTP 200 and no truncation marker. There is one switch per alarm, so 218 were missing. A missing element in a large tree is not evidence that it is gone."}}, {"@type": "Question", "name": "What snapshot depth should WebDriverAgent use for iOS agents?", "acceptedAnswer": {"@type": "Answer", "text": "Blolabel defaults to snapshotMaxDepth 20 with escalation. On a heavy third-party list, depth 20 read 59 elements in 0.21 s, depth 25 read 78 elements in 1.27 s, and depth 30 and above added nothing over 25. Excluding the visible and accessible attributes cut one read from 5.82 s to 0.89 s."}}]}
+</script>
+
+  <section class="sources">
+    <h2 id="sources">Sources</h2>
+    <ol>
+      <li>Blolabel, <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">FINDINGS.md</a>, sections 2 and 18 to 21, measured on an iPhone 17 Pro Max on iOS 26.6, committed 8 September 2026.</li>
+<li>Blolabel, <a href="https://github.com/Blomega/phoneshell/blob/main/docs/EXPERIMENT-2.md">docs/EXPERIMENT-2.md</a>: the Clock tree read under 0.5 s run gate.</li>
+<li>Blolabel, <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/config.py">phoneshell/config.py</a> (snapshotMaxDepth 20) and <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/wda/client.py">phoneshell/wda/client.py</a> (source and settings calls).</li>
+<li>Appium, <a href="https://github.com/appium/WebDriverAgent/releases/tag/v16.12.4">WebDriverAgent v16.12.4</a>, released 6 September 2026, the runner version measured.</li>
+<li>Lawrence Keunho Jang et al., <a href="https://arxiv.org/abs/2606.09764">iOSWorld: A Benchmark for Personally Intelligent Phone Agents</a>, arXiv:2606.09764, submitted 8 June 2026; tree capped at 200 elements and 15 levels per <a href="https://iosworld.io/">iosworld.io</a>.</li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
