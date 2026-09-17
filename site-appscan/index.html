@@ -25,7 +25,7 @@
 
   /* The phone is the point of the product, so it owns the room: at 1680px it is
      about 60% of everything right of the two lists, and it never goes away. */
-  #app{display:grid;grid-template-columns:52px 210px 240px 1fr 1.55fr;height:100vh}
+  #app{display:grid;grid-template-columns:52px 210px 260px minmax(300px,1fr) minmax(0,1.1fr);height:100vh}
   .col{min-width:0;min-height:0;display:flex;flex-direction:column;border-right:1px solid var(--line)}
   .col:last-child{border-right:none}
 
@@ -49,6 +49,7 @@
   .iconbtn{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--faint)}
   .iconbtn:hover{background:var(--hover);color:var(--text)}
   .iconbtn svg{width:15px;height:15px}
+  .iconbtn:disabled{opacity:.3;cursor:default;background:none}
   .scroll{flex:1;overflow-y:auto;min-height:0}
   .pill{font-size:10.5px;padding:2px 9px;border-radius:20px;font-weight:600;flex:none}
   .pill.open{background:var(--accent);color:#07130b}
@@ -102,6 +103,7 @@
   .tabs{display:flex;gap:3px;padding:0 10px;height:50px;align-items:center;border-bottom:1px solid var(--line);flex:none}
   .tab{padding:6px 12px;border-radius:8px;font-size:12.5px;color:var(--dim)}
   .tab.on{background:var(--panel2);color:var(--text);font-weight:500}
+  #midsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #chat{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
   .msg{max-width:86%;padding:9px 13px;border-radius:13px;white-space:pre-wrap;word-wrap:break-word;font-size:13px}
   .msg.bot{align-self:flex-start;background:var(--panel);border:1px solid var(--line)}
@@ -129,6 +131,8 @@
   .chip{border:1px solid var(--line);border-radius:6px;padding:2px 8px;display:flex;align-items:center;gap:5px}
   .chip input{width:36px;background:none;border:none;color:var(--text);font:inherit;font-size:11px;
     font-family:var(--mono);text-align:right;outline:none}
+  .chip.resume{cursor:pointer;color:var(--dim);border-color:#1f4029}
+  .chip.resume input{width:auto;margin:0 3px 0 0;accent-color:var(--accent)}
 
   /* flow tab */
   #flowwrap{padding:14px 18px 18px}
@@ -153,24 +157,55 @@
   .leaf{font-size:10.5px;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
   .leaf.cross{border-color:#4a3a1a;color:#d6b45e}
 
+  /* screenshot tab: the selected screen, full size, beside (not inside) the phone */
+  #shotpane{flex:1;min-height:0;display:flex;flex-direction:column;--ar:0.4603}
+  .shothead{flex:none;display:flex;align-items:center;gap:6px;padding:9px 12px;border-bottom:1px solid var(--line)}
+  .shothead .meta{flex:1;min-width:0;display:flex;flex-direction:column;margin-left:4px}
+  .shothead .ttl{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .shothead .dm{color:var(--faint);font-size:10.5px;font-family:var(--mono)}
+  .shothead .trail{color:var(--accent);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #shotfit{padding:16px}
+
   /* ------------------------------------------------- column 4: the phone */
   #right{background:#0a0a0c}
-  #stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:20px;gap:22px}
-  .stagewrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;min-height:0;height:100%}
-  .stagelabel{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;font-weight:600;flex:none}
-  .frame{flex:1;min-height:0;aspect-ratio:9/19.5;border-radius:min(4.4vh,42px);background:#000;overflow:hidden;
-    position:relative}
+  /* Each phone is sized by the room it is given, width AND height. Sizing by height
+     alone put two phone-tall frames side by side that were wider than the column,
+     and the second ran off the window. --ar is the phone's own shape, read off the
+     screenshot, so nothing is cropped on a phone that is not 19.5:9. */
+  #stage{flex:1;min-height:0;display:flex;justify-content:center;padding:14px 20px 20px;gap:22px;--ar:0.4603}
+  .stagewrap{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .stagehead{height:26px;flex:none;display:flex;align-items:center;gap:10px}
+  .stagelabel{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;font-weight:600;
+    white-space:nowrap}
+  .fit{flex:1;min-height:0;width:100%;container-type:size;display:flex;align-items:center;justify-content:center}
+  .frame,#nophone{width:min(100cqw,100cqh * var(--ar));aspect-ratio:var(--ar);flex:none;
+    border-radius:min(11cqw,5cqh);background:#000;overflow:hidden;position:relative}
   #phoneframe{border:3px solid #2a2a30;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05)}
   #phoneframe.live{border-color:#2a4a33;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 2px rgba(34,197,94,.4)}
   .frame img{width:100%;height:100%;object-fit:cover;display:block}
-  #nophone{flex:1;min-height:0;aspect-ratio:9/19.5;border-radius:min(4.4vh,42px);border:2px dashed var(--line2);
+  #nophone{background:none;border:2px dashed var(--line2);overflow:auto;
     display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-    color:var(--faint);font-size:12.5px;padding:28px;gap:9px;line-height:1.6}
-  #nophone b{color:var(--dim);font-size:13.5px}
+    color:var(--faint);font-size:12.5px;padding:8%;gap:9px;line-height:1.6}
+  .dl{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:7px;padding:3px 9px;
+    font-size:11.5px;color:var(--dim);background:var(--panel2);white-space:nowrap;flex:none}
+  .dl:hover{color:var(--text);border-color:var(--line2)}
+  .dl:disabled{opacity:.4;cursor:default}
+  .dl svg{width:13px;height:13px}
+  /* Where the room runs out, a download button keeps its icon and loses its words. */
+  #c2 .chead{container:shead/inline-size}
+  #c2 .chead h2{flex:none}
+  @container shead (max-width:229px){#dlall .t{display:none}}  #nophone b{color:var(--dim);font-size:13.5px}
+  #nopic{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;
+    text-align:center;padding:12%;color:var(--faint);font-size:12.5px;line-height:1.6;background:#000}
+  #nopic b{color:var(--dim);font-size:13.5px}
+  .spin{width:11px;height:11px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;
+    display:inline-block;animation:spin .8s linear infinite;margin-right:7px;vertical-align:-1px;flex:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .btn.busy{opacity:1;cursor:progress}
   #focus{border:2px solid var(--line);cursor:zoom-in}
-  #focus .tag{position:absolute;left:0;right:0;bottom:0;padding:9px 11px;font-size:10.5px;
-    background:linear-gradient(transparent,rgba(0,0,0,.9));color:var(--dim);font-family:var(--mono)}
-  #devbar{flex:none;border-top:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px}
+  #devbar{flex:none;border-top:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px;
+    flex-wrap:wrap}
+  #devbar .who{flex:1 1 150px;min-width:0}
   #devbar .n{font-size:12.5px;font-weight:600}
   #devbar .s{font-size:10.5px;color:var(--faint);font-family:var(--mono)}
   .btn{border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:12px;background:var(--panel2)}
@@ -207,10 +242,21 @@
   .empty code{font-family:var(--mono);font-size:11.5px;background:var(--panel2);padding:1px 5px;border-radius:4px;
     border:1px solid var(--line)}
   #box{position:fixed;inset:0;background:rgba(5,5,7,.94);display:none;align-items:center;justify-content:center;
-    z-index:60;padding:30px;cursor:zoom-out}
+    z-index:60;padding:24px 84px 68px;cursor:zoom-out}
   #box.on{display:flex}
-  #box img{max-height:100%;border-radius:16px;box-shadow:0 26px 70px rgba(0,0,0,.75)}
-  #box .cap{position:fixed;bottom:20px;left:0;right:0;text-align:center;color:var(--dim);font-size:12px;font-family:var(--mono)}
+  #box img{height:100%;width:auto;max-width:100%;object-fit:contain;border-radius:16px;cursor:default;
+    box-shadow:0 26px 70px rgba(0,0,0,.75)}
+  .boxnav{position:fixed;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;z-index:61;
+    background:rgba(255,255,255,.09);color:#fff;display:flex;align-items:center;justify-content:center}
+  .boxnav:hover{background:rgba(255,255,255,.18)}
+  .boxnav:disabled{opacity:.22;cursor:default;background:rgba(255,255,255,.09)}
+  .boxnav svg{width:24px;height:24px}
+  #boxprev{left:20px} #boxnext{right:20px}
+  #boxclose{top:16px;right:16px;transform:none;width:40px;height:40px}
+  #boxclose svg{width:18px;height:18px}
+  #boxpos{color:var(--faint)}
+  #box .cap{position:fixed;bottom:18px;left:0;right:0;display:flex;align-items:center;justify-content:center;
+    gap:14px;padding:0 16px;color:var(--dim);font-size:12px;font-family:var(--mono)}
   #modal,#ask{position:fixed;inset:0;background:rgba(5,5,7,.72);display:none;align-items:center;
     justify-content:center;z-index:70;backdrop-filter:blur(3px)}
   #modal.on,#ask.on{display:flex}
@@ -230,6 +276,30 @@
   #applist button{display:block;width:100%;text-align:left;padding:8px 11px;font-size:12.5px;color:var(--dim)}
   #applist button:hover{background:var(--hover);color:var(--text)}
   #applist button.on{background:#131a15;color:var(--accent)}
+
+  /* ------------------------------------------------------- narrower windows */
+  @media (max-width:1400px){
+    #app{grid-template-columns:52px 190px 220px minmax(280px,1fr) minmax(0,1fr)}
+  }
+  @media (max-width:1180px){
+    #rail{display:none}
+    #app{grid-template-columns:170px 200px minmax(260px,1fr) minmax(0,1fr)}
+    #stage{padding:10px 12px 14px;gap:12px}
+  }
+  /* A phone, or a tablet on end: one column that scrolls, each panel a fixed share
+     of the screen, the phone straight after the app list. */
+  @media (max-width:860px){
+    body{overflow:auto}
+    #app{display:flex;flex-direction:column;height:auto}
+    .col{border-right:none;border-bottom:1px solid var(--line)}
+    #c1{order:1;height:44vh}
+    #right{order:2;height:88vh;min-height:540px}
+    #c2{order:3;height:60vh}
+    #mid{order:4;height:82vh}
+    #box{padding:14px 10px 64px}
+    .boxnav{width:40px;height:40px}
+    #boxprev{left:8px} #boxnext{right:8px}
+  }
 </style>
 </head>
 <body>
@@ -264,6 +334,7 @@
 
   <div class="col" id="c2">
     <div class="chead"><h2>Screens</h2><div class="grow"></div>
+      <button class="dl" id="dlall" disabled title="Every screenshot in this scan, full resolution, in one zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="t">Download all</span></button>
       <button class="iconbtn" id="gridtoggle" title="open the folder gallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3h7v7M21 3l-9 9"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></button>
     </div>
     <div class="filters"><span id="scount">0 screens</span><div class="grow"></div>
@@ -276,6 +347,7 @@
     <div class="tabs">
       <button class="tab on" id="t-chat">Chat</button>
       <button class="tab" id="t-flow">Flow</button>
+      <button class="tab" id="t-shot">Screenshot</button>
       <div class="grow"></div>
       <span class="pill idle" id="pill">idle</span>
       <span class="sub" id="midsub"></span>
@@ -288,6 +360,18 @@
         AppScan walks it on the real phone, keeping a screenshot of every screen it reaches.</p>
       </div>
       <div id="flowwrap"></div>
+    </div>
+    <div id="shotpane" hidden>
+      <div class="shothead" id="shothead" hidden>
+        <button class="iconbtn" id="sprev" title="previous screen (←)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+        <button class="iconbtn" id="snext" title="next screen (→)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>
+        <span class="meta"><span class="ttl" id="stitle"></span><span class="dm" id="smeta"></span><span class="trail" id="strail"></span></span>
+        <button class="dl" id="dlone" title="This screenshot, full resolution"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="t">Download</span></button>
+      </div>
+      <div class="fit" id="shotfit" hidden><div class="frame" id="focus"><img id="focusimg" alt=""></div></div>
+      <div class="empty" id="shotempty"><h3>No screen selected.</h3>
+        <p>Click a screen in the list to see it here. Double-click one to open it large, then use the
+        arrows, or the arrow keys, to step through the rest.</p></div>
     </div>
     <div id="composer">
       <div id="cbox">
@@ -302,20 +386,20 @@
   <div class="col" id="right">
     <div id="stage">
       <div class="stagewrap">
-        <span class="stagelabel" id="livelabel">live phone</span>
-        <div class="frame" id="phoneframe" hidden><img id="screen" alt="live screen"></div>
-        <div id="nophone"><b>No phone connected</b>
-          Plug an iPhone into this Mac with a cable and unlock it, then press Connect below.</div>
-      </div>
-      <div class="stagewrap" id="focuswrap" hidden>
-        <span class="stagelabel">selected screen</span>
-        <div class="frame" id="focus"><img id="focusimg" alt=""><div class="tag" id="focustag"></div></div>
-      </div>
-    </div>
+        <div class="stagehead"><span class="stagelabel" id="livelabel">live phone</span></div>
+        <div class="fit">
+          <div class="frame" id="phoneframe" hidden><img id="screen" alt="live screen">
+            <div id="nopic" hidden><b>Connected, but no picture yet.</b>The phone is answering, but its screen
+              is not coming through. I keep retrying; if it stays black, press Relaunch.</div></div>
+          <div id="nophone"><b id="nophone-title">No phone connected</b>
+            <span id="nophone-body">Plug an iPhone into this Mac with a cable and unlock it, then
+            press Connect below.</span></div>
+        </div>
+      </div>    </div>
 
     <div id="devbar">
       <span class="dotm" id="livedot"></span><span class="dotm" id="healthdot" hidden></span>
-      <span style="min-width:0"><span class="n" id="devname">—</span>
+      <span class="who"><span class="n" id="devname">-</span>
         <span class="s" id="devsub">not connected</span></span>
       <div class="grow"></div>
       <button class="btn p" id="connect" disabled>Connect</button>
@@ -357,7 +441,14 @@
   </div>
 </div>
 
-<div id="box"><img id="boximg" alt=""><div class="cap" id="boxcap"></div></div>
+<div id="box">
+  <button class="boxnav" id="boxprev" title="previous screen (←)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+  <img id="boximg" alt="">
+  <button class="boxnav" id="boxnext" title="next screen (→)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>
+  <button class="boxnav" id="boxclose" title="close (Esc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <div class="cap"><span id="boxcap"></span><span id="boxpos"></span>
+    <button class="dl" id="boxdl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="t">Download</span></button></div>
+</div>
 
 <div id="ask"><div class="sheet">
   <h3>One question before I carry on</h3>
@@ -415,8 +506,22 @@ const S = {
   apps: [], runs: [], app: null, appName: '', order: 'new', taps: 0,
 };
 
+let rediscovering = false;
+/* Look for the helper again instead of staying dark until someone reloads.
+   findHelper() used to run exactly once, at page load, so a page opened before
+   `phoneshell serve` was started stayed broken for the rest of its life however
+   many times the helper came up afterwards -- and the page gave no hint that a
+   reload was what it wanted. */
 async function api(path, opts) {
-  if (API === null) return null;
+  if (API === null) {
+    if (rediscovering) return null;
+    rediscovering = true;
+    try {
+      if (!await findHelper()) return null;
+    } finally {
+      rediscovering = false;
+    }
+  }
   try { const r = await fetch(API + path, opts); return await r.json(); }
   catch (e) { return null; }
 }
@@ -450,6 +555,7 @@ function thinking(on) {
 async function loadDevices() {
   const r = await api('/api/devices');
   if (!r) { offline(); return; }
+  onlineAgain();
   S.devices = r.devices || []; S.bridge = r.bridge || {};
   if (!S.selected) {
     const pick = S.devices.find(d => d.configured && d.connected) || S.devices.find(d => d.connected)
@@ -470,15 +576,35 @@ async function loadDevices() {
     $('a-dev').innerHTML = `<div class="chk bad"><span class="m">none</span><span>No iPhone is visible to this Mac.
       <span class="fix">Plug one in with a cable, unlock it and tap Trust.</span></span></div>`;
   }
-  $('connect').disabled = !S.selected;
-  $('relaunch').disabled = !S.selected;
+  $('connect').disabled = !S.selected || S.connecting || S.up;
+  $('relaunch').disabled = !S.selected || S.connecting;
   $('drop').disabled = !(S.bridge.owned || S.bridge.up);
 }
 function offline() {
   $('devsub').textContent = 'helper not running on this Mac';
+  // Say which of the two things is missing. This page cannot see the phone
+  // WITHOUT the helper, so when the helper is down it knows nothing about the
+  // cable -- and telling someone to check a cable that is already plugged in is
+  // the exact failure this project exists to stop. The bridge (phoneshell up)
+  // and the helper (phoneshell serve) are separate processes and either can be
+  // down while the other is perfectly fine.
+  $('nophone-title').textContent = 'The helper is not running on this Mac';
+  $('nophone-body').innerHTML = 'This page talks to a small local helper, and nothing is answering '
+    + 'on 8765. Nothing here can tell whether a phone is plugged in until it is up. Run '
+    + '<code>bin/phoneshell serve</code> in the phoneshell folder. If the phone is already '
+    + 'connected in a terminal, that is a different process (<code>phoneshell up</code>) and it '
+    + 'stays up regardless.';
   $('a-dev').innerHTML = `<div class="chk bad"><span class="m">off</span><span>The AppScan helper is not running.
     <span class="fix">On the Mac with the phone, run <code>bin/phoneshell serve</code>.</span></span></div>`;
 }
+function onlineAgain() {
+  if ($('nophone-title').textContent.startsWith('The helper')) {
+    $('nophone-title').textContent = 'No phone connected';
+    $('nophone-body').textContent = 'Plug an iPhone into this Mac with a cable and unlock it, '
+      + 'then press Connect below.';
+  }
+}
+
 async function loadChecks() {
   const r = await api('/api/checks?udid=' + encodeURIComponent(S.selected || ''));
   if (!r) return;
@@ -497,11 +623,15 @@ async function health() {
   if (h.state !== lastHealth) {
     const first = lastHealth === null;
     lastHealth = h.state;
-    if (!h.ok) {
+    if (h.state === 'parked') {
+      // Off on purpose, not a fault. A finished scan has already said so.
+      if (first) bubble(`**${h.title}.** ${h.detail}\n\n${h.fix}`);
+    } else if (!h.ok) {
       bubble(`**${h.title}.** ${h.detail}\n\n${h.fix}`, 'err');
       if (h.action === 'connect') showAction('Connect', () => $('connect').click());
       if (h.action === 'relaunch') showAction('Relaunch', () => $('relaunch').click());
-    } else if (!first) {
+    } else if (!first && !S.connecting && Date.now() - (S.connectEnd || 0) > 15000) {
+      // A connect just said this in its own message; saying it again is noise.
       bubble(`**${h.title}.** ${h.detail}`);
     }
   }
@@ -528,23 +658,121 @@ async function poll() {
   const up = !!(r && r.connected && !r.error);
   $('livedot').className = 'dotm' + (S.crawling ? ' busy' : up ? ' on' : '');
   $('phoneframe').className = 'frame' + (S.crawling ? ' live' : '');
-  $('livelabel').textContent = S.crawling ? 'live phone — scanning' : 'live phone';
+  $('livelabel').textContent = S.crawling ? 'live phone · scanning' : 'live phone';
+  // The live phone's own shape, so a phone that is not 19.5:9 is not cropped.
+  const pt = (r && r.point_size) || [];
+  if (pt[1]) $('stage').style.setProperty('--ar', (pt[0] / pt[1]).toFixed(4));
+  S.up = up;
+  if (!S.connecting) {
+    $('connect').textContent = up ? 'Connected' : 'Connect';
+    $('connect').disabled = up || !S.selected;
+  }
   if (up) {
-    if (r.mjpeg && !$('screen').src) $('screen').src = API + r.mjpeg;
+    streamOn();
     $('phoneframe').hidden = false; $('nophone').hidden = true;
+    // Connected is not the same as seeing the screen, so say which one it is.
+    const noPic = $('screen').naturalWidth === 0 && Date.now() - S.streamAt > 8000;
+    $('nopic').hidden = !noPic;
+    if (noPic && Date.now() - S.streamAt > 20000) { streamOff(); streamOn(); }
     $('devname').textContent = r.device || 'iPhone';
     $('devsub').textContent = `iOS ${r.ios || '?'} · WDA ${r.wda || '?'}${r.app ? ' · ' + r.app : ''}`;
     $('a-info').innerHTML = [
       ['device', r.device], ['ios', r.ios], ['webdriveragent', r.wda], ['transport', r.transport],
       ['front app', r.app], ['screen', (r.point_size || []).join(' × ')], ['locked', r.locked ? 'yes' : 'no'],
-    ].map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v ?? '—')}</span></div>`).join('');
+    ].map(([k, v]) => `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v ?? '-')}</span></div>`).join('');
   } else {
-    $('phoneframe').hidden = true; $('nophone').hidden = false; $('screen').src = '';
-    if (r) { $('devname').textContent = '—'; $('devsub').textContent = r.hint || 'not connected'; }
+    $('phoneframe').hidden = true; $('nophone').hidden = false; streamOff();
+    if (r) { $('devname').textContent = '-'; $('devsub').textContent = r.hint || 'not connected'; }
   }
   $('go').disabled = (!up && !S.waiting) || (S.crawling && !S.waiting) ? (S.crawling ? false : !S.waiting && !up) : false;
-  if (!S.crawling && !S.waiting) $('go').disabled = !up || !S.plan;
+  if (!S.crawling && !S.waiting) $('go').disabled = !(up || lastHealth === 'parked') || !S.plan;
   setTimeout(poll, S.crawling ? 6000 : 4000);
+}
+
+/* The live picture. Tested with getAttribute, never the src property: after
+   src = '' the property reads back as the page's own URL, which is truthy, so a
+   phone that went away and came back never got its stream again and sat black. */
+function streamOn() {
+  const img = $('screen');
+  if (img.getAttribute('src')) return;
+  img.src = `${API}/stream.mjpeg?t=${Date.now()}`;
+  S.streamAt = Date.now();
+}
+function streamOff() { $('screen').removeAttribute('src'); $('nopic').hidden = true; }
+$('screen').onerror = () => streamOff();     // the next poll starts it again
+
+/* ------------------------------------------------------------------ sound */
+/* Three bell strikes when a scan ends, so you can look away while it works.
+   Synthesised, so there is no file to fetch. The context is opened on the first
+   click, because browsers only let a page make sound after someone touched it. */
+let audio = null;
+function audioCtx() {
+  if (!audio) {
+    try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+  }
+  if (audio.state === 'suspended') audio.resume();
+  return audio;
+}
+document.addEventListener('pointerdown', () => audioCtx(), { once: true });
+function ding(times = 3) {
+  const ctx = audioCtx();
+  if (!ctx) return;
+  for (let i = 0; i < times; i++) {
+    const t = ctx.currentTime + 0.05 + i * 0.42;
+    for (const [freq, peak] of [[1318.5, 0.22], [2637, 0.05]]) {    // E6, and its octave for shimmer
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+      o.connect(g).connect(ctx.destination);
+      o.start(t); o.stop(t + 1.2);
+    }
+  }
+}
+
+/* ------------------------------------------------------------- connecting */
+/* A connect takes 5 to 40 seconds. The button says it is working and ignores
+   more presses, and every step writes into ONE message. Before, the button never
+   changed, so it got pressed again, and each press added five bubbles. */
+let progress = null, progressHead = '', progressLines = [];
+function progressSay(head, line) {
+  if (head) progressHead = head;
+  if (line) progressLines.push(line);
+  const text = progressHead + (progressLines.length ? '\n' + progressLines.map(l => '· ' + l).join('\n') : '');
+  if (!progress) { progress = bubble(text); return; }
+  progress.innerHTML = fmt(text) + `<span class="when">${clock()}</span>`;
+  $('chatpane').scrollTop = $('chatpane').scrollHeight;
+}
+function progressEnd(head) { progressSay(head); progress = null; progressLines = []; }
+
+const NOPHONE = $('nophone').innerHTML;
+let connectTimer = null;
+function connectingUI(on, label) {
+  S.connecting = on;
+  if (!on) S.connectEnd = Date.now();
+  const b = $('connect');
+  b.classList.toggle('busy', on);
+  b.innerHTML = on ? `<span class="spin"></span>${label}` : (S.up ? 'Connected' : 'Connect');
+  b.disabled = on || S.up || !S.selected;
+  $('relaunch').disabled = on || !S.selected;
+  $('nophone').innerHTML = on
+    ? `<span class="spin" style="width:20px;height:20px;margin:0"></span><b>${label}</b>This takes up to half a minute.`
+    : NOPHONE;
+  clearTimeout(connectTimer);
+  if (on) connectTimer = setTimeout(() => {
+    if (!S.connecting) return;
+    connectingUI(false);
+    progressEnd('**The phone did not answer within 90 seconds.** Check that it is unlocked and on the '
+              + 'cable or the same wifi, then press Connect again.');
+  }, 90000);
+}
+function startConnect(relaunch) {
+  if (S.connecting) return;
+  progress = null; progressLines = [];
+  if (!send({ type: 'connect', udid: S.selected, relaunch })) return;
+  connectingUI(true, relaunch ? 'Restarting…' : 'Connecting…');
+  progressSay(relaunch ? 'Restarting WebDriverAgent on the phone…' : 'Connecting to the phone…');
 }
 
 /* ------------------------------------------------------------------- plan */
@@ -556,19 +784,25 @@ function limits() {
   return o;
 }
 async function readPlan(extra) {
-  const body = { prompt: $('prompt').value, ...limits(), ...(extra || {}) };
+  const body = { prompt: $('prompt').value, ...limits(),
+    ...(S.app ? { app: S.app, label: S.appName } : {}), fresh: !!S.fresh, ...(extra || {}) };
   const r = await api('/api/plan', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   if (!r) return null;
   S.plan = r.plan;
   $('notes').innerHTML = (r.notes || []).slice(0, 2).map(n => `<span>${esc(n)}</span>`).join('')
     + `<span class="chip">screens <input id="q_max_screens" value="${r.plan.max_screens}"></span>`
     + `<span class="chip">depth <input id="q_max_depth" value="${r.plan.max_depth}"></span>`
-    + `<span class="chip">minutes <input id="q_max_minutes" value="${r.plan.max_minutes}"></span>`;
+    + `<span class="chip">minutes <input id="q_max_minutes" value="${r.plan.max_minutes}"></span>`
+    // Earlier scans of this app: carry on from them (the default) or start over.
+    + (r.earlier && r.earlier.runs ? `<label class="chip resume" title="Keeps every screen already collected and only taps controls no earlier scan tapped. Untick to scan from scratch.">
+        <input type="checkbox" id="q_resume" ${S.fresh ? '' : 'checked'}>carry on: keep the ${r.earlier.screens} screens already collected</label>` : '');
   for (const k of ['max_screens', 'max_depth', 'max_minutes']) {
     $('f_' + k).value = r.plan[k];
     const q = $('q_' + k);
     if (q) q.onchange = () => { S.plan[k] = Number(q.value); $('f_' + k).value = q.value; };
   }
+  const qr = $('q_resume');
+  if (qr) qr.onchange = () => { S.fresh = !qr.checked; S.plan.resume = qr.checked; };
   return r.plan;
 }
 
@@ -582,8 +816,9 @@ function connectSocket() {
   ws.onerror = () => {};
 }
 function send(msg) {
-  if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg));
-  else bubble('I cannot reach the helper on this Mac. Start it with `bin/phoneshell serve`.', 'err');
+  if (ws && ws.readyState === 1) { ws.send(JSON.stringify(msg)); return true; }
+  bubble('I cannot reach the helper on this Mac. Start it with `bin/phoneshell serve`.', 'err');
+  return false;
 }
 
 function handle(e) {
@@ -608,17 +843,31 @@ function handle(e) {
     case 'ask_timeout': S.waiting = false; $('prompt').classList.remove('waiting'); break;
     case 'step':
       if (!e.ok) bubble(`${e.detail}${e.fix ? `\n\n${e.fix}` : ''}`, 'err');
-      else if (['device','wda','ready','launch','forward'].includes(e.step)) bubble(e.detail);
+      else if (S.connecting && ['device','wda','ready','launch','forward'].includes(e.step)) progressSay('', e.detail);
       break;
-    case 'connected':
-      S.bridge = e.bridge || {}; loadDevices(); loadChecks();
-      if (e.bridge && e.bridge.up) bubble('The phone is connected and I can see its screen.');
+    case 'connected': {
+      const up = !!(e.bridge && e.bridge.up);
+      S.bridge = e.bridge || {};
+      if (S.connecting) {
+        S.up = up;
+        connectingUI(false);
+        progressEnd(up ? '**Connected.**' : '**Not connected.** The message below says why.');
+      }
+      loadDevices(); loadChecks();
+      if (up) { loadApps(); streamOff(); }        // a fresh stream on the new bridge
+      // Start was pressed while the automation was off: it is on now, so scan.
+      if (S.pendingCrawl && !S.connecting) {
+        const plan = S.pendingCrawl; S.pendingCrawl = null;
+        if (up) send({ type: 'crawl', plan });
+      }
       break;
+    }
     case 'run':
       S.run = e.run; S.plan = e.plan; S.crawling = true; S.t0 = Date.now(); S.taps = 0;
       S.screens = []; S.byId = {}; S.skipped = []; S.sel = null;
       $('flowempty').hidden = true; $('flowwrap').innerHTML = ''; $('screens').innerHTML = '';
       $('a-skip').innerHTML = ''; $('s_taps').textContent = '0'; $('s_skip').textContent = '0';
+      $('dlall').disabled = false;
       $('pill').className = 'pill open'; $('pill').textContent = 'scanning';
       $('go').textContent = 'Stop'; $('go').className = 'go stop'; $('go').disabled = false;
       $('t-chat').click(); tick(); thinking(true);
@@ -635,12 +884,21 @@ function handle(e) {
     case 'alert': addExtra(S.sel || '', e.shot, 'system alert', true); break;
     case 'wedged': thinking(false); bubble(e.reason, 'err'); break;
     case 'done':
-      S.crawling = false; thinking(false);
+      S.crawling = false; thinking(false); ding(3);
       $('pill').className = 'pill idle'; $('pill').textContent = 'done';
       $('go').textContent = 'Start'; $('go').className = 'go'; $('go').disabled = false;
       $('midsub').textContent = `${e.screens} screens · ${e.taps} taps · ${Math.round(e.seconds)}s`;
       $('s_now').textContent = '';
       loadRuns();
+      break;
+    case 'parked':
+      S.up = false; lastHealth = 'parked';
+      bubble(e.why === 'scan'
+        ? '**Automation is off.** The scan is done, so I turned the automation off: the "Automation '
+          + 'Running" banner is gone and the phone is yours again. Press Start for another scan and '
+          + 'I turn it back on first.'
+        : '**Automation is off.** The "Automation Running" banner is gone and the phone is yours '
+          + 'again. Press Start, or Connect, to turn it back on.');
       break;
     case 'error':
       S.crawling = false; thinking(false); bubble(e.text, 'err');
@@ -655,8 +913,12 @@ const thumb = (shot) => `${API}/collected/${S.run}/${shot.replace('shots/', 'thu
 const full = (shot) => `${API}/collected/${S.run}/${shot}`;
 
 function addScreen(e) {
+  // A carried-over screen arrives with all its scroll positions; a new one with one.
+  const all = e.shots && e.shots.length ? e.shots : (e.shot ? [e.shot] : []);
   const rec = { sid: e.sid, title: e.title || e.app || e.sid, depth: e.depth ?? 0, path: e.path || [],
-    shots: e.shots || (e.shot ? [e.shot] : []), elements: e.elements || 0, at: Date.now(), extras: [] };
+    shots: all.slice(0, 1), elements: e.elements || 0,
+    at: e.first_seen ? e.first_seen * 1000 : Date.now(),
+    extras: all.slice(1).map((sh, i) => ({ shot: sh, label: `scrolled ${i + 1}` })) };
   if (S.byId[rec.sid]) return;
   S.byId[rec.sid] = rec; S.screens.push(rec);
   $('s_screens').textContent = S.screens.length;
@@ -687,32 +949,80 @@ function renderScreens() {
     const trail = s.path.map(p => p.label).join(' › ') || 'app root';
     const b = document.createElement('button');
     b.className = 'srow' + (S.sel === s.sid ? ' on' : '');
+    b.dataset.sid = s.sid;
     b.innerHTML = `${s.shots[0] ? `<img loading="lazy" src="${thumb(s.shots[0])}" alt="">` : ''}
       <span class="body">
         <span class="top"><span class="nm">${esc(s.title)}</span><span class="ago">${ago(s.at)}</span></span>
         <span class="dm">${esc(s.sid)} · depth ${s.depth} · ${s.elements} elements${s.extras.length ? ` · +${s.extras.length}` : ''}</span>
         <span class="trail">${esc(trail)}</span></span>`;
-    b.onclick = () => select(s.sid);
+    b.onclick = () => select(s.sid, true);
+    b.ondblclick = () => openBox(s.sid);
     wrap.appendChild(b);
   }
 }
-/* The selected screen sits BESIDE the live phone, same size, so you can compare
-   what was collected with what the phone is showing right now. */
-function select(sid) {
+/* The selected screen has a tab of its own in the middle column, so it and the live
+   phone are both full size at once, not two small phones side by side. A click in
+   the list opens that tab; a scan selecting its newest screen does not, so the
+   chat is not pulled away from you mid-scan. */
+function select(sid, show) {
   S.sel = sid;
   const s = S.byId[sid];
   if (s && s.shots[0]) {
-    $('focuswrap').hidden = false;
-    $('focusimg').src = thumb(s.shots[0]);
-    $('focusimg').dataset.full = full(s.shots[0]);
-    $('focustag').textContent = `${s.sid} · ${s.title}`;
+    shotEmpty(false);
+    focusShow(s.shots[0]);
+    $('stitle').textContent = s.title;
+    $('smeta').textContent = `${s.sid} · depth ${s.depth} · ${s.elements} elements`;
+    $('strail').textContent = s.path.map(p => p.label).join(' › ') || 'app root';
   }
-  renderScreens(); renderFlow();
+  // Only the highlight moves. Rebuilding the rows here replaced the row under the
+  // pointer between the two clicks of a double-click, and the double-click was lost.
+  for (const el of $('screens').querySelectorAll('.srow')) el.classList.toggle('on', el.dataset.sid === sid);
+  renderFlow(); navState();
+  if (show) tab('shot');
 }
-$('focus').onclick = () => {
-  const f = $('focusimg').dataset.full;
-  if (f) lightbox(f, $('focustag').textContent);
-};
+function shotEmpty(on) { $('shothead').hidden = on; $('shotfit').hidden = on; $('shotempty').hidden = !on; }
+function caption(s) { return `${s.sid} · ${s.title}`; }
+/* Next and previous follow the Screens list as it is sorted right now, so the
+   arrows walk the screens in the order you are looking at them. */
+function neighbour(delta) {
+  const list = ordered().filter(s => s.shots[0]);
+  const i = list.findIndex(s => s.sid === S.sel);
+  return i < 0 ? null : list[i + delta] || null;
+}
+function navState() {
+  const prev = !neighbour(-1), next = !neighbour(1);
+  $('sprev').disabled = $('boxprev').disabled = prev;
+  $('snext').disabled = $('boxnext').disabled = next;
+}
+function step(delta) {
+  const s = neighbour(delta);
+  if (!s) return;
+  select(s.sid);
+  if ($('box').dataset.nav) openBox(s.sid);
+  const row = $('screens').querySelector(`[data-sid="${s.sid}"]`);
+  if (row) row.scrollIntoView({ block: 'nearest' });
+}
+/* The thumbnail first, because it is cached and shows at once, then the full PNG
+   in its place. This frame is often 900px tall on a 2x screen, and a thumbnail
+   stretched to that is what made every collected screen look blurry. */
+function sharpen(img, shot, done) {
+  img.dataset.shot = shot;
+  img.src = thumb(shot);
+  const hi = new Image();
+  hi.onload = () => {
+    if (img.dataset.shot !== shot) return;
+    img.src = hi.src;
+    if (done) done(hi);
+  };
+  hi.src = full(shot);
+}
+function focusShow(shot) {
+  sharpen($('focusimg'), shot, (hi) =>
+    $('shotpane').style.setProperty('--ar', (hi.naturalWidth / hi.naturalHeight).toFixed(4)));
+}
+$('focus').onclick = () => { if (S.sel) openBox(S.sel); };
+$('sprev').onclick = () => step(-1);
+$('snext').onclick = () => step(1);
 
 /* ------------------------------------------------------------------- flow */
 function renderFlow() {
@@ -727,7 +1037,7 @@ function renderFlow() {
   wrap.innerHTML = S.screens.filter(s => !s.path.length).map(r => nodeHtml(r, kids, true, true)).join('');
   for (const el of wrap.querySelectorAll('[data-sid]')) el.onclick = () => select(el.dataset.sid);
   for (const el of wrap.querySelectorAll('[data-shot]')) {
-    el.onclick = (ev) => { ev.stopPropagation(); lightbox(full(el.dataset.shot), el.dataset.cap || ''); };
+    el.onclick = (ev) => { ev.stopPropagation(); lightbox(el.dataset.shot, el.dataset.cap || ''); };
   }
 }
 function nodeHtml(s, kids, isRoot, isLast) {
@@ -765,8 +1075,82 @@ function askDialog(question, options) {
   $('ask').className = 'on';
 }
 
-function lightbox(src, cap) { $('boximg').src = src; $('boxcap').textContent = cap; $('box').className = 'on'; }
-$('box').onclick = () => { $('box').className = ''; $('boximg').src = ''; };
+/* nav: the popup steps through the Screens list (a screen), or it does not (a
+   scroll position or a crossing, opened from the Flow tab). */
+function lightbox(shot, cap, nav) {
+  sharpen($('boximg'), shot);
+  $('boxcap').textContent = cap;
+  $('box').dataset.shot = shot; $('box').dataset.nav = nav ? '1' : '';
+  $('boxprev').hidden = $('boxnext').hidden = !nav;
+  if (!nav) $('boxpos').textContent = '';
+  $('box').className = 'on';
+}
+function openBox(sid) {
+  const s = S.byId[sid];
+  if (!s || !s.shots[0]) return;
+  if (S.sel !== sid) select(sid);
+  lightbox(s.shots[0], caption(s), true);
+  const list = ordered().filter(x => x.shots[0]);
+  $('boxpos').textContent = `${list.findIndex(x => x.sid === sid) + 1} / ${list.length}`;
+  navState();
+}
+function closeBox() {
+  $('box').className = ''; $('box').dataset.nav = '';
+  $('boximg').dataset.shot = ''; $('boximg').src = '';
+}
+$('box').onclick = (ev) => { if (ev.target === $('box')) closeBox(); };
+$('boxclose').onclick = closeBox;
+$('boxprev').onclick = () => step(-1);
+$('boxnext').onclick = () => step(1);
+/* Left/up is the previous screen in the list, right/down the next: in the popup,
+   and on the Screenshot tab whenever you are not typing. */
+document.addEventListener('keydown', (ev) => {
+  const open = $('box').className === 'on';
+  if (open && ev.key === 'Escape') { closeBox(); return; }
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || '')) return;
+  if (open ? !$('box').dataset.nav : $('shotpane').hidden) return;
+  const d = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[ev.key];
+  if (d) { ev.preventDefault(); step(d); }
+});
+
+/* A download is fetched and handed over as a blob, not linked: this page comes
+   from appscan.blolabel.ai and the files from the helper on this Mac, and a
+   browser ignores `download` on a link to another origin and opens the PNG in a
+   tab instead. The helper names the file and sends the name in a header. */
+async function download(path, fallback, btn) {
+  const t = btn && btn.querySelector('.t');
+  const label = t ? t.textContent : '';
+  if (btn) btn.disabled = true;
+  if (t) t.textContent = 'Preparing…';
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `the helper answered ${r.status}`);
+    const cd = r.headers.get('content-disposition') || '';
+    const enc = cd.match(/filename\*=utf-8''([^;]+)/i);
+    const plain = cd.match(/filename="?([^";]+)"?/i);
+    const name = enc ? decodeURIComponent(enc[1]) : plain ? plain[1] : fallback;
+    const url = URL.createObjectURL(await r.blob());
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) {
+    bubble(`**The download did not work.** ${e.message}`, 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (t) t.textContent = label;
+  }
+}
+function downloadShot(shot, btn) {
+  if (!S.run || !shot) return;
+  download(`/api/crawl/${encodeURIComponent(S.run)}/shot?shot=${encodeURIComponent(shot)}`,
+           shot.split('/').pop(), btn);
+}
+$('dlone').onclick = () => downloadShot($('focusimg').dataset.shot, $('dlone'));
+$('boxdl').onclick = (ev) => { ev.stopPropagation(); downloadShot($('box').dataset.shot, $('boxdl')); };
+$('dlall').onclick = () => {
+  if (S.run) download(`/api/crawl/${encodeURIComponent(S.run)}/zip`, `${S.run}.zip`, $('dlall'));
+};
 
 /* ------------------------------------------------------- apps & their runs */
 function hue(name) { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
@@ -790,7 +1174,8 @@ function renderApps() {
       <span class="tile" style="background:hsl(${hue(a.name)} 58% 62%)">${esc((a.name[0] || '?').toUpperCase())}</span>
       <span class="t">${esc(a.name)}</span>
       ${counts[a.bundle] ? `<span class="badge" style="background:#1f4029;color:#8ff0ae">${counts[a.bundle]}</span>` : ''}
-    </button>`).join('') || '<div style="padding:6px 16px;font-size:11.5px;color:var(--faint)">no match</div>';
+    </button>`).join('') || `<div style="padding:6px 16px;font-size:11.5px;color:var(--faint)">${
+      q ? 'no match' : 'No apps listed yet. Connect the phone and they appear here.'}</div>`;
   for (const el of $('apps').querySelectorAll('[data-app]')) {
     el.onclick = () => selectApp(el.dataset.app, el.dataset.name);
   }
@@ -799,14 +1184,15 @@ function renderApps() {
 /* Clicking an app rebuilds Screens and Flow for THAT app: its latest scan, or an
    empty state that says it has not been scanned and offers to start one. */
 async function selectApp(bundle, name) {
-  S.app = bundle; S.appName = name;
-  $('prompt').value = `screenshot every screen in ${name}`;
+  S.app = bundle; S.appName = name; S.fresh = false;
+  $('prompt').value =`screenshot every screen in ${name}`;
   renderApps(); renderScanned();
   await readPlan({ scope: 'app', app: bundle, label: name });
   const mine = S.runs.filter(r => (r.plan || {}).app === bundle);
   if (mine.length) { await openRun(mine[0].run); bubble(`Showing the last scan of **${name}**: ${S.screens.length} screens.`); return; }
   S.run = null; S.screens = []; S.byId = {}; S.sel = null; S.skipped = [];
-  $('screens').innerHTML = ''; $('flowwrap').innerHTML = ''; $('focuswrap').hidden = true;
+  $('screens').innerHTML = ''; $('flowwrap').innerHTML = ''; shotEmpty(true);
+  $('dlall').disabled = true;
   $('flowempty').hidden = false;
   $('scount').textContent = '0 screens'; $('s_screens').textContent = '0';
   $('pill').className = 'pill idle'; $('pill').textContent = 'not scanned';
@@ -839,15 +1225,18 @@ function renderScanned() {
       <span class="t">${esc(name)}</span><span class="badge">${r.screens}</span></button>`;
   }).join('') || '<div style="padding:4px 16px;font-size:11.5px;color:var(--faint)">nothing scanned yet</div>';
   for (const el of $('scanned').querySelectorAll('[data-run]')) {
-    el.onclick = () => { S.app = el.dataset.app; S.appName = el.dataset.name;
-      renderApps(); renderScanned(); openRun(el.dataset.run); };
+    // Through selectApp, so the plan follows the pick. Opening the run alone left
+    // the plan on whatever the prompt last said, and Start scanned that instead.
+    el.onclick = () => el.dataset.app ? selectApp(el.dataset.app, el.dataset.name) : openRun(el.dataset.run);
   }
 }
 
 async function openRun(run) {
   const m = await api(`/api/crawl/${encodeURIComponent(run)}/manifest`);
   if (!m || m.error) return;
-  S.run = run; S.plan = m.plan; S.byId = {}; S.screens = []; S.sel = null; S.skipped = m.skipped || [];
+  // Viewing a scan does not touch S.plan: that is the NEXT scan's plan, and taking
+  // the old one here made Start rerun it with its old settings and no carry-on.
+  S.run = run; S.byId = {}; S.screens = []; S.sel = null; S.skipped = m.skipped || [];
   for (const s of (m.screens || [])) {
     const rec = { sid: s.sid, title: s.title || s.app || s.sid, depth: s.depth, path: s.path || [],
       shots: (s.shots || []).slice(0, 1), elements: s.elements || 0,
@@ -855,7 +1244,7 @@ async function openRun(run) {
     rec.extras = (s.shots || []).slice(1).map((sh, i) => ({ shot: sh, label: `scrolled ${i + 1}` }));
     S.byId[rec.sid] = rec; S.screens.push(rec);
   }
-  $('flowempty').hidden = true;
+  $('flowempty').hidden = true; $('dlall').disabled = false;
   $('pill').className = 'pill idle'; $('pill').textContent = 'saved';
   $('midsub').textContent = `${m.summary?.screens || 0} screens · ${m.summary?.taps || 0} taps · ${Math.round(m.summary?.seconds || 0)}s`;
   $('a-skip').innerHTML = S.skipped.slice(0, 60).map(k =>
@@ -870,13 +1259,14 @@ async function openRun(run) {
 
 /* ------------------------------------------------------------------- tabs */
 function tab(which) {
-  $('t-chat').className = 'tab' + (which === 'chat' ? ' on' : '');
-  $('t-flow').className = 'tab' + (which === 'flow' ? ' on' : '');
-  $('chatpane').hidden = which !== 'chat';
-  $('flowpane').hidden = which !== 'flow';
+  for (const k of ['chat', 'flow', 'shot']) {
+    $('t-' + k).className = 'tab' + (which === k ? ' on' : '');
+    $(k + 'pane').hidden = which !== k;
+  }
 }
 $('t-chat').onclick = () => tab('chat');
 $('t-flow').onclick = () => tab('flow');
+$('t-shot').onclick = () => tab('shot');
 for (const h of document.querySelectorAll('.acchead')) {
   h.onclick = () => { h.classList.toggle('open'); $(h.dataset.acc).classList.toggle('open'); };
 }
@@ -890,8 +1280,8 @@ function tick() {
 
 /* ----------------------------------------------------------------- wiring */
 $('refresh').onclick = () => { loadDevices(); loadRuns(); loadApps(); loadChecks(); };
-$('connect').onclick = () => { bubble('Bringing the bridge up…'); send({ type: 'connect', udid: S.selected }); };
-$('relaunch').onclick = () => { bubble('Restarting WebDriverAgent on the phone…'); send({ type: 'connect', udid: S.selected, relaunch: true }); };
+$('connect').onclick = () => startConnect(false);
+$('relaunch').onclick = () => startConnect(true);
 $('drop').onclick = () => send({ type: 'disconnect' });
 $('order').onchange = () => { S.order = $('order').value; renderScreens(); };
 $('appfilter').oninput = renderApps;
@@ -912,6 +1302,8 @@ $('go').onclick = async () => {
   if (!plan) return;
   Object.assign(plan, limits());
   bubble(text || `Scan ${plan.label || plan.app}`, 'me');
+  // The automation is turned off after every scan: turn it on, then scan.
+  if (!S.up) { S.pendingCrawl = plan; startConnect(false); return; }
   send({ type: 'crawl', plan });
 };
 $('prompt').addEventListener('keydown', (ev) => {

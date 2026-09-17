@@ -74,9 +74,9 @@ bin/phoneshell bench --model claude-sonnet-5
 
 ## Use it from an AI assistant
 
-phoneshell is an MCP server, so any MCP client can drive the phone. It exposes 22 tools: observe,
-tap, type, swipe, 49 named gestures, picker wheels, popup dismissal, app launch, and `phone_do` for
-running several steps in one call.
+phoneshell is an MCP server, so any MCP client can drive the phone. It exposes 23 tools: observe,
+tap, type, swipe, 49 named gestures, picker wheels, popup dismissal, app launch, pushing a photo
+onto the device, and `phone_do` for running several steps in one call.
 
 ```bash
 bin/phoneshell mcp-config    # prints the config block to paste into your client
@@ -161,6 +161,26 @@ starts, because the fixed offset WebDriverAgent uses moves two rows on some of t
 **Popups.** A catalogue of 14 overlay shapes with an ordered set of moves for each: close control,
 then known labels, then a drag down from the grabber, then the backdrop, then a back swipe.
 
+**Putting a file on the phone.** `phoneshell push shot.jpg` copies a picture or video from the Mac
+into the camera roll, so a task that starts "upload this photo" can start at all. This is the one
+thing that needs a patch to WebDriverAgent itself, and it needs one for a measured reason: AFC over
+usbmux gives full write access to `/var/mobile/Media/DCIM`, the file lands, `stat` confirms it, and
+the photo library never notices, because the library is a database and not a directory scan. The
+count held at 8,030 across a write and a relaunch. `PHPhotoLibrary` is the only supported way in
+and it has to run on the phone. `phoneshell setup` applies the patch before it builds, `doctor`
+reports whether it is there, and [`phoneshell/wda/patches.py`](phoneshell/wda/patches.py) says what
+each one widens.
+
+**Blind mode.** When an app names nothing, the pixels still say something. On a screen whose tree
+collapses to one opaque view, it recovers tap targets three ways: every line of text macOS Vision
+can read, glyphs matched against a library of 27 drawn icons, and compact isolated blobs offered
+only as "something is drawn here". Measured on Safari at a WebGL page, the tree gives eleven nodes
+of which ten are Safari's own toolbar and the eleventh is the entire page; blind mode finds the
+"Click to start" that the page actually wants tapped. It costs 135ms and runs **only** on screens
+that need it, so a healthy tree pays nothing. Every recovered row is flagged `pixel` with a
+confidence, because a model that cannot tell a control the app declared from one this harness
+guessed at will trust both equally.
+
 **Memory.** It fingerprints screens it has seen before and remembers how long each takes to settle,
 so a familiar screen is polled tighter than a new one.
 
@@ -173,10 +193,11 @@ pick the phone up and resumes when you put it down.
 
 Being specific about this matters more than the feature list.
 
-- **Apps that expose nothing.** It reads the accessibility tree. Apple labels its controls
+- **Apps that expose nothing, fully.** It reads the accessibility tree. Apple labels its controls
   properly; a Flutter or Unity app can expose one opaque view for a whole screen, and one chat app
   measured here returns `WAMessageBubbleTableViewCell` as a button's name, which is a class name,
-  not meaning.
+  not meaning. Blind mode (below) recovers targets from the pixels on those screens, but a guessed
+  target is not a named one, and it says so on every row.
 - **Screens whose geometry lies.** An alarm's toggle reports its position as `x=0, width=63` while
   being drawn at 89% across the row.
 - **Very long screens.** A 640-row list takes 2.6s to read, 24s with a sheet open, against 154ms on
@@ -204,8 +225,10 @@ timer task. A suite that mutates the device has to undo it, or its numbers drift
 
 ```
 phoneshell/
-├── wda/          WebDriverAgent HTTP client, written against the runner's own source
-├── perception/   accessibility tree condensing, screenshots, Set-of-Marks, OCR
+├── wda/          WebDriverAgent HTTP client, written against the runner's own
+│                 source, plus the patches this project adds to that source
+├── perception/   accessibility tree condensing, screenshots, Set-of-Marks, OCR,
+│                 blind mode (targets recovered from pixels) and its glyph library
 ├── agent/        observation building, overlay playbook, consistency gate, macros
 ├── bench/        task schema, runner, checks, site generator
 ├── actions.py    the verb layer: everything an agent is allowed to do
