@@ -41,6 +41,94 @@
 <div class="wrap">
   <ul class="postlist" id="posts">
   <!-- POSTS:START -->
+  <li><a class="row" href="/blog/ios-identifiers-carry-instance-data/">
+    <span class="when">17 September 2026</span>
+    <span>
+      <h3>iOS Settings ships accessibility identifiers containing a MAC address and a raw pointer</h3>
+      <p>iOS Settings ships accessibility identifiers containing a UUID, a MAC address and a raw heap pointer. They change between app launches, so a screen fingerprint built on raw identifiers never accumulates. Also the measured cost of verifying an element's label against its pixels: 39% false alarms unscoped, zero over 46 elements when scoped to the six types whose label is the rendering.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>5 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/benchmark-failures-are-mostly-ours/">
+    <span class="when">17 September 2026</span>
+    <span>
+      <h3>Four of six failures in our first trusted run were our own bugs, not the model's</h3>
+      <p>An audit of every failure in one 32-task iPhone benchmark run: three failures were broken checks of our own, one was an unfair task that depended on the owner's device, and one or two were the model's. Alongside it, the five distinct ways the same rig produced a published number that was not true, and the guard now in code for each.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>8 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/wda-session-creation-moves-the-phone/">
+    <span class="when">16 September 2026</span>
+    <span>
+      <h3>Creating a WebDriverAgent session terminates the last session's app, so our verification step moved the phone it was measuring</h3>
+      <p>POST /session in WebDriverAgent begins by killing the active session, and the teardown terminates that session's tested application by default, so creating a session mid-task sends the iPhone to the home screen. A benchmark check that needed a session therefore destroyed the state it was measuring.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>7 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/accessibility-tree-size-latency/">
+    <span class="when">16 September 2026</span>
+    <span>
+      <h3>640 leftover alarms turned a 154 ms screen read into 24 seconds, and the tree came back 218 switches short</h3>
+      <p>Measured on a physical iPhone on 8 September 2026: WebDriverAgent read, tap and drag latency scaled with accessibility tree size (154 ms to 24,195 ms for /source), a 640-row read silently dropped 218 of 631 switches, and tree depth 25 cost six times depth 20 for 19 more elements.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>8 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/w3c-drag-19-seconds-ios/">
+    <span class="when">16 September 2026</span>
+    <span>
+      <h3>A moving W3C pointer chain costs 19 seconds on a real iPhone, and the identical drag costs 1.4</h3>
+      <p>A moving W3C pointer chain costs about 19 seconds on a physical iPhone running iOS 26.6 regardless of how many points it contains, while WebDriverAgent's native drag endpoint performs the identical gesture in 1.4 seconds and a tap through the same W3C endpoint takes 500 ms.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>7 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/render-gap-ocr-vs-accessibility-tree/">
+    <span class="when">16 September 2026</span>
+    <span>
+      <h3>OCR read thirteen iPhone screens and the accessibility tree already had everything on eleven of them</h3>
+      <p>A screen-by-screen diff of macOS Vision OCR against the iOS accessibility tree on a physical iPhone 17 Pro Max: on eleven of thirteen first-party screens the tree already carries every word OCR can read, and the only render-only text is on Maps tiles and Books cover artwork.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>5 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/picker-wheel-tap-not-drag/">
+    <span class="when">16 September 2026</span>
+    <span>
+      <h3>WebDriverAgent turns an iOS picker wheel with one tap, and on the Clock timer that tap moves two rows</h3>
+      <p>WebDriverAgent turns an iOS picker wheel with one tap at a fixed fraction of the wheel's height, and on the 292 point Clock timer wheel that default lands two rows away, making half the values unreachable. Agents that drag the wheel instead never converge: clock.timer.set was passed by one of six frontier models.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>8 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/ios-automation-stack-false-success/">
+    <span class="when">15 September 2026</span>
+    <span>
+      <h3>Eight calls in the iPhone automation stack that report success for work that never happened</h3>
+      <p>A measured catalogue of eight WebDriverAgent, devicectl and usbmux calls that report success on a physical iPhone while nothing happens, with the cost of each and the read-back that catches it. Measured on WebDriverAgent v16.12.4, iOS 26.6, 8 and 9 September 2026.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>6 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/screenshot-removed-agents-substitute/">
+    <span class="when">15 September 2026</span>
+    <span>
+      <h3>Take the screenshot away and phone agents do not abstain: 30 of 30 answers named the wrong word</h3>
+      <p>Blolabel's pre-registered screenshot ablation on a physical iPhone: 30/30 with the image, 0/30 without, and all 30 blind answers substituted the page's written word for the picture's word instead of abstaining. Read against iOSWorld (June 2026), where adding the accessibility tree gained Opus 4.6 25.6 points but cost GPT-5.4 Mini 10.5.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>8 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/agents-report-success-device-disagrees/">
+    <span class="when">15 September 2026</span>
+    <span>
+      <h3>16 of 27 failures on a physical iPhone were reported as successes by the model that failed them</h3>
+      <p>On Blolabel's 9 September 2026 six-model sweep, 16 of 27 device-graded failures carried a completion claim in the model's own summary; self-report grading would have reported 96.8% against the device's 92.3%. The error ran in one direction only, and three failures were rig outages that should not have been scored.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>5 min read</span></span>
+    </span>
+  </a></li>
+  <li><a class="row" href="/blog/leaderboard-that-cannot-rank/">
+    <span class="when">10 September 2026</span>
+    <span>
+      <h3>Six models, 58 tasks on one iPhone, and not a single pair separates</h3>
+      <p>Adding 34 tasks to the benchmark took the ranking further out of reach, not closer. The reason is arithmetic that contains no sample size: McNemar needs six one-directional disagreements to reach p &lt; 0.05, and our widest pair has had four since the first run.</p>
+      <span class="meta"><span class="kind analysis">analysis</span><span>9 min read</span></span>
+    </span>
+  </a></li>
   <!-- POSTS:END -->
   </ul>
   <p id="empty" style="color:var(--faint);padding:52px 0;text-align:center">

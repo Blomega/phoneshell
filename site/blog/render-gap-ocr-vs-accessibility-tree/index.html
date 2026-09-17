@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OCR read thirteen iPhone screens and the accessibility tree already had everything on eleven of them &mdash; Blolabel</title>
+<meta name="description" content="A screen-by-screen survey diffing macOS Vision OCR against the iOS accessibility tree on a physical iPhone 17 Pro Max. Only Maps and Books carry text a screenshot could add, and both are characters rendered into a raster image.">
+<link rel="canonical" href="https://blolabel.ai/blog/render-gap-ocr-vs-accessibility-tree/">
+<meta property="og:title" content="OCR read thirteen iPhone screens and the accessibility tree already had everything on eleven of them &mdash; Blolabel">
+<meta property="og:description" content="A screen-by-screen survey diffing macOS Vision OCR against the iOS accessibility tree on a physical iPhone 17 Pro Max. Only Maps and Books carry text a screenshot could add, and both are characters rendered into a raster image.">
+<meta property="og:url" content="https://blolabel.ai/blog/render-gap-ocr-vs-accessibility-tree/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"OCR read thirteen iPhone screens and the accessibility tree already had everything on eleven of them","description":"A screen-by-screen survey diffing macOS Vision OCR against the iOS accessibility tree on a physical iPhone 17 Pro Max. Only Maps and Books carry text a screenshot could add, and both are characters rendered into a raster image.",
+ "datePublished":"2026-09-16","dateModified":"2026-09-16",
+ "url":"https://blolabel.ai/blog/render-gap-ocr-vs-accessibility-tree/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/render-gap-ocr-vs-accessibility-tree/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Do GUI agents on iPhone need screenshots, or is the accessibility tree enough?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "On eleven of thirteen first-party iPhone screens surveyed, every word OCR could read was already in the accessibility tree. The two exceptions are Maps, where labels are drawn into map tiles, and Books, where text is printed on cover artwork."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "What does a screenshot cost a phone agent per task?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "In a pre-registered paired ablation the image cost 35% more per task on render-dependent pages and 43% more on tree-sufficient ones, with steps unchanged at 2.0 to 2.3 either way."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "When does vision change the outcome for a phone agent?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "When the answer exists only as pixels. In the paired run that was 30 of 30 with the image and 0 of 30 without it, McNemar exact p < 0.0001."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-16">16 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>OCR read thirteen iPhone screens and the accessibility tree already had everything on eleven of them</h1>
+  <p class="standfirst">Vision OCR against the accessibility tree, one frame at a time, on eleven of thirteen first-party screens the image has nothing to add. The two exceptions are map tiles and book covers, which is to say text baked into pixels.</p>
+
+    <p>We read thirteen first-party iPhone screens twice, once through the iOS accessibility tree and
+once through macOS Vision OCR on the screenshot of the same frame, and diffed the words. On eleven
+of them, every word OCR could read was already in the tree. Two screens carried text that exists
+only as pixels, and both are the same phenomenon: characters rendered into a raster image. Maps,
+where the words are printed on map tiles, and Books, where they are printed on cover artwork. In
+Books, <code>author</code>, <code>bestselling</code> and an author's surname appear nowhere among
+the screen's 521 raw accessibility nodes.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/render-gap-ocr-vs-accessibility-tree-hero.png" alt="Abstract technical illustration of a screen split into a sparse wireframe of labelled nodes on one side and a dense field of rendered pixels on the other, with a narrow band of overlap glowing between them" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">Why we measured coverage before writing another vision task</h2>
+
+<p>Our first screenshot ablation (phoneshell <code>FINDINGS.md</code> section 23) reported that the
+image was worth zero points. It was run with a 235x512 thumbnail on 24 tasks against Apple's own
+apps, and a thumbnail that small is not a test of vision. Before re-running it we asked a cheaper
+question: on an iOS screen, is there anything a model could only learn by looking? That is
+measurable rather than arguable. Whatever OCR reads and the tree lacks is render-only content by
+definition, and a task whose answer lives there is the only kind of task that can separate the two
+conditions.</p>
+
+<p>The survey ran on a physical iPhone 17 Pro Max on iOS 26.6, driven from macOS 26.5, with
+<code>scripts/render_gap.py</code> in the phoneshell repository. OCR is Apple's own Vision
+framework running locally on the Mac through pyobjc, so nothing leaves the machine and no
+screenshot is written to disk. The result is recorded in <code>FINDINGS.md</code> section 25 and
+published in the 15 September 2026 commit.</p>
+
+<p>It points the opposite way to the headline number in iOSWorld (arXiv:2606.09764, 8 June 2026),
+which reports that adding a cleaned accessibility tree to a screenshot improves frontier models by
+up to 26 points on its 133 tasks. That is not a contradiction. iOSWorld runs 26 purpose-built apps
+in the iOS simulator, and its tree is filtered to interactive, visible elements and capped at 200
+elements and 15 levels. We are measuring Apple's shipping apps, where the tree is unusually
+complete, and we are measuring the gap in the other direction: what the picture adds once the tree
+is already there.</p>
+
+<h2 id="evidence">Thirteen screens, two with anything to see</h2>
+
+<p>Coverage is the share of OCR-read words on the screen that the accessibility tree also carries.
+Render-only is what survives three noise filters, described below. The eleven screens with a
+recorded coverage figure are listed; two of the thirteen were surveyed without a figure being
+written into the note, and we are not going to reconstruct one from memory.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>screen</th><th>tree covers</th><th>genuine render-only</th><th>what the exception is</th><th>source</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>Calculator</td><td>100%</td><td>none</td><td>every key is a labelled button</td><td>FINDINGS s.25</td></tr>
+    <tr><td>Measure</td><td>100%</td><td>none</td><td>live values are exposed as element values</td><td>FINDINGS s.25</td></tr>
+    <tr><td>Clock</td><td>96%</td><td>none</td><td>wheel rows carry their own value</td><td>FINDINGS s.25</td></tr>
+    <tr><td>Safari</td><td>95%</td><td>none</td><td>page text arrives through WebKit's tree</td><td>FINDINGS s.25</td></tr>
+    <tr><td>Calendar</td><td>93%</td><td>none</td><td>dates and events are labelled cells</td><td>FINDINGS s.25</td></tr>
+    <tr><td>Notes</td><td>83%</td><td>none</td><td>body text is a text view's value</td><td>FINDINGS s.25</td></tr>
+    <tr><td>Shortcuts</td><td>79%</td><td>none</td><td>tiles are labelled, glyphs are not text</td><td>FINDINGS s.25</td></tr>
+    <tr><td>Settings</td><td>78%</td><td>none</td><td>rows are labelled, OCR splits some of them</td><td>FINDINGS s.25</td></tr>
+    <tr><td><strong>Maps</strong></td><td><strong>62%</strong></td><td><strong>map tile labels</strong></td><td>street and place names are drawn into tiles</td><td>FINDINGS s.25</td></tr>
+    <tr><td><strong>Books</strong></td><td><strong>35%</strong></td><td><strong>text on cover artwork</strong></td><td>absent from 521 raw nodes</td><td>FINDINGS s.25</td></tr>
+    <tr><td>Files</td><td>20%</td><td>none</td><td>OCR split labels the tree does carry</td><td>FINDINGS s.25</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Files is the row that shows why a raw diff is not evidence. Its coverage is 20% and its
+render-only count is zero: OCR chopped file names and sizes differently from the way the tree
+reports them, so almost every word looked new and none of it was. Read the coverage column as a
+measure of how the two instruments tokenise, and the render-only column as the finding.</p>
+
+<figure>
+<svg viewBox="0 0 900 470" role="img" style="width:100%;height:auto"
+  aria-label="Horizontal bar chart of how much of the OCR-readable text on each iPhone screen the accessibility tree also carries. Calculator and Measure are at 100 percent, Clock 96, Safari 95, Calendar 93, Notes 83, Shortcuts 79, Settings 78, Maps 62, Books 35 and Files 20. Only Maps and Books, marked in amber, contain genuine render-only text after noise filtering; Files is low only because OCR splits labels the tree does carry.">
+  <rect x="0" y="0" width="900" height="470" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Share of on-screen text the accessibility tree already carries</text>
+  <text x="40" y="56" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">iPhone 17 Pro Max, iOS 26.6, one read per screen. Amber = the screen has render-only words.</text>
+  <g stroke="#1e293b"><line x1="230" y1="76" x2="230" y2="410"/><line x1="380" y1="76" x2="380" y2="410"/><line x1="530" y1="76" x2="530" y2="410"/><line x1="680" y1="76" x2="680" y2="410"/><line x1="830" y1="76" x2="830" y2="410"/></g>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <g fill="#e2e8f0" text-anchor="end">
+      <text x="215" y="97">Calculator</text><text x="215" y="127">Measure</text><text x="215" y="157">Clock</text>
+      <text x="215" y="187">Safari</text><text x="215" y="217">Calendar</text><text x="215" y="247">Notes</text>
+      <text x="215" y="277">Shortcuts</text><text x="215" y="307">Settings</text>
+      <text x="215" y="337" fill="#fbbf24">Maps</text><text x="215" y="367" fill="#fbbf24">Books</text>
+      <text x="215" y="397">Files</text>
+    </g>
+    <g>
+      <rect x="230" y="84" width="600" height="18" rx="3" fill="#38bdf8"/>
+      <rect x="230" y="114" width="600" height="18" rx="3" fill="#38bdf8"/>
+      <rect x="230" y="144" width="576" height="18" rx="3" fill="#38bdf8"/>
+      <rect x="230" y="174" width="570" height="18" rx="3" fill="#38bdf8"/>
+      <rect x="230" y="204" width="558" height="18" rx="3" fill="#38bdf8"/>
+      <rect x="230" y="234" width="498" height="18" rx="3" fill="#38bdf8"/>
+      <rect x="230" y="264" width="474" height="18" rx="3" fill="#38bdf8"/>
+      <rect x="230" y="294" width="468" height="18" rx="3" fill="#38bdf8"/>
+      <rect x="230" y="324" width="372" height="18" rx="3" fill="#f59e0b"/>
+      <rect x="230" y="354" width="210" height="18" rx="3" fill="#f59e0b"/>
+      <rect x="230" y="384" width="120" height="18" rx="3" fill="#475569"/>
+    </g>
+    <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#0f172a" font-weight="700">
+      <text x="790" y="98">100%</text><text x="790" y="128">100%</text><text x="766" y="158">96%</text>
+      <text x="760" y="188">95%</text><text x="748" y="218">93%</text><text x="688" y="248">83%</text>
+      <text x="664" y="278">79%</text><text x="658" y="308">78%</text><text x="562" y="338">62%</text>
+      <text x="400" y="368">35%</text>
+    </g>
+    <text x="362" y="398" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#94a3b8">20%, an OCR tokenisation artifact</text>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="middle">
+    <text x="230" y="428">0</text><text x="380" y="428">25</text><text x="530" y="428">50</text><text x="680" y="428">75</text><text x="830" y="428">100</text>
+  </g>
+  <text x="530" y="452" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5" text-anchor="middle">percent of OCR-read words present in the accessibility tree</text>
+</svg>
+<figcaption>Coverage per screen. The two amber bars are the only screens where a screenshot can
+tell a model something the tree does not already say.</figcaption>
+</figure>
+
+<h2 id="mechanism">How a survey like this manufactures its own answer</h2>
+
+<p>The first pass reported render-only content on all seven screens it covered, and nearly all of
+it was noise. OCR returned <code>ecuri</code>, <code>rivacy</code> and <code>oca</code>, which are
+fragments of Security, Privacy and Location, all three of which the tree has. It returned
+<code>29h</code>, <code>39m</code> and <code>29h41m</code> from a Live Activity in the Dynamic
+Island. It returned <code>ac</code> for the Calculator key the tree labels All Clear, and
+<code>115kb</code> and <code>217kb</code> for file sizes the tree carries with different
+spacing.</p>
+
+<p>Left unfiltered, that produces a vision stratum built entirely from artifacts, which is the
+same mistake as the thumbnail, wearing different clothes. Three filters remove it: drop tokens
+under four characters, drop anything matching the live-activity pattern
+<code>^(\d+[hms])+$</code>, and drop any word that is a substring of a longer word the tree
+already has. Both survivors, Maps and Books, were then checked directly against the raw tree
+rather than trusted from the diff.</p>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Flow diagram of the render gap measurement. One frame of the phone is read twice: the accessibility tree read yields label, name, value, placeholder and identifier words, while the screenshot is passed to macOS Vision OCR. The two word sets are subtracted, then three filters remove tokens under four characters, Live Activity patterns such as 29h41m, and fragments that are substrings of words the tree already has, such as ecuri from Security. What survives is render-only content: on eleven of thirteen screens nothing survives, and on Maps and Books map tile labels and cover artwork text survive.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">One frame, two instruments, three filters</text>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <rect x="40" y="62" width="200" height="60" rx="8" fill="#334155" stroke="#38bdf8"/>
+    <text x="56" y="88" fill="#e2e8f0" font-weight="600">one settled frame</text>
+    <text x="56" y="108" fill="#94a3b8">snapshot(stable=True)</text>
+
+    <rect x="300" y="42" width="250" height="56" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="316" y="66" fill="#e2e8f0" font-weight="600">accessibility tree</text>
+    <text x="316" y="86" fill="#94a3b8">label, name, value, identifier</text>
+
+    <rect x="300" y="118" width="250" height="56" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="316" y="142" fill="#e2e8f0" font-weight="600">screenshot to Vision OCR</text>
+    <text x="316" y="162" fill="#94a3b8">local, on the Mac, no upload</text>
+
+    <rect x="610" y="80" width="250" height="56" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+    <text x="626" y="104" fill="#38bdf8" font-weight="600">OCR words minus tree words</text>
+    <text x="626" y="124" fill="#94a3b8">the raw gap, mostly noise</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2">
+    <line x1="240" y1="80" x2="300" y2="70"/><line x1="240" y1="104" x2="300" y2="146"/>
+    <line x1="550" y1="70" x2="610" y2="100"/><line x1="550" y1="146" x2="610" y2="116"/>
+    <line x1="735" y1="136" x2="735" y2="170"/>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12">
+    <rect x="130" y="176" width="720" height="150" rx="8" fill="#111c33" stroke="#334155"/>
+    <text x="150" y="202" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">three filters, one per failure seen in the first pass</text>
+    <text x="150" y="232" fill="#94a3b8">len(w) &lt; 4</text><text x="420" y="232" fill="#64748b">drops "ac" (the All Clear key)</text>
+    <text x="150" y="262" fill="#94a3b8">^(\d+[hms])+$</text><text x="420" y="262" fill="#64748b">drops "29h", "39m", "29h41m" (Dynamic Island)</text>
+    <text x="150" y="292" fill="#94a3b8">w in any longer tree word</text><text x="420" y="292" fill="#64748b">drops "ecuri", "rivacy", "oca", "115kb"</text>
+  </g>
+  <line x1="490" y1="326" x2="490" y2="352" stroke="#64748b" stroke-width="2"/>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <rect x="130" y="356" width="330" height="52" rx="8" fill="#1e293b" stroke="#475569"/>
+    <text x="146" y="380" fill="#e2e8f0" font-weight="600">11 of 13 screens: nothing survives</text>
+    <text x="146" y="399" fill="#94a3b8">the tree is the whole screen</text>
+    <rect x="490" y="356" width="360" height="52" rx="8" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="506" y="380" fill="#fbbf24" font-weight="600">Maps and Books: words survive</text>
+    <text x="506" y="399" fill="#94a3b8">tile labels, cover artwork, 0 of 521 nodes</text>
+  </g>
+</svg>
+<figcaption>The measurement, including the filters. Without them the survey reports render-only
+content on every screen and the conclusion is made of OCR fragments.</figcaption>
+</figure>
+
+<h2 id="consequences">What this changes for an agent that drives an iPhone</h2>
+
+<p>Send the screenshot when the target is rendered content, and not otherwise. On a screen like
+Calculator or Clock the image is a token tax with no measurable return: our pre-registered
+ablation measured it at 35% extra cost per task on render-dependent pages and 43% on
+tree-sufficient ones, with steps unchanged at 2.0 to 2.3 either way. On a map tile or a book
+cover it is not marginal, it is the task: 30 of 30 with the image, 0 of 30 without, McNemar exact
+p &lt; 0.0001.</p>
+
+<p>That makes it a per-screen decision rather than a global setting, and the signal is already
+computable. The same diff that produced this table is the switch: if the filtered gap is empty,
+the tree is the screen.</p>
+
+<figure>
+<svg viewBox="0 0 900 340" role="img" style="width:100%;height:auto"
+  aria-label="Decision diagram for sending a screenshot to a phone agent. Compute the filtered render gap for the current screen. If it is empty, as on eleven of thirteen first-party screens, send the accessibility tree alone and save 35 to 43 percent of the per-task cost. If words survive, as on Maps and Books, send the image: the paired experiment scored 30 of 30 with it and 0 of 30 without it.">
+  <rect x="0" y="0" width="900" height="340" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">The screenshot is a per-screen decision, and the gap computes it</text>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <rect x="40" y="70" width="270" height="70" rx="8" fill="#334155" stroke="#38bdf8"/>
+    <text x="58" y="98" fill="#e2e8f0" font-weight="600">filtered render gap</text>
+    <text x="58" y="120" fill="#94a3b8">for the screen in front of you</text>
+
+    <rect x="400" y="60" width="460" height="86" rx="8" fill="#1e293b" stroke="#475569"/>
+    <text x="420" y="88" fill="#e2e8f0" font-weight="600">empty: tree only</text>
+    <text x="420" y="110" fill="#94a3b8">Calculator, Measure, Clock, Safari, Calendar, Notes,</text>
+    <text x="420" y="130" fill="#94a3b8">Shortcuts, Settings, Files. Saves 35% to 43% per task.</text>
+
+    <rect x="400" y="170" width="460" height="86" rx="8" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="420" y="198" fill="#fbbf24" font-weight="600">not empty: send the image</text>
+    <text x="420" y="220" fill="#94a3b8">Maps tile labels, Books cover text, third-party apps,</text>
+    <text x="420" y="240" fill="#94a3b8">charts, canvases. 30/30 with it, 0/30 without it.</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2">
+    <line x1="310" y1="95" x2="400" y2="95"/><line x1="310" y1="120" x2="360" y2="120"/>
+    <line x1="360" y1="120" x2="360" y2="210"/><line x1="360" y1="210" x2="400" y2="210"/>
+  </g>
+  <text x="40" y="290" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">Scope: Apple's own applications label their controls. A chat app returning WAMessageBubbleTableViewCell as a button name does not,</text>
+  <text x="40" y="312" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">and neither does a Flutter or Unity screen that exposes one opaque view. Measure the app you are actually driving.</text>
+</svg>
+<figcaption>The rule this survey supports. It is a claim about Apple's apps, not about iOS
+generally, and least of all about somebody else's app.</figcaption>
+</figure>
+
+<p>There is a second reading worth stating, because it is the same set of pixels from another
+direction. Text baked into an image has been a documented accessibility failure since WCAG 2.0
+success criterion 1.4.5, Images of Text. The words our agent cannot reach on a Books cover are
+the words a screen reader cannot announce either. Work like the A11y-CUA dataset
+(arXiv:2602.09310, CHI 2026) and the MCP accessibility-tree proposal (arXiv:2608.24898, 13 July
+2026) is arguing that agents and assistive technology should read interfaces through the same
+semantic layer. On eleven of thirteen Apple screens, that layer is already complete enough to do
+the whole job.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>The script is 160 lines and the whole method is in it:</p>
+
+<pre><code>git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+bin/phoneshell doctor        # names every missing piece
+bin/phoneshell up            # brings the bridge up over USB
+
+./.venv/bin/python scripts/render_gap.py Settings Clock Calculator Safari Maps Books</code></pre>
+
+<p>Each screen prints how many words OCR read, how many of them the tree has, the raw gap, and
+what survives the filters, then the run ends with a verdict line. The filters are the
+<code>is_fragment</code>, <code>LIVE_ACTIVITY</code> and <code>len(w) &gt;= 4</code> conditions in
+<code>gap_for_screen</code>. OCR is <code>phoneshell/perception/ocr.py</code>, which calls the
+macOS Vision framework through pyobjc and returns "inconclusive" rather than a wrong answer when
+the bindings are absent. Pass <code>--private</code> to run it over third-party apps: it prints
+counts only and never a word, so the statistic can be published while the content stays on the
+phone. The script also refuses to measure a screen whose app never came to the foreground, because
+<code>open_app</code> reports success either way and the home screen scores about 46%.</p>
+
+<p>The tasks built on this survey are the <code>probe.*</code> set in the public dataset at
+<a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">huggingface.co/datasets/blolabel/phoneshell-bench</a>.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<p>The claim is narrow: on Apple's shipping apps, the accessibility tree describes the screen so
+completely that a screenshot adds nothing on eleven of the thirteen screens surveyed, and the two
+exceptions are both text rendered into a raster. It fails if any of these happens.</p>
+
+<ul>
+  <li>Someone re-runs <code>render_gap.py</code> on the same thirteen screens under a later iOS 26
+  point release before 31 December 2026 and finds a third screen with five or more render-only
+  words surviving the filters. Our prediction is that they will not.</li>
+  <li>A first-party screen turns out to hide a control's state in pixels rather than in a
+  <code>value</code> or a checkmark element. We found one case of the second kind already: the
+  chosen row in Auto-Lock is identified only by a <code>Button</code> labelled
+  <code>checkmark</code>, and only in the raw tree.</li>
+  <li>The corollary fails the other way: a survey of thirty third-party apps returns tree coverage
+  above 90%, which would mean the vision case we are reserving for other developers' apps is not
+  there either.</li>
+</ul>
+
+<p>The strongest caveat is sample size. This is one read of each screen on one device on one OS
+build, by one instrument. Coverage is a property of a screen's current contents, so a Maps screen
+with the search sheet open and a Maps screen showing a route are two different measurements.</p>
+
+
+  <section class="sources">
+    <h2 id="sources">Sources</h2>
+    <ol>
+      <li>phoneshell, FINDINGS.md section 25, published 15 September 2026. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>phoneshell, scripts/render_gap.py, the survey script and its three noise filters. <a href="https://github.com/Blomega/phoneshell/blob/main/scripts/render_gap.py">https://github.com/Blomega/phoneshell/blob/main/scripts/render_gap.py</a></li>
+      <li>Jang et al., iOSWorld: A Benchmark for Personally Intelligent Phone Agents, arXiv:2606.09764, 8 June 2026. 133 tasks in the iOS simulator; vision plus XML improves frontier models by up to 26 points over vision alone. <a href="https://arxiv.org/abs/2606.09764">https://arxiv.org/abs/2606.09764</a></li>
+      <li>A11y-CUA Dataset: Characterizing the Accessibility Gap in Computer Use Agents, arXiv:2602.09310, CHI 2026. <a href="https://arxiv.org/abs/2602.09310">https://arxiv.org/abs/2602.09310</a></li>
+      <li>Ramineni et al., MCP-Driven Accessibility Tree Standardization for AI-Powered Screen Reader Agents, arXiv:2608.24898, 13 July 2026. <a href="https://arxiv.org/abs/2608.24898">https://arxiv.org/abs/2608.24898</a></li>
+      <li>W3C, Understanding WCAG 2.2 Success Criterion 1.4.5 Images of Text. <a href="https://www.w3.org/WAI/WCAG22/Understanding/images-of-text.html">https://www.w3.org/WAI/WCAG22/Understanding/images-of-text.html</a></li>
+      <li>Apple, Vision framework documentation, the local OCR used for every reading here. <a href="https://developer.apple.com/documentation/vision">https://developer.apple.com/documentation/vision</a></li>
+      <li>phoneshell-bench, the public task set including the probe stratum built from this survey. <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">https://huggingface.co/datasets/blolabel/phoneshell-bench</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>

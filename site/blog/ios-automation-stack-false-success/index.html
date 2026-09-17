@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eight calls in the iPhone automation stack that report success for work that never happened | Blolabel</title>
+<meta name="description" content="Measured on a physical iPhone 17 Pro Max on iOS 26.6 with WebDriverAgent v16.12.4, 8 and 9 September 2026: eight calls return HTTP 200 or exit code 0 while the phone does nothing. The worst cost a 20-minute supervisor loop and a 23-turn, $0.41 task on a dead input stack.">
+<link rel="canonical" href="https://blolabel.ai/blog/ios-automation-stack-false-success/">
+<meta property="og:title" content="Eight calls in the iPhone automation stack that report success for work that never happened | Blolabel">
+<meta property="og:description" content="Measured on a physical iPhone 17 Pro Max on iOS 26.6 with WebDriverAgent v16.12.4, 8 and 9 September 2026: eight calls return HTTP 200 or exit code 0 while the phone does nothing. The worst cost a 20-minute supervisor loop and a 23-turn, $0.41 task on a dead input stack.">
+<meta property="og:url" content="https://blolabel.ai/blog/ios-automation-stack-false-success/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Eight calls in the iPhone automation stack that report success for work that never happened","description":"Measured on a physical iPhone 17 Pro Max on iOS 26.6 with WebDriverAgent v16.12.4, 8 and 9 September 2026: eight calls return HTTP 200 or exit code 0 while the phone does nothing. The worst cost a 20-minute supervisor loop and a 23-turn, $0.41 task on a dead input stack.",
+ "datePublished":"2026-09-15","image":"https://blolabel.ai/images/blog/ios-automation-stack-false-success-hero.png","dateModified":"2026-09-15",
+ "url":"https://blolabel.ai/blog/ios-automation-stack-false-success/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/ios-automation-stack-false-success/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAABOCAMAAAD4iTj8AAAAilBMVEVMaXFiXmJhXmEVieRkYGRiXmJiXmJEaZJiX2IWjehNaIJhXmEUjOcVjOdgXWBjX2MWjecUjOZiXmJiXmIUi+UVjehUoN7w9/33+/7q9Pzg7/p8gIlkYGQXjuj///9oZGgWk/JmY2YVjullYWUJh+dtaG0olumr1/dSq+7T6vo6n+tntfCMx/N7vvJEi25LAAAAHHRSTlMAakku/HusA/z7Eo+hwDL30nXizUnjHfvKolE8aPCOgAAAAAlwSFlzAAALEgAACxIB0t1+/AAAB35JREFUeJztmn1zsjoThwMCCaCg4EvbASFA1bZ3v//XO7MJeQFBwJ55nnNP85v+oSYB9mJ3k2yKkJGRkZGRkZGRkZGRkZGRkZGRkdHPhZXQ7xPuGH2P4Gk4P8L6P3slGCOEV7vderNZr3f7I/yEfpEwQqvd1i+FDpt90PWCwBKyF147kiOjxc8VzborvtdI++gV0Grtl2XuC1Vledhh5QQY2e8F17u3yASMQjnSXehVGFnaXReOxUvug3c+WJ9LMQbblbwpRnYdO6CYLgZA25HFEwAKddfxscdVX0eIaPnw6ueR2xw3ZaVZLxiU/k7cFSObkgzkFIsBFE478hkAYuw4AIzWld/TYbvetw6M0Ur69XZ4/GpbCvOrBiQQ5KUgMAeACjM95voAxoJxKH5nAyh7r6+qyrLacAcGAK095RAAjI7K/uZy+/q6fVYtAt8XBKYB6I89wwPu0tTQtZ4GkEMMl/4exkwBQHijhv85nUEfN+kELYFJABjhyA09L7QxQpEtFPQAoMCCTlakJVhucWDDcM9zoU363dMAcnj2A5/NHwLojL6ehb6ED1Q+c6QpABjZqUMhXdM0QuG7Q5lY3tcB2AnvFHuRPsUg24spaykojVMLuP0YQO6Xa3gxDwFgtJfpr/mW9p9Pl0oM2szwAIzcmhLiOA4hNI7CIiYgh3YAvFu2Q6ET62WpBBt4tMjYcN5WJHbrd0sB+FwiFRyC6RDQAuBDATh/d4PgMQAwkvDmLCM09age9QIAqcOklr1I0RLAKErUaDaM1DVLF8sBlEzSBao9ZJcHADDaqwT4qdl/vioA26kQYI3KAuKIL10AGXEcrReJWRSA/e2llYjD8CwHsGbypfvuJgEoB2huOoAPLZIYxocekN6ZMASgZ2R7IZwWyi3kpwzwLAewZ9j2/kwA0NbCyvPmSwcgkwBPJY8AqDb++p0HACDO5eestVFaXVMVImDxYgAVvCssX+sMADuVAUYBQCp5DMBTNlBKVUDfASAFLSQsUoRglPQeSB7KlQiBCHnGAxAKtjyz+9VqCsB6GgC/zKMQCGRuI5ln2558jf0cQJzQtmQzoSnGKIrl1xAj7EkcbOziHLADbVr72/T1aBbQ5oCxHNDOA6MAwAb5/l0gHgoj+gAoS/yyOUsCJCPAoSm7Wtrycdj257lZoOT255C9HgPABwWgupyGZoEZAOz2mUmdsCJCkAx6AKlTFqCyOcsiwNG20jACuVS72E/WAX6Vs1XsQwCBBiBv1ELwfL4tASAs5E+J0cg6gMe8aia1jZDyeS4REVkWPwFAU3XgCWECgLYNbj5PQw4wDUA9Zbt86W5/epsh3SUYgMFJEgBEPwKQ+5s9b57rAdpa+PT5/wDAl8Liy1Me4OtL4bJcT4UAVjthRuDPgP0DADrFNz0EpI+TIQBUNHcBCJ+vO8qeygGlvhb22yXM3FmgyS/N7eN0Pl0vzacqi8zIATJvpcAGYTEt9gC0zWrW5ElQTBlx0pX3xEpww5bCG7+NbLaKnbcOaKrb9eP01TSXz7zJr+ePP5+NXFHvdStpGukKkDaV1xZbvo1Ng5kNzSLPizQnr4uDIMBRFADDIAiCpxdCaN8ucPmGeM5KsLnxreD1dskv3+3nC3eC6nDsLHdJrKm2tIUQyWI3ilyxLLgHEFtRFIooh2kRoSiTCyHobMdJ6rk2cH1mN7jn4Sl/YRviGXsBEfwQ/yc5F3ywVOCXG30v0BVf26ipLCvieHwpTDIaO3LjyI3CqSKQul6cZVAYIUnq/cADkAhteHkdAHdnB6xnZwVw7q0G2h3FMACHAZA+DzYKe4Y3Q5DepQfwiNA2QwXAg8pIRuD44QkAGGLnuBOze+VrAPLK32o6MLugHqCXgro6XRqfQXzsAVpa6+K58wB9KIsAfSeRqXoBrxYsB3DgkiWRTgjkeVXq4gvFbakvgPq6Nv2K0AAAfUvLHl5Y2s8BtV42IZTVvTCyZQHl5wWRiksuCyB8NQDq6AuqxtywfaklgHt9VlvIR489AGHvXQuCRG5ougBqL5FOQMh7KJ7fqnUyjCBLiM8URX2tJNifBrtqC94wWq8F9vXdtMV1u26Llh3BLMB24F4BRVD2V9iuPNByO0djllU4bSen8LRjtwRqolKZXhSdPhrDY1Vh5gBTAKB68MD+81WeC4hjyq7eRWnTjYuC1jUtYqt3HKp/c+Oihk40sXQLAjehBaV1VlNoC1VZfMbhKB4GAE6+CaYBYHQcTwHn86u4beQOq63vYxRYXpokaRghZHda9W8oCqGTJyr/wgQU2CEMT1IvtNlT89/VXcePxzEAuFdV+uugezbYlTr1ehsn8DL7NJPBDAJ5qjPai3e6O0Djw1nToqNtxADcy9+u5dngQLOcBTiBl/H3r53mDUtrFw/fbez0lT/dmdH+1G2a8+81GO22m67Wu91K+BFGq82gttrZ9/F1yPzTG/qbhZf4Eb53gtMrbAH+DuHH/yQz4bttp7eXU8/8v8b+f0Ng6/Ht9YXp9fWN589fJTzx/TcIyw+/0XojIyMjIyMjIyMjIyMjIyP0n9Y/P2/lF8zxuoMAAAAASUVORK5CYII=" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind foundational">foundational</span>
+    <time datetime="2026-09-15">15 September 2026</time>
+    <span>6 min read</span>
+  </div>
+  <h1>Eight calls in the iPhone automation stack that report success for work that never happened</h1>
+  <p class="standfirst">None of these is exotic. A tap on a locked phone, an app launch, a runner relaunch, a TCP connect, a keystroke. Each returns the success signal its caller checks, and each needs a separate read of the phone to prove anything happened.</p>
+
+  <p>On a physical iPhone 17 Pro Max running iOS 26.6, driven from macOS 26.5 through WebDriverAgent
+v16.12.4, eight separate calls returned HTTP 200 or exit code 0 on 8 and 9 September 2026 while
+the phone did nothing. Three of them cost real time: a 54-second agent loop on one step, a
+supervisor that relaunched a dead runner for twenty minutes, and a task that burned 23 turns and
+$0.41 against an input stack that was discarding every event.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/ios-automation-stack-false-success-hero.png" alt="Abstract illustration of stacked translucent layers passing a green-lit signal upward while the bottom layer stays dark" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">What was measured, on which versions</h2>
+
+<p>Every entry below was measured on the phoneshell rig and written into
+<code>FINDINGS.md</code> in the commits of 8 and 9 September 2026. The runner is Appium's
+WebDriverAgent at tag v16.12.4, released 6 September 2026 and pinned in
+<code>phoneshell/device.py</code> as "the version every measurement in FINDINGS.md was taken
+against". Four releases have shipped since, v16.12.5 on 7 September through v16.12.8 on
+11 September. We have not re-measured on them, so treat each row as true of v16.12.4 until
+someone does.</p>
+
+<p>These are physical-device observations. iOSWorld (arXiv:2606.09764, 8 June 2026), the largest
+iOS agent benchmark published this year, runs its 133 tasks in the iOS simulator. We did not test
+a simulator, so we make no claim either way about whether an offloaded runner, a locked screen or
+an input wedge occurs there.</p>
+
+<h2 id="evidence">The eight calls</h2>
+
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>call</th><th>reports</th><th>what the phone did</th><th>measured cost</th><th>the read that catches it</th><th>source</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>any gesture to a locked or sleeping phone</td><td>HTTP 200, null value</td><td>nothing; screenshots either side byte-identical</td><td>not reported</td><td><code>/wda/locked</code> before every gesture</td><td>FINDINGS s.1</td></tr>
+    <tr><td><code>/wda/apps/activate</code>, <code>/wda/apps/launch</code></td><td>OK</td><td>app stayed in the background</td><td>54 s agent loop on one step</td><td>poll <code>/wda/activeAppInfo</code> until the bundle matches</td><td>FINDINGS s.1</td></tr>
+    <tr><td><code>/wda/homescreen</code></td><td>OK</td><td>often nothing; agent stranded in the app switcher</td><td>not reported</td><td>screen check: four or more <code>Icon</code> elements, no overlay</td><td>FINDINGS s.1</td></tr>
+    <tr><td><code>devicectl device process launch</code>, runner offloaded</td><td>exit 0, "Launched application"</td><td>bundle not on the phone</td><td>40 s wait, 20 min diagnosis</td><td><code>devicectl device info apps</code> first</td><td>FINDINGS s.13</td></tr>
+    <tr><td><code>devicectl device process launch</code>, runner wedged</td><td>exit 0, supervisor logs <code>wda-launch: OK</code></td><td>old process kept the field, no HTTP</td><td>20 min loop after run 190</td><td><code>info processes</code>, then <code>process terminate --pid</code></td><td>FINDINGS s.29</td></tr>
+    <tr><td>writes during an input wedge</td><td>OK on dismiss, tap, home, drag</td><td>0.0% of pixels changed; reads still correct</td><td>23 turns, $0.41</td><td>two-second drag probe, measure pixel change</td><td>FINDINGS s.14</td></tr>
+    <tr><td>TCP connect to port 8100</td><td>connection accepted</td><td>usbmux forward up, runner absent</td><td>not reported</td><td>require an HTTP answer from <code>/status</code></td><td>FINDINGS s.22</td></tr>
+    <tr><td><code>type_text</code> judged by pixel diff</td><td>"screen changed"</td><td>keyboard animated in; keystrokes discarded</td><td>empty reminder saved</td><td>read the tree back for the typed text</td><td>FINDINGS s.16</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="mechanism">Why every layer can say yes</h2>
+
+<p>Each layer reports on its own contract, and none of those contracts is "the phone changed". An
+HTTP 200 from WebDriverAgent means XCTest accepted the request. Exit 0 from
+<code>devicectl</code> means the launch request was delivered. A TCP accept on 8100 means
+<code>iproxy</code> is listening on the Mac. The only layer that knows whether the screen moved
+is the screen.</p>
+
+<figure>
+<svg viewBox="0 0 900 500" role="img" style="width:100%;height:auto"
+  aria-label="Layer diagram of the iPhone automation stack from agent to device. The agent calls phoneshell, which speaks HTTP to port 8100 through iproxy and usbmux, to the WebDriverAgent runner inside XCTest, which injects HID events into iOS. Each layer's success signal is marked: TCP accept on 8100, HTTP 200 from WebDriverAgent, exit 0 from devicectl, OK from activate and launch. None of them observes the screen. The witness path reads back from the device: activeAppInfo in 43 milliseconds, screenshot in 72 milliseconds, source at depth 20 in 159 to 210 milliseconds.">
+  <rect x="0" y="0" width="900" height="500" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Every success signal is local to its own layer</text>
+  <g font-family="Montserrat,sans-serif">
+    <rect x="40" y="70" width="400" height="56" rx="8" fill="#1e293b" stroke="#334155"/>
+    <text x="60" y="104" fill="#e2e8f0" font-size="14" font-weight="600">agent (model + tools)</text>
+    <rect x="40" y="140" width="400" height="56" rx="8" fill="#1e293b" stroke="#334155"/>
+    <text x="60" y="174" fill="#e2e8f0" font-size="14" font-weight="600">phoneshell on the Mac, macOS 26.5</text>
+    <rect x="40" y="210" width="400" height="56" rx="8" fill="#1e293b" stroke="#334155"/>
+    <text x="60" y="244" fill="#e2e8f0" font-size="14" font-weight="600">iproxy + usbmux, port 8100, USB cable</text>
+    <rect x="40" y="280" width="400" height="56" rx="8" fill="#1e293b" stroke="#334155"/>
+    <text x="60" y="314" fill="#e2e8f0" font-size="14" font-weight="600">WebDriverAgent v16.12.4 runner (XCTest)</text>
+    <rect x="40" y="350" width="400" height="56" rx="8" fill="#1e293b" stroke="#334155"/>
+    <text x="60" y="384" fill="#e2e8f0" font-size="14" font-weight="600">iOS 26.6: HID events, SpringBoard, apps</text>
+    <rect x="40" y="420" width="400" height="56" rx="8" fill="#334155" stroke="#38bdf8"/>
+    <text x="60" y="454" fill="#38bdf8" font-size="14" font-weight="700">the screen: the only layer that knows</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2"><line x1="240" y1="126" x2="240" y2="140"/><line x1="240" y1="196" x2="240" y2="210"/><line x1="240" y1="266" x2="240" y2="280"/><line x1="240" y1="336" x2="240" y2="350"/><line x1="240" y1="406" x2="240" y2="420"/></g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#94a3b8">
+    <text x="470" y="174">devicectl launch: exit 0</text>
+    <text x="470" y="244">TCP accept on 8100</text>
+    <text x="470" y="300">HTTP 200 on a locked phone</text>
+    <text x="470" y="320">activate / launch: OK</text>
+    <text x="470" y="384">110,348 events dropped, writes OK</text>
+  </g>
+  <line x1="880" y1="448" x2="880" y2="100" stroke="#38bdf8" stroke-width="2"/>
+  <line x1="880" y1="100" x2="450" y2="100" stroke="#38bdf8" stroke-width="2"/>
+  <polygon points="450,100 462,94 462,106" fill="#38bdf8"/>
+  <line x1="440" y1="448" x2="880" y2="448" stroke="#38bdf8" stroke-width="2"/>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#38bdf8">
+    <text x="660" y="416">witness reads, no session:</text>
+    <text x="660" y="434">activeAppInfo 43 ms, screenshot 72 ms</text>
+    <text x="560" y="90">source at depth 20: 159 to 210 ms</text>
+  </g>
+</svg>
+<figcaption>Success signals on the left are each true of their own layer. The read-back path on
+the right costs tens to hundreds of milliseconds and is the only evidence the phone moved.</figcaption>
+</figure>
+
+<p>The wedged runner is the clearest case because the recovery loop itself runs on a false
+signal. A 360-cell sweep died at run 190, after 189 minutes of continuous automation. The runner
+process was alive on the phone and answered no HTTP. The supervisor relaunched it, got exit 0,
+logged <code>wda-launch: OK</code>, and did it again for twenty minutes, because a launch against
+an already-running app is a no-op that reports success. The fix takes seconds and no reboot.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Flow diagram of the wedged WebDriverAgent recovery. The false loop: after run 190 and 189 minutes of automation the runner answers no HTTP, the supervisor calls devicectl process launch, gets exit 0 and logs wda-launch OK, and repeats for twenty minutes because a launch against a running app is a no-op. The working path: stop the supervisor, list device processes to find the runner pid, terminate that pid, kill the orphaned iproxy holding port 8100, restart the bridge, and WebDriverAgent reports ready on the first attempt with no reboot.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Launching over a wedged runner reports success forever</text>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <rect x="40" y="70" width="190" height="70" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="55" y="98" fill="#e2e8f0" font-weight="600">run 190, 189 min</text>
+    <text x="55" y="120" fill="#94a3b8">runner alive, no HTTP</text>
+    <rect x="290" y="70" width="230" height="70" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="305" y="98" fill="#e2e8f0" font-weight="600">devicectl process launch</text>
+    <text x="305" y="120" fill="#94a3b8">no-op on a running app</text>
+    <rect x="580" y="70" width="280" height="70" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="595" y="98" fill="#e2e8f0" font-weight="600">exit 0, wda-launch: OK</text>
+    <text x="595" y="120" fill="#94a3b8">port 8100 still silent</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2"><line x1="230" y1="105" x2="290" y2="105"/><line x1="520" y1="105" x2="580" y2="105"/></g>
+  <path d="M720 140 C720 185, 405 185, 405 145" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="470" y="196" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">repeated for 20 minutes</text>
+  <line x1="40" y1="222" x2="860" y2="222" stroke="#334155"/>
+  <text x="40" y="250" fill="#38bdf8" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">what worked, in order</text>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12">
+    <rect x="40" y="268" width="150" height="56" rx="6" fill="#1e293b" stroke="#38bdf8"/><text x="52" y="292" fill="#e2e8f0">1 stop the</text><text x="52" y="310" fill="#e2e8f0">supervisor</text>
+    <rect x="205" y="268" width="150" height="56" rx="6" fill="#1e293b" stroke="#38bdf8"/><text x="217" y="292" fill="#e2e8f0">2 info processes</text><text x="217" y="310" fill="#e2e8f0">find runner pid</text>
+    <rect x="370" y="268" width="150" height="56" rx="6" fill="#1e293b" stroke="#38bdf8"/><text x="382" y="292" fill="#e2e8f0">3 process</text><text x="382" y="310" fill="#e2e8f0">terminate --pid</text>
+    <rect x="535" y="268" width="150" height="56" rx="6" fill="#1e293b" stroke="#38bdf8"/><text x="547" y="292" fill="#e2e8f0">4 kill orphaned</text><text x="547" y="310" fill="#e2e8f0">iproxy on 8100</text>
+    <rect x="700" y="268" width="160" height="56" rx="6" fill="#1e293b" stroke="#38bdf8"/><text x="712" y="292" fill="#e2e8f0">5 restart bridge</text><text x="712" y="310" fill="#38bdf8">ready, no reboot</text>
+  </g>
+  <text x="40" y="360" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">Skipping step 4 fails on bind with "iproxy exited immediately", whose advice is to check the cable.</text>
+  <text x="40" y="382" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">Killing the bridge does not kill iproxy, which keeps port 8100.</text>
+</svg>
+<figcaption>The false loop, and the five steps that recovered the runner in seconds on
+9 September 2026 without a reboot or anyone entering the passcode by hand.</figcaption>
+</figure>
+
+<p>The cost of trusting each signal is uneven. Two of the false successes cost under a minute of
+wall clock, 40 s and 54 s; the two that fooled automated recovery cost about twenty minutes each,
+roughly 1,200 seconds, because nothing downstream disagreed.</p>
+
+<figure>
+<svg viewBox="0 0 900 330" role="img" style="width:100%;height:auto"
+  aria-label="Log-scale bar chart of wall-clock time lost to one false success signal on a physical iPhone. A missing-runner launch wait cost 40 seconds, an app activation that reported OK caused a 54 second agent loop, diagnosing a devicectl exit 0 for an offloaded runner took about 1,200 seconds, and a supervisor relaunching a wedged runner looped for about 1,200 seconds.">
+  <rect x="0" y="0" width="900" height="330" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Time lost to one false success, log scale</text>
+  <g stroke="#1e293b"><line x1="300" y1="60" x2="300" y2="270"/><line x1="534.7" y1="60" x2="534.7" y2="270"/><line x1="769.4" y1="60" x2="769.4" y2="270"/></g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="middle">
+    <text x="300" y="288">10 s</text><text x="534.7" y="288">100 s</text><text x="769.4" y="288">1,000 s</text>
+  </g>
+  <text x="560" y="315" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">seconds of wall clock</text>
+  <g font-family="Montserrat,sans-serif" font-size="13" fill="#e2e8f0">
+    <text x="40" y="95">launch wait, runner offloaded</text>
+    <text x="40" y="145">agent loop, activate said OK</text>
+    <text x="40" y="195">diagnosis, devicectl exit 0</text>
+    <text x="40" y="245">supervisor loop, runner wedged</text>
+  </g>
+  <rect x="300" y="78" width="141.3" height="24" fill="#64748b"/>
+  <rect x="300" y="128" width="171.8" height="24" fill="#64748b"/>
+  <rect x="300" y="178" width="487.9" height="24" fill="#38bdf8"/>
+  <rect x="300" y="228" width="487.9" height="24" fill="#38bdf8"/>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12.5" font-weight="600">
+    <text x="451" y="95" fill="#e2e8f0">40 s</text><text x="482" y="145" fill="#e2e8f0">54 s</text>
+    <text x="798" y="195" fill="#38bdf8">~1,200 s</text><text x="798" y="245" fill="#38bdf8">~1,200 s</text>
+  </g>
+</svg>
+<figcaption>The two twenty-minute losses are the ones where automated recovery trusted the
+signal. FINDINGS reports them as "twenty minutes", so both bars are approximate.</figcaption>
+</figure>
+
+<h2 id="what-it-means">What this changes if you build on a real iPhone</h2>
+
+<p>A write is not done until a read agrees. The reads are cheap next to a model turn:
+<code>/wda/activeAppInfo</code> at 43 ms, <code>/screenshot</code> at 72 ms and a full
+<code>/source</code> at depth 20 in 159 to 210 ms, against 4.1 to
+6.8 seconds per agent turn on the same rig, of which the phone accounts for about one second.
+Skipping verification saves under 5% of a turn and risks the 54-second loop.</p>
+
+<p>Keep reads session-free. WebDriverAgent registers <code>/source</code>,
+<code>/screenshot</code>, <code>/wda/activeAppInfo</code> and <code>/wda/locked</code> with
+<code>.withoutSession</code>. Creating a session switches the app under test and sends the phone
+home, which once made our own verification step navigate away from the state it was measuring.</p>
+
+<p>Probe input, not health. A phone in the HID wedge answers <code>/status</code>,
+<code>/source</code> and <code>/screenshot</code> correctly. Our doctor reported it healthy
+until an <code>input</code> check was added that drags on the home screen and measures pixel
+change. It costs about two seconds, and <code>prepare_for_run</code> now refuses to start a
+benchmark when it fails.</p>
+
+<p>Recover by killing, not relaunching. <code>recycle_runner</code> now calls
+<code>terminate_runner</code> before launching, and <code>PortForward.start</code> clears a stale
+<code>iproxy</code> off 8100, killing only <code>iproxy</code>. Judgement: a reboot is the wrong
+default. After a cold boot iOS withholds developer services until a person types the passcode on
+the phone itself, and WebDriverAgent cannot start to type it, which ends any unattended run.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<p>You need a Mac, an iPhone with Developer Mode and Settings &gt; Developer &gt; Enable UI
+Automation on, and the repo at
+<a href="https://github.com/Blomega/phoneshell">github.com/Blomega/phoneshell</a>.</p>
+
+<pre><code>bin/phoneshell setup && bin/phoneshell up      # builds WebDriverAgent v16.12.4, starts the bridge
+bin/phoneshell doctor                           # ends with the input check that drags and measures
+
+# 1. A gesture to a locked phone: lock it with the side button, then
+curl -s http://127.0.0.1:8100/wda/locked        # {"value":true}
+#    send any tap through phoneshell shell and compare screenshots before and after
+
+# 2. Exit 0 for an app that is not there: offload any app in
+#    Settings > General > iPhone Storage > app > Offload App, then
+xcrun devicectl device info apps --device &lt;udid&gt; | grep &lt;bundle&gt;    # absent
+xcrun devicectl device process launch --device &lt;udid&gt; &lt;bundle&gt;; echo $?
+
+# 3. TCP accept is not a runner: with the bridge up, terminate the runner, then
+nc -z 127.0.0.1 8100 && echo "port open"
+curl -s -m 3 http://127.0.0.1:8100/status || echo "no runner behind it"
+
+# 4. The recovery for a wedged runner
+xcrun devicectl device info processes --device &lt;udid&gt; | grep -i WebDriverAgent
+xcrun devicectl device process terminate --device &lt;udid&gt; --pid &lt;pid&gt;</code></pre>
+
+<p>The code for each witness: <code>launch_wda</code>, <code>terminate_runner</code>,
+<code>recycle_runner</code> and <code>input_check</code> in <code>phoneshell/device.py</code>;
+<code>check_input_reaches_screen</code> and <code>prepare_for_run</code> in
+<code>phoneshell/prep.py</code>. The device-log line for the input wedge was
+<code>process:AutomationModeUI ... dropped:110348 dropStatus:-536870168</code>, visible in
+Console.app with the phone selected. Items 1 and 3 reproduce on demand. The offload and the two
+wedges were observed, not induced, so we cannot give a command that forces them.</p>
+
+<h2 id="falsification">What would prove this wrong</h2>
+
+<p>The claim is that these signals are structurally local: each layer reports on its own contract
+and cannot see the screen. Two dated predictions follow. <b>By 31 March 2027, the then-current
+WebDriverAgent release will still return HTTP 200 for a tap sent to a locked iPhone</b>, and
+<b>the then-current Xcode's <code>devicectl device process launch</code> will still exit 0 when
+the target app is already running.</b> A release that returns an error for either falsifies that
+row, and we will update the table rather than leave it standing.</p>
+
+<p>The limit: one phone, one iOS build, one WebDriverAgent tag, two days. Rows marked "not
+reported" have no measured cost, and the two wedges were each seen in one long session.</p>
+
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What makes phone agents fail on real iPhone hardware?", "acceptedAnswer": {"@type": "Answer", "text": "Often the automation stack, not the model. Blolabel measured eight calls that report success while the phone does nothing on WebDriverAgent v16.12.4 and iOS 26.6: gestures sent to a locked phone return HTTP 200, app activation returns OK while the app stays in the background, devicectl exits 0 for an app that is not installed or a runner that is wedged, and a phone can accept every write with 0.0% of pixels changing."}}, {"@type": "Question", "name": "Does devicectl process launch confirm the app actually started?", "acceptedAnswer": {"@type": "Answer", "text": "No. On 8 September 2026 xcrun devicectl device process launch printed Launched application and exited 0 for a WebDriverAgent runner that iOS had offloaded from the phone, and on 9 September 2026 it reported success for twenty minutes against a runner process that was alive but answered no HTTP."}}, {"@type": "Question", "name": "How do you detect that an iPhone is silently dropping automation input?", "acceptedAnswer": {"@type": "Answer", "text": "Drag across the home screen and measure the pixel change. In the wedged state reads stay correct while every write returns OK and moves 0.0% of pixels; the device log showed 110,348 dropped events. Blolabel's doctor and prepare_for_run run this two-second probe and refuse to start a benchmark when it fails."}}]}
+</script>
+
+  <section class="sources">
+    <h2 id="sources">Sources</h2>
+    <ol>
+      <li>Blolabel, <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">FINDINGS.md</a>, sections 1, 2, 13, 14, 16, 22, 24 and 29, measured on an iPhone 17 Pro Max on iOS 26.6 from macOS 26.5, committed 8 and 9 September 2026.</li>
+<li>Appium, <a href="https://github.com/appium/WebDriverAgent/releases/tag/v16.12.4">WebDriverAgent v16.12.4</a>, released 6 September 2026; the version pinned in <code>phoneshell/device.py</code>.</li>
+<li>Appium, <a href="https://github.com/appium/WebDriverAgent/releases">WebDriverAgent releases</a>: v16.12.5 (7 September 2026) through v16.12.8 (11 September 2026), not re-measured here.</li>
+<li>Blolabel, <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/device.py">phoneshell/device.py</a> and <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/prep.py">phoneshell/prep.py</a>: runner launch, termination, recycling and the input probe.</li>
+<li>Lawrence Keunho Jang et al., <a href="https://arxiv.org/abs/2606.09764">iOSWorld: A Benchmark for Personally Intelligent Phone Agents</a>, arXiv:2606.09764, submitted 8 June 2026. Runs in the iOS simulator.</li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>

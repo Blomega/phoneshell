@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Six models, 58 tasks on one iPhone, and not a single pair separates &mdash; Blolabel</title>
+<meta name="description" content="Six frontier models scored 89.7% to 96.6% on 58 paired tasks run on a physical iPhone. None of the fifteen pairs reaches p < 0.05 under McNemar. Growing the suite from 24 tasks to 58 moved the requirement from about 33 tasks to about 80.">
+<link rel="canonical" href="https://blolabel.ai/blog/leaderboard-that-cannot-rank/">
+<meta property="og:title" content="Six models, 58 tasks on one iPhone, and not a single pair separates &mdash; Blolabel">
+<meta property="og:description" content="Six frontier models scored 89.7% to 96.6% on 58 paired tasks run on a physical iPhone. None of the fifteen pairs reaches p < 0.05 under McNemar. Growing the suite from 24 tasks to 58 moved the requirement from about 33 tasks to about 80.">
+<meta property="og:url" content="https://blolabel.ai/blog/leaderboard-that-cannot-rank/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Six models, 58 tasks on one iPhone, and not a single pair separates","description":"Six frontier models scored 89.7% to 96.6% on 58 paired tasks run on a physical iPhone. None of the fifteen pairs reaches p < 0.05 under McNemar. Growing the suite from 24 tasks to 58 moved the requirement from about 33 tasks to about 80.",
+ "datePublished":"2026-09-10","dateModified":"2026-09-10",
+ "url":"https://blolabel.ai/blog/leaderboard-that-cannot-rank/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/leaderboard-that-cannot-rank/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-10">10 September 2026</time>
+    <span>9 min read</span>
+  </div>
+  <h1>Six models, 58 tasks on one iPhone, and not a single pair separates</h1>
+  <p class="standfirst">Adding 34 tasks to the benchmark took the ranking further out of reach, not closer. The reason is arithmetic that contains no sample size: McNemar needs six one-directional disagreements to reach p < 0.05, and our widest pair has had four since the first run.</p>
+
+  <p>Six frontier models from six vendors ran the same 58 tasks on a physical iPhone 14 Pro on
+9 September 2026. They scored between 89.7% and 96.6%, and under McNemar's exact test not one
+of the fifteen model pairs separates at p &lt; 0.05. The suite had been 24 tasks. Going to 58 did
+not fix the ranking, it moved it further out of reach: the widest gap on the board went from
+needing about 33 tasks to needing about 80.</p>
+
+<h2 id="what-we-ran">What we ran, and when</h2>
+
+<p>The first board ran six models over 24 tasks on a physical iPhone for $4.29 of API spend:
+Kimi K3 at 91.7%, GPT-5.1, Claude Opus 4.8 and Qwen3-Max all at 83.3%, Gemini 3.1 Pro at 79.2%,
+DeepSeek v3.2 at 75.0%. Three identical numbers sitting in the middle of a sorted list is the
+tell. Sorting is not ranking, and a page that prints six percentages in descending order reads
+as an ordering whether or not the data contains one.</p>
+
+<p>The sweep meant to fix it ran on 9 September 2026: 58 tasks attempted by all six models,
+round-robin by task rather than blocked by model so that an interrupted run still leaves a
+balanced paired design, $9.25 and about five hours of wall clock on the phone. The 20
+<code>probe.*</code> tasks were excluded, because they are a vision ablation's stimuli, built so
+a model with eyes gets all ten and a model without gets none. Tasks a model was never asked,
+because of a provider rate limit or a missing app, are recorded as not scored rather than as
+failures, so they never enter a denominator.</p>
+
+<p>The same saturation is visible one platform over, and it is better documented there.
+AndroidWorld shipped in May 2024 with 116 programmatic tasks across 20 Android apps and a best
+agent at 30.6%. By 8 October 2025 AGI Inc was claiming 97.4% on it, in a post with no confidence
+interval, no run count and no per-task results. MobileWorld, posted to arXiv on 22 December 2025
+and published at ACL 2026, opens by stating that AndroidWorld agents "achieving over 90% success
+rates indicate its saturation", then rebuilds the problem with 201 tasks where the best agentic
+framework reaches 51.7% and the best end-to-end model 20.9%.</p>
+
+<h2 id="the-board">The board, and the interval the board did not print</h2>
+
+<p>Every score below is a Wilson 95% interval computed from the same paired run, not a
+measurement. On 24 items the narrowest interval is 23.5 points wide and the widest is 32.9. All
+six overlap each other.</p>
+
+<figure>
+<svg viewBox="0 0 900 410" role="img" style="width:100%;height:auto"
+  aria-label="Wilson 95% confidence intervals for six models on the 24-task iPhone suite: Kimi K3 91.7% with an interval of 74.2 to 97.7, GPT-5.1, Claude Opus 4.8 and Qwen3-Max all 83.3% with 64.1 to 93.3, Gemini 3.1 Pro 79.2% with 59.5 to 90.8, and DeepSeek v3.2 75.0% with 55.1 to 88.0. Every interval overlaps every other interval, so the sorted order of the point estimates is not supported by the data.">
+  <rect x="0" y="0" width="900" height="410" fill="#0f172a"/>
+  <text x="40" y="38" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Six models, 24 paired tasks, one physical iPhone</text>
+  <text x="40" y="62" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="13">Point estimate (dot) and Wilson 95% interval (bar). Every interval overlaps every other one.</text>
+
+  <line x1="260" y1="80" x2="260" y2="352" stroke="#334155" stroke-width="1"/>
+  <line x1="380" y1="80" x2="380" y2="352" stroke="#1e293b" stroke-width="1"/>
+  <line x1="500" y1="80" x2="500" y2="352" stroke="#1e293b" stroke-width="1"/>
+  <line x1="620" y1="80" x2="620" y2="352" stroke="#1e293b" stroke-width="1"/>
+  <line x1="740" y1="80" x2="740" y2="352" stroke="#1e293b" stroke-width="1"/>
+  <line x1="860" y1="80" x2="860" y2="352" stroke="#334155" stroke-width="1"/>
+
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="middle">
+    <text x="260" y="372">50%</text><text x="380" y="372">60%</text><text x="500" y="372">70%</text>
+    <text x="620" y="372">80%</text><text x="740" y="372">90%</text><text x="860" y="372">100%</text>
+  </g>
+  <text x="560" y="396" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">tasks passed, of 24</text>
+
+  <g font-family="Montserrat,sans-serif" font-size="13" fill="#e2e8f0">
+    <text x="40" y="109">Kimi K3</text>
+    <text x="40" y="154">GPT-5.1</text>
+    <text x="40" y="199">Claude Opus 4.8</text>
+    <text x="40" y="244">Qwen3-Max</text>
+    <text x="40" y="289">Gemini 3.1 Pro</text>
+    <text x="40" y="334">DeepSeek v3.2</text>
+  </g>
+
+  <g stroke="#38bdf8" stroke-width="7" stroke-linecap="round" opacity="0.55">
+    <line x1="550" y1="105" x2="832" y2="105"/>
+    <line x1="429" y1="150" x2="780" y2="150"/>
+    <line x1="429" y1="195" x2="780" y2="195"/>
+    <line x1="429" y1="240" x2="780" y2="240"/>
+    <line x1="374" y1="285" x2="750" y2="285"/>
+    <line x1="321" y1="330" x2="716" y2="330"/>
+  </g>
+  <g fill="#e2e8f0">
+    <circle cx="760" cy="105" r="5"/><circle cx="660" cy="150" r="5"/><circle cx="660" cy="195" r="5"/>
+    <circle cx="660" cy="240" r="5"/><circle cx="610" cy="285" r="5"/><circle cx="560" cy="330" r="5"/>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11.5" fill="#94a3b8">
+    <text x="540" y="93" text-anchor="end">74.2</text><text x="842" y="93">97.7</text>
+    <text x="419" y="138" text-anchor="end">64.1</text><text x="790" y="138">93.3</text>
+    <text x="419" y="183" text-anchor="end">64.1</text><text x="790" y="183">93.3</text>
+    <text x="419" y="228" text-anchor="end">64.1</text><text x="790" y="228">93.3</text>
+    <text x="364" y="273" text-anchor="end">59.5</text><text x="760" y="273">90.8</text>
+    <text x="311" y="318" text-anchor="end">55.1</text><text x="726" y="318">88.0</text>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#38bdf8" font-weight="600">
+    <text x="760" y="123" text-anchor="middle">91.7%</text>
+    <text x="660" y="168" text-anchor="middle">83.3%</text>
+    <text x="660" y="213" text-anchor="middle">83.3%</text>
+    <text x="660" y="258" text-anchor="middle">83.3%</text>
+    <text x="610" y="303" text-anchor="middle">79.2%</text>
+    <text x="560" y="348" text-anchor="middle">75.0%</text>
+  </g>
+</svg>
+<figcaption>Wilson intervals on the 24-task board. Kimi K3's 91.7% and DeepSeek v3.2's 75.0%
+share 34 points of overlap.</figcaption>
+</figure>
+
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>model</th><th class="r">score</th><th class="r">95% Wilson CI</th>
+    <th class="r">width</th><th>input</th><th>source</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>Kimi K3</td><td class="r num">22/24, 91.7%</td><td class="r num">74.2% to 97.7%</td><td class="r num">23.5</td><td>tree + image</td><td>phoneshell run <code>xv</code>, 24 tasks</td></tr>
+    <tr><td>GPT-5.1</td><td class="r num">20/24, 83.3%</td><td class="r num">64.1% to 93.3%</td><td class="r num">29.2</td><td>tree + image</td><td>phoneshell run <code>xv</code>, 24 tasks</td></tr>
+    <tr><td>Claude Opus 4.8</td><td class="r num">20/24, 83.3%</td><td class="r num">64.1% to 93.3%</td><td class="r num">29.2</td><td>tree + image</td><td>phoneshell run <code>xv</code>, 24 tasks</td></tr>
+    <tr><td>Qwen3-Max</td><td class="r num">20/24, 83.3%</td><td class="r num">64.1% to 93.3%</td><td class="r num">29.2</td><td>tree only</td><td>phoneshell run <code>xv</code>, 24 tasks</td></tr>
+    <tr><td>Gemini 3.1 Pro</td><td class="r num">19/24, 79.2%</td><td class="r num">59.5% to 90.8%</td><td class="r num">31.2</td><td>tree + image</td><td>phoneshell run <code>xv</code>, 24 tasks</td></tr>
+    <tr><td>DeepSeek v3.2</td><td class="r num">18/24, 75.0%</td><td class="r num">55.1% to 88.0%</td><td class="r num">32.9</td><td>tree only</td><td>phoneshell run <code>xv</code>, 24 tasks</td></tr>
+    <tr><td colspan="6" style="color:var(--muted)">58-task sweep, 9 September 2026: the field spans 52/58 (89.7%, CI 79.2% to 95.2%) to 56/58 (96.6%, CI 88.3% to 99.0%). Per-model attribution for that run is in the published leaderboard.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="fifteen-pairs">Fifteen pairs, zero separations, at both sizes</h2>
+
+<p>Models run on the same tasks are a paired design, so comparing two percentages as independent
+proportions throws away the only information that makes a small sample decidable: which tasks the
+two models disagreed on. McNemar's exact test uses exactly that and nothing else. Run over the
+24-task board it returns this.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>pair</th><th class="r">wins (b to c)</th><th class="r">exact p</th>
+    <th class="r">tasks it would need</th><th>source</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>Kimi K3 vs DeepSeek v3.2</td><td class="r num">4-0</td><td class="r num">0.125</td><td class="r num">~33</td><td>phoneshell <code>analyse_models.py</code>, run <code>xv</code></td></tr>
+    <tr><td>Kimi K3 vs Gemini 3.1 Pro</td><td class="r num">3-0</td><td class="r num">0.250</td><td class="r num">~44</td><td>phoneshell <code>analyse_models.py</code>, run <code>xv</code></td></tr>
+    <tr><td>Kimi K3 vs GPT-5.1 / Opus 4.8 / Qwen3-Max</td><td class="r num">2-0</td><td class="r num">0.500</td><td class="r num">~66</td><td>phoneshell <code>analyse_models.py</code>, run <code>xv</code></td></tr>
+    <tr><td>Claude Opus 4.8 vs GPT-5.1</td><td class="r num">2-2</td><td class="r num">1.000</td><td class="r">never</td><td>phoneshell <code>analyse_models.py</code>, run <code>xv</code></td></tr>
+    <tr><td>Claude Opus 4.8 vs Qwen3-Max</td><td class="r num">2-2</td><td class="r num">1.000</td><td class="r">never</td><td>phoneshell <code>analyse_models.py</code>, run <code>xv</code></td></tr>
+    <tr><td>GPT-5.1 vs Qwen3-Max</td><td class="r num">2-2</td><td class="r num">1.000</td><td class="r">never</td><td>phoneshell <code>analyse_models.py</code>, run <code>xv</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Three pairs are marked never. Their disagreements are exactly symmetric: each model wins
+precisely the tasks the other loses, so scaling the suite cannot separate them because there is
+nothing to scale. To this instrument those three models are the same model. On the 58-task sweep
+two pairs are still exactly symmetric, Claude Opus 4.8 against GPT-5.1 and DeepSeek v3.2 against
+Gemini 3.1 Pro.</p>
+
+<h2 id="six-disagreements">Six disagreements is the floor, and it does not move with sample size</h2>
+
+<p>With all disagreements in one direction, McNemar's exact two-sided p is 2 x 0.5<sup>b</sup>,
+where b is the count of tasks one model passed and the other failed. That expression contains no
+n. Five one-directional disagreements give p = 0.0625 and six give p = 0.03125, so six is the
+smallest number of disagreements that can reach p &lt; 0.05, on a suite of 24 tasks or a suite of
+a million.</p>
+
+<figure>
+<svg viewBox="0 0 900 380" role="img" style="width:100%;height:auto"
+  aria-label="McNemar exact p-values for one-directional disagreements: b equals 1 gives p equals 1.0, b equals 2 gives 0.5, b equals 3 gives 0.25, b equals 4 gives 0.125, b equals 5 gives 0.0625, b equals 6 gives 0.03125, b equals 7 gives 0.0156 and b equals 8 gives 0.0078. The 0.05 threshold falls between b equals 5 and b equals 6, so six one-directional disagreements is the minimum for significance regardless of how many tasks the suite contains. The widest pair in this benchmark sits at b equals 4.">
+  <rect x="0" y="0" width="900" height="380" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">p = 2 x 0.5 to the power b. The task count never appears.</text>
+  <text x="40" y="60" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="13">b = tasks passed by one model and failed by the other, all in the same direction.</text>
+
+  <line x1="437" y1="82" x2="437" y2="338" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="443" y="96" fill="#38bdf8" font-family="ui-monospace,Menlo,monospace" font-size="12" font-weight="600">p = 0.05</text>
+
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#94a3b8">
+    <text x="40" y="119">b = 1</text><text x="40" y="151">b = 2</text><text x="40" y="183">b = 3</text>
+    <text x="40" y="215">b = 4</text><text x="40" y="247">b = 5</text>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12.5" fill="#e2e8f0" font-weight="600">
+    <text x="40" y="279">b = 6</text><text x="40" y="311">b = 7</text><text x="40" y="343">b = 8</text>
+  </g>
+
+  <g stroke="#334155" stroke-width="1">
+    <line x1="110" y1="115" x2="820" y2="115"/><line x1="110" y1="147" x2="731" y2="147"/>
+    <line x1="110" y1="179" x2="643" y2="179"/><line x1="110" y1="211" x2="554" y2="211"/>
+    <line x1="110" y1="243" x2="466" y2="243"/><line x1="110" y1="275" x2="377" y2="275"/>
+    <line x1="110" y1="307" x2="289" y2="307"/><line x1="110" y1="339" x2="200" y2="339"/>
+  </g>
+  <g fill="#64748b">
+    <circle cx="820" cy="115" r="6"/><circle cx="731" cy="147" r="6"/><circle cx="643" cy="179" r="6"/>
+    <circle cx="554" cy="211" r="6"/><circle cx="466" cy="243" r="6"/>
+  </g>
+  <g fill="#38bdf8">
+    <circle cx="377" cy="275" r="6"/><circle cx="289" cy="307" r="6"/><circle cx="200" cy="339" r="6"/>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#94a3b8">
+    <text x="834" y="119">1.0</text><text x="745" y="151">0.5</text><text x="657" y="183">0.25</text>
+    <text x="568" y="215">0.125</text><text x="480" y="247">0.0625</text>
+  </g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#38bdf8" font-weight="600">
+    <text x="391" y="279">0.03125</text><text x="303" y="311">0.0156</text><text x="214" y="343">0.0078</text>
+  </g>
+  <text x="640" y="232" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="12.5">widest pair on this benchmark: b = 4, c = 0</text>
+  <text x="110" y="366" fill="#64748b" font-family="Montserrat,sans-serif" font-size="11.5">horizontal axis is p on a log scale, halving at every step</text>
+</svg>
+<figcaption>The significance threshold sits between five and six one-directional disagreements.
+Our widest pair had four, both at 24 tasks and at 58.</figcaption>
+</figure>
+
+<h2 id="where-the-information-went">Where the information went when the suite got bigger</h2>
+
+<p>A task every model passes and a task no model passes both carry zero information about
+ranking. On the 24-task board, 12 tasks were passed by every model and 2 by none, leaving an
+instrument 10 items wide behind a 24-item facade. On the 58-task sweep, 46 tasks were passed by
+every model. Eleven discriminate. One is failed by all six, which follows from the other two
+counts. So 2.4 times the tasks bought exactly one additional discriminating item, and the share
+of the suite at ceiling rose from 50% to 79%.</p>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Item map of the 58-task iPhone suite: 46 tasks were passed by all six models and carry no ranking information, 1 task was failed by all six, and only 11 tasks discriminate between models. The eleven live items are clock timer set and reminders create at one of six models passing, settings battery percentage at four of six, and calculator chain, calculator percentage, clock alarm set time, notes type long, resilience scrolled list, resilience wrong app, settings bluetooth reach and settings scroll to bottom at five of six.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">58 tasks, 11 of which measure anything</text>
+  <text x="40" y="60" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="13">One square per task in the 9 September 2026 sweep, six models each.</text>
+
+  <g>
+    <rect x="40" y="86" width="14" height="14" fill="#1e293b" stroke="#334155"/>
+    <text x="62" y="98" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">46 passed by all six</text>
+    <rect x="210" y="86" width="14" height="14" fill="#64748b"/>
+    <text x="232" y="98" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">1 failed by all six</text>
+    <rect x="360" y="86" width="14" height="14" fill="#38bdf8"/>
+    <text x="382" y="98" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="12">11 discriminating</text>
+  </g>
+
+  <g stroke="#334155" stroke-width="1">
+    <rect x="40" y="120" width="30" height="22" fill="#1e293b"/><rect x="76" y="120" width="30" height="22" fill="#1e293b"/><rect x="112" y="120" width="30" height="22" fill="#1e293b"/><rect x="148" y="120" width="30" height="22" fill="#1e293b"/><rect x="184" y="120" width="30" height="22" fill="#1e293b"/><rect x="220" y="120" width="30" height="22" fill="#1e293b"/><rect x="256" y="120" width="30" height="22" fill="#1e293b"/><rect x="292" y="120" width="30" height="22" fill="#1e293b"/><rect x="328" y="120" width="30" height="22" fill="#1e293b"/><rect x="364" y="120" width="30" height="22" fill="#1e293b"/>
+    <rect x="40" y="148" width="30" height="22" fill="#1e293b"/><rect x="76" y="148" width="30" height="22" fill="#1e293b"/><rect x="112" y="148" width="30" height="22" fill="#1e293b"/><rect x="148" y="148" width="30" height="22" fill="#1e293b"/><rect x="184" y="148" width="30" height="22" fill="#1e293b"/><rect x="220" y="148" width="30" height="22" fill="#1e293b"/><rect x="256" y="148" width="30" height="22" fill="#1e293b"/><rect x="292" y="148" width="30" height="22" fill="#1e293b"/><rect x="328" y="148" width="30" height="22" fill="#1e293b"/><rect x="364" y="148" width="30" height="22" fill="#1e293b"/>
+    <rect x="40" y="176" width="30" height="22" fill="#1e293b"/><rect x="76" y="176" width="30" height="22" fill="#1e293b"/><rect x="112" y="176" width="30" height="22" fill="#1e293b"/><rect x="148" y="176" width="30" height="22" fill="#1e293b"/><rect x="184" y="176" width="30" height="22" fill="#1e293b"/><rect x="220" y="176" width="30" height="22" fill="#1e293b"/><rect x="256" y="176" width="30" height="22" fill="#1e293b"/><rect x="292" y="176" width="30" height="22" fill="#1e293b"/><rect x="328" y="176" width="30" height="22" fill="#1e293b"/><rect x="364" y="176" width="30" height="22" fill="#1e293b"/>
+    <rect x="40" y="204" width="30" height="22" fill="#1e293b"/><rect x="76" y="204" width="30" height="22" fill="#1e293b"/><rect x="112" y="204" width="30" height="22" fill="#1e293b"/><rect x="148" y="204" width="30" height="22" fill="#1e293b"/><rect x="184" y="204" width="30" height="22" fill="#1e293b"/><rect x="220" y="204" width="30" height="22" fill="#1e293b"/><rect x="256" y="204" width="30" height="22" fill="#1e293b"/><rect x="292" y="204" width="30" height="22" fill="#1e293b"/><rect x="328" y="204" width="30" height="22" fill="#1e293b"/><rect x="364" y="204" width="30" height="22" fill="#1e293b"/>
+    <rect x="40" y="232" width="30" height="22" fill="#1e293b"/><rect x="76" y="232" width="30" height="22" fill="#1e293b"/><rect x="112" y="232" width="30" height="22" fill="#1e293b"/><rect x="148" y="232" width="30" height="22" fill="#1e293b"/><rect x="184" y="232" width="30" height="22" fill="#1e293b"/><rect x="220" y="232" width="30" height="22" fill="#1e293b"/>
+    <rect x="256" y="232" width="30" height="22" fill="#64748b"/>
+    <rect x="292" y="232" width="30" height="22" fill="#38bdf8"/><rect x="328" y="232" width="30" height="22" fill="#38bdf8"/><rect x="364" y="232" width="30" height="22" fill="#38bdf8"/>
+    <rect x="40" y="260" width="30" height="22" fill="#38bdf8"/><rect x="76" y="260" width="30" height="22" fill="#38bdf8"/><rect x="112" y="260" width="30" height="22" fill="#38bdf8"/><rect x="148" y="260" width="30" height="22" fill="#38bdf8"/><rect x="184" y="260" width="30" height="22" fill="#38bdf8"/><rect x="220" y="260" width="30" height="22" fill="#38bdf8"/><rect x="256" y="260" width="30" height="22" fill="#38bdf8"/><rect x="292" y="260" width="30" height="22" fill="#38bdf8"/>
+  </g>
+
+  <text x="440" y="136" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">the eleven items carrying the benchmark</text>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#94a3b8">
+    <text x="440" y="160"><tspan fill="#38bdf8">1/6</tspan>  clock.timer.set</text>
+    <text x="440" y="182"><tspan fill="#38bdf8">1/6</tspan>  reminders.create</text>
+    <text x="440" y="204"><tspan fill="#38bdf8">4/6</tspan>  settings.battery.percentage</text>
+    <text x="440" y="226"><tspan fill="#38bdf8">5/6</tspan>  calculator.chain</text>
+    <text x="440" y="248"><tspan fill="#38bdf8">5/6</tspan>  calculator.percentage</text>
+    <text x="440" y="270"><tspan fill="#38bdf8">5/6</tspan>  clock.alarm.set_time</text>
+    <text x="700" y="160"><tspan fill="#38bdf8">5/6</tspan>  notes.type_long</text>
+    <text x="700" y="182"><tspan fill="#38bdf8">5/6</tspan>  resilience.scrolled_list</text>
+    <text x="700" y="204"><tspan fill="#38bdf8">5/6</tspan>  resilience.wrong_app</text>
+    <text x="700" y="226"><tspan fill="#38bdf8">5/6</tspan>  settings.bluetooth.reach</text>
+    <text x="700" y="248"><tspan fill="#38bdf8">5/6</tspan>  settings.scroll.to_bottom</text>
+  </g>
+  <text x="440" y="296" fill="#64748b" font-family="Montserrat,sans-serif" font-size="11.5">Eight of the eleven are 5/6: one model failed alone, which</text>
+  <text x="440" y="313" fill="#64748b" font-family="Montserrat,sans-serif" font-size="11.5">separates that model from the field but cannot order the rest.</text>
+
+  <line x1="40" y1="340" x2="860" y2="340" stroke="#334155"/>
+  <text x="40" y="366" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">24-task suite</text>
+  <text x="150" y="366" fill="#94a3b8" font-family="ui-monospace,Menlo,monospace" font-size="12.5">12 ceiling  ·  2 floor  ·  10 live  ·  widest split 4-0  ·  needs ~33</text>
+  <text x="40" y="392" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">58-task suite</text>
+  <text x="150" y="392" fill="#94a3b8" font-family="ui-monospace,Menlo,monospace" font-size="12.5">46 ceiling  ·  1 floor  ·  11 live  ·  widest split 4-0  ·  needs ~80</text>
+  <text x="40" y="416" fill="#38bdf8" font-family="Montserrat,sans-serif" font-size="12.5">2.4x the tasks, one extra live item, and the requirement moved away from us.</text>
+</svg>
+<figcaption>The 58-task suite is 79% at ceiling. Adding tasks that every model passes lowers the
+disagreement rate, and the required sample size scales inversely with it.</figcaption>
+</figure>
+
+<p>That inversion is the whole mechanism. McNemar sees only disagreements, so adding tasks helps
+only if the new tasks provoke them. These did not. The measured disagreement rate fell from about
+17% to about 5%, and because required sample size scales inversely with that rate, the
+requirement rose from about 33 tasks to about 80 while the actual sample grew from 24 to 58. The
+earlier projection that 60 tasks would settle the board was a power calculation performed on
+tasks that had not been written yet, and it was only as good as the assumption that they would
+resemble the ones already run. They did not.</p>
+
+<h2 id="what-it-means">What this changes if you build or buy one of these</h2>
+
+<p>If you publish a leaderboard, publish b and c. A sorted column of percentages is not a
+ranking and cannot be checked by a reader. An AndroidWorld leaderboard aggregator, snapshot dated
+8 September 2026, prints scores to one decimal place, Qwen3.8 Max at 85.3% over Qwen3.8-Flash-Next
+at 84.5%, with no interval, no task count and no per-task outcomes. That makes an independent
+paired test impossible even for a reader who wants to run one. AGI Inc's 97.4% claim from 8 October 2025 has the same shape.</p>
+
+<p>If you are choosing a model to drive Apple's own apps, the accuracy axis is close to spent.
+Six models from six vendors land between 89.7% and 96.6% on this suite and are statistically
+indistinguishable, while price across the same six moves by a factor of about twenty-three:
+Claude Opus 4.8 cost $0.1130 per task against Qwen3-Max's $0.0076 for the same 83.3%. Judgement,
+not measurement: on first-party iOS the decision is cost and latency, and the accuracy column is
+close to decoration.</p>
+
+<p>If you are writing tasks, write tasks that fail. The eleven live items point at where they
+are: multi-column picker wheels, cross-app creation flows, scrolling to a true list end, long
+typing, and recovering from a wrong starting state. The other lead is third-party apps, where the
+accessibility tree stops describing the screen. Our own trace of that has a chat app returning
+<code>WAMessageBubbleTableViewCell</code> where a button name should be. MobileWorld took the
+same route on Android and got the best framework down from over 90% to 51.7% by making tasks
+long-horizon and cross-app: 27.8 completion steps on average against AndroidWorld's 14.3, and
+62.2% multi-app tasks against 9.5%.</p>
+
+<p>And audit failures before believing them. Epoch AI's 30 October 2025 review of OSWorld found
+roughly 10% of tasks contain serious errors that make them invalid, about 10% depend on live
+internet data so their difficulty drifts, and around 10% of instructions changed even after the
+July 2025 revision. Our own first honest run scored 85.4% of attempted tasks, and reading every
+failure against what the agent actually said showed four of six were our fault, not the
+model's.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<p>The arithmetic in this note needs no phone. The threshold claim is one line:</p>
+
+<pre><code>python3 -c "import math; print([round(2*0.5**b, 5) for b in range(1,9)])"
+# [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.01563, 0.00781]</code></pre>
+
+<p>The test, the intervals and the power calculation live in one module,
+<code>phoneshell/bench/stats.py</code>, as <code>wilson</code>, <code>mcnemar_exact</code>,
+<code>min_discordant_for_significance</code> and <code>required_n</code>. Both published
+required-sample figures reproduce from a 4-0 split, and no other split up to b, c = 11 reproduces
+either, apart from the same split with the arms swapped:</p>
+
+<pre><code>from phoneshell.bench.stats import wilson, mcnemar_exact, required_n
+
+wilson(20, 24)          # 64.1% to 93.3%
+mcnemar_exact(4, 0)     # 0.125
+required_n(4, 0, 24)    # 33     the 24-task board
+required_n(4, 0, 58)    # 80     the 58-task sweep
+required_n(2, 2, 24)    # None   exactly symmetric, no suite size separates them</code></pre>
+
+<p>To regenerate the paired analysis from a results file, including Wilson intervals, all fifteen
+pairwise tests and the item statistics that produce the 46 / 1 / 11 split:</p>
+
+<pre><code>./.venv/bin/python scripts/analyse_models.py xv2</code></pre>
+
+<p>To run the sweep itself, round-robin by task and resumable per (model, task):</p>
+
+<pre><code>./.venv/bin/python scripts/run_sweep.py --run xv2</code></pre>
+
+<p>The task definitions are one YAML file each under <code>environments/</code>, so
+<code>environments/clock_timer_set.yaml</code> and <code>environments/resilience_wrong_app.yaml</code>
+are two of the eleven items above. The 16 held-out tasks are not in the repo, on the principle
+that a benchmark whose entire answer key is public becomes training data. Per-task outcomes are
+published at <a href="https://blolabel.ai/">blolabel.ai</a> and the task set is mirrored at
+<a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">huggingface.co/datasets/blolabel/phoneshell-bench</a>.</p>
+
+<h2 id="falsification">What would prove this wrong</h2>
+
+<p>The claim is that a benchmark built from Apple's own applications cannot separate frontier
+models at any suite size, because those apps are at ceiling rather than because the sample is
+small. The prediction, with a date: <b>by 31 March 2027, no pair of the six models on this board
+will reach six one-directional disagreements on a first-party iOS task set, however large it
+grows.</b> One pair reaching b &gt;= 6 on first-party apps alone falsifies it, and we will publish
+that as a correction if it happens.</p>
+
+<p>The second prediction is directional and cheaper to test. A stratum of third-party apps, where
+control labels are class names rather than descriptions, will produce a disagreement rate above
+the 5% measured here on the first sweep it runs. If it does not, then the ceiling is a property
+of frontier models rather than of Apple's accessibility tree, and the argument in this note is
+about the wrong thing.</p>
+
+<p>One caveat that limits everything above. This is one instrument, one phone, one day. Six
+models on 58 tasks is 348 cells, which is a small experiment by any standard other than the cost
+of running it on real hardware, and the sweep ran on a physical iPhone 14 Pro rather than the
+iPhone 17 Pro Max that produced the rest of this repo's numbers. Treat the ceiling as measured and
+the projection past 80 tasks as an assumption, since the last projection of that kind was wrong by
+a factor of two and a half.</p>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+ {"@type":"Question","name":"How many runs do you need to claim one agent is better than another?",
+  "acceptedAnswer":{"@type":"Answer","text":"On a paired benchmark, what matters is disagreements, not runs. McNemar's exact two-sided p for b one-directional disagreements is 2 x 0.5^b, which contains no sample size. Five disagreements give p = 0.0625 and six give p = 0.03125, so six tasks that one model passes and the other fails is the minimum that can reach p < 0.05, on a suite of 24 tasks or a million."}},
+ {"@type":"Question","name":"Can a mobile agent benchmark built on first-party iOS apps rank frontier models?",
+  "acceptedAnswer":{"@type":"Answer","text":"Not on the evidence from Blolabel's 9 September 2026 sweep. Six models from six vendors ran 58 tasks on a physical iPhone 14 Pro, scored between 89.7% and 96.6%, and none of the fifteen pairs separated at p < 0.05. Forty-six of the 58 tasks were passed by every model, so only 11 items discriminated at all."}},
+ {"@type":"Question","name":"Does adding more tasks to an agent benchmark make it better at ranking models?",
+  "acceptedAnswer":{"@type":"Answer","text":"Only if the added tasks provoke disagreements. Blolabel's suite went from 24 tasks to 58, the share at ceiling rose from 50% to 79%, the measured disagreement rate fell from about 17% to about 5%, and the sample size required to separate the widest pair rose from about 33 tasks to about 80. Required sample size scales inversely with the disagreement rate, so 2.4 times the tasks moved the requirement further away."}}
+]}
+</script>
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>Rawles et al., <a href="https://arxiv.org/abs/2405.14573">AndroidWorld: A Dynamic Benchmarking Environment for Autonomous Agents</a>, arXiv:2405.14573, submitted 23 May 2024. 116 programmatic tasks across 20 Android apps; best agent 30.6%.</li>
+<li><a href="https://arxiv.org/abs/2512.19432">MobileWorld: Benchmarking Autonomous Mobile Agents in Agent-User Interactive and MCP-Augmented Environments</a>, arXiv:2512.19432, submitted 22 December 2025, published at ACL 2026. "Recent agents achieving over 90% success rates indicate its saturation"; 201 tasks, best agentic framework 51.7%, best end-to-end model 20.9%, 27.8 vs 14.3 mean steps, 62.2% vs 9.5% multi-app.</li>
+<li>AGI Inc, <a href="https://www.theagi.company/blog/android-world">The World's Most Capable Mobile-Use Agent</a>, 8 October 2025. Claims 97.4% on AndroidWorld; no confidence interval, run count or per-task results in the post.</li>
+<li>Florian Brand and Greg Burnham, Epoch AI, <a href="https://epoch.ai/publications/what-does-osworld-tell-us-about-ais-ability-to-use-computers">What does OSWorld tell us about AI's ability to use computers?</a>, 30 October 2025. Roughly 10% of tasks contain serious errors; about 10% depend on live internet data; around 10% of instructions changed after the July 2025 revision.</li>
+<li><a href="https://arxiv.org/abs/2606.19388">Beyond the GUI Paradigm: Do Mobile Agents Need the Phone Screen?</a>, arXiv:2606.19388, submitted 16 June 2026. CLI agents at 71.8% and 51.9% outperform every reproducible GUI baseline, at 10.7 steps per task against 18.6.</li>
+<li><a href="https://benchlm.ai/benchmarks/androidworld">BenchLM AndroidWorld leaderboard</a>, snapshot dated 8 September 2026. Qwen3.8 Max 85.3%, Qwen3.8-Flash-Next 84.5%, Qwen3.8-27B 81.9%, Qwen3.7 Plus 81.0%; no intervals, no task counts, no per-task outcomes. Third-party aggregator, not a primary source.</li>
+<li>Blolabel, <a href="https://blolabel.ai/">the iPhone agent leaderboard</a>, run <code>xv2</code>, 9 September 2026. 58 tasks common to all six models on a physical iPhone 14 Pro, $9.25, about five hours of device time.</li>
+<li>Blolabel, <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">phoneshell-bench</a> on Hugging Face. Public task set; 16 tasks held out and not published.</li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>

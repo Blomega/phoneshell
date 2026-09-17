@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>16 of 27 failures on a physical iPhone were reported as successes by the model that failed them | Blolabel</title>
+<meta name="description" content="Six frontier models, 349 task runs, a physical iPhone 14 Pro, 9 September 2026. The phone said 322 passed. The models&#x27; own summaries claimed success on 16 of the 27 failures, which would have reported 96.8% instead of 92.3%. No passing run&#x27;s summary admitted failure.">
+<link rel="canonical" href="https://blolabel.ai/blog/agents-report-success-device-disagrees/">
+<meta property="og:title" content="16 of 27 failures on a physical iPhone were reported as successes by the model that failed them | Blolabel">
+<meta property="og:description" content="Six frontier models, 349 task runs, a physical iPhone 14 Pro, 9 September 2026. The phone said 322 passed. The models&#x27; own summaries claimed success on 16 of the 27 failures, which would have reported 96.8% instead of 92.3%. No passing run&#x27;s summary admitted failure.">
+<meta property="og:url" content="https://blolabel.ai/blog/agents-report-success-device-disagrees/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"16 of 27 failures on a physical iPhone were reported as successes by the model that failed them","description":"Six frontier models, 349 task runs, a physical iPhone 14 Pro, 9 September 2026. The phone said 322 passed. The models' own summaries claimed success on 16 of the 27 failures, which would have reported 96.8% instead of 92.3%. No passing run's summary admitted failure.",
+ "datePublished":"2026-09-15","image":"https://blolabel.ai/images/blog/agents-report-success-device-disagrees-hero.png","dateModified":"2026-09-15",
+ "url":"https://blolabel.ai/blog/agents-report-success-device-disagrees/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/agents-report-success-device-disagrees/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-15">15 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>16 of 27 failures on a physical iPhone were reported as successes by the model that failed them</h1>
+  <p class="standfirst">Grading an agent by what it says it did does not add noise. It adds a bias with one sign. On two paired sweeps, the self-reported score ran 4.5 and 11.1 points above the device&#x27;s verdict, and none of the 441 passing summaries claimed a failure.</p>
+
+  <p>On 9 September 2026 six frontier models ran 349 tasks on a physical iPhone 14 Pro running iOS
+26.3.1, and the phone's own state graded 322 of them as passed. Of the 27 failures, 16 ended with
+the model's summary saying the job was done. Graded by those summaries, the sweep would have
+reported 96.8% instead of 92.3%. Across that sweep and the 24-task run the day before, not one of
+the 441 runs the device passed had a summary admitting failure.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/agents-report-success-device-disagrees-hero.png" alt="Abstract illustration of two parallel signal traces that agree for most of their length and diverge in one direction" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">What was measured, and what other benchmarks grade with</h2>
+
+<p>The sweep is the one behind our <a href="/blog/leaderboard-that-cannot-rank/">10 September
+note</a>: Kimi K3, GPT-5.1, Claude Opus 4.8, Qwen3-Max, Gemini 3.1 Pro and DeepSeek v3.2 on 58
+first-party iOS tasks, run between 05:06 and 12:28 UTC on 9 September 2026. Each task ends with a
+final <code>phone_done</code> summary written by the model, then checks that read the phone
+directly: foreground bundle, an element found after scrolling, a switch's value. The model never
+sees the checks. For this note we set every failed run's summary beside its check results and
+labelled each by hand.</p>
+
+<p>The two largest 2026 mobile benchmarks grade differently. iOSWorld (arXiv:2606.09764, 8 June
+2026) scores each trajectory with a GPT-5.4 Mini judge against a per-task rubric and reports
+kappa 0.77 and 89% task-level accuracy against human labels on 128 Opus trajectories.
+AndroidDaily (arXiv:2605.27761, 26 May 2026) grades 350 tasks across 94 closed-source apps with
+GRADE, a guideline-grounded reviewer at 87.37% agreement with human evaluators. OSWorld, per Epoch
+AI's 30 October 2025 review, checks "whether it has achieved a specified target state", which is
+the design used here.</p>
+
+<h2 id="evidence">Every failure, sorted by what the model said</h2>
+
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>what the model's summary said</th><th class="r">9 Sep sweep, 349 runs</th><th class="r">8 Sep run, 144 runs</th><th>source</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>claimed the task was done; device check failed</td><td class="r num">16 of 27</td><td class="r num">16 of 25</td><td>phoneshell runs <code>xv2</code>, <code>xv</code>, hand-labelled</td></tr>
+    <tr><td>no summary: ran out of the 240 s budget or of turns</td><td class="r num">6</td><td class="r num">6</td><td><code>error</code> field in the same rows</td></tr>
+    <tr><td>said the phone was unreachable (rig fault)</td><td class="r num">3</td><td class="r num">1</td><td>check detail "could not read the phone"</td></tr>
+    <tr><td>admitted it could not finish</td><td class="r num">1</td><td class="r num">2</td><td>hand-labelled</td></tr>
+    <tr><td>gave the answer but left the app</td><td class="r num">1</td><td class="r num">0</td><td>hand-labelled</td></tr>
+    <tr><td><b>device score</b></td><td class="r num"><b>322/349, 92.3%</b></td><td class="r num"><b>119/144, 82.6%</b></td><td>checks in <code>results/xv2.jsonl</code>, <code>results/xv.jsonl</code></td></tr>
+    <tr><td><b>score if graded by the summary</b></td><td class="r num"><b>338/349, 96.8%</b></td><td class="r num"><b>135/144, 93.8%</b></td><td>device passes plus claimed failures</td></tr>
+    <tr><td>device passes whose summary admits failure</td><td class="r num">0 of 322</td><td class="r num">0 of 119</td><td>keyword scan: unable, could not, cannot, failed, not able</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The sixteen claims on the 9 September sweep, by task: <code>reminders.create</code> 5,
+<code>clock.timer.set</code> 5, <code>system.notifications.open</code> 3, and one each on
+<code>calculator.chain</code>, <code>notes.type_long</code> and
+<code>resilience.scrolled_list</code>. By model: GPT-5.1 4, Claude Opus 4.8 3, Qwen3-Max 3,
+DeepSeek v3.2 3, Gemini 3.1 Pro 2, Kimi K3 1.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>model, task</th><th>the model's summary</th><th>what the phone showed</th><th>source</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>GPT-5.1, <code>calculator.chain</code></td><td>"left the result 52 displayed in Calculator"</td><td>pattern for 100, the value of (12 + 8) x 5, did not match</td><td>run <code>xv2</code></td></tr>
+    <tr><td>Claude Opus 4.8, <code>reminders.create</code></td><td>"the list count increased from 7 to 8, confirming it was saved"</td><td>"collect parcel" not found anywhere, after scrolling</td><td>run <code>xv2</code></td></tr>
+    <tr><td>DeepSeek v3.2, <code>resilience.scrolled_list</code></td><td>"opened the General page ... showing Airplane Mode, Wi-Fi, Bluetooth"</td><td>"About", a row on General, not on screen; those rows are top-level Settings</td><td>run <code>xv2</code></td></tr>
+    <tr><td>Qwen3-Max, <code>system.notifications.open</code></td><td>"The Notification Centre has been opened successfully."</td><td>no Notification Centre marker on screen</td><td>run <code>xv2</code></td></tr>
+    <tr><td>Claude Opus 4.8, <code>notes.type_long</code></td><td>"Created a new note ... and saved it."</td><td>foreground was the home screen; text not found</td><td>run <code>xv2</code></td></tr>
+    <tr><td>Claude Opus 4.8, <code>clock.timer.set</code></td><td>"now counting down (showing 03:15 with a Pause button)"</td><td>pattern <code>0?[34]:\d\d|0?5:00</code> did not match. Contested, see below</td><td>run <code>xv2</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="mechanism">How a summary gets ahead of the phone</h2>
+
+<figure>
+<svg viewBox="0 0 900 470" role="img" style="width:100%;height:auto"
+  aria-label="Flow diagram of 349 task runs on a physical iPhone on 9 September 2026. Device checks passed 322 and failed 27. Of the 27 failures, 16 carried a completion claim in the model's summary, 6 timed out or ran out of turns with no summary, 3 were rig outages the model reported, 1 was an admitted failure and 1 gave the answer but left the app. Grading by summary gives 338 of 349, 96.8 percent, against the device's 322 of 349, 92.3 percent. Zero of 322 device passes had a summary admitting failure.">
+  <rect x="0" y="0" width="900" height="470" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">349 runs, two graders, one direction of error</text>
+  <rect x="40" y="180" width="150" height="90" rx="8" fill="#1e293b" stroke="#64748b"/>
+  <text x="115" y="215" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="15" font-weight="700" text-anchor="middle">349 runs</text>
+  <text x="115" y="240" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">6 models, 58 tasks</text>
+  <line x1="190" y1="210" x2="250" y2="120" stroke="#64748b" stroke-width="2"/>
+  <line x1="190" y1="240" x2="250" y2="330" stroke="#38bdf8" stroke-width="2"/>
+  <rect x="250" y="80" width="190" height="80" rx="8" fill="#1e293b" stroke="#64748b"/>
+  <text x="345" y="112" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="14" font-weight="600" text-anchor="middle">device: 322 passed</text>
+  <text x="345" y="136" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">0 summaries admit failure</text>
+  <rect x="250" y="290" width="190" height="80" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+  <text x="345" y="322" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="14" font-weight="600" text-anchor="middle">device: 27 failed</text>
+  <text x="345" y="346" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">summaries sorted by hand</text>
+  <g stroke="#334155" stroke-width="2">
+    <line x1="440" y1="330" x2="500" y2="230"/><line x1="440" y1="330" x2="500" y2="290"/><line x1="440" y1="330" x2="500" y2="350"/><line x1="440" y1="330" x2="500" y2="410"/>
+  </g>
+  <rect x="500" y="205" width="170" height="50" rx="6" fill="#38bdf8" opacity="0.25" stroke="#38bdf8"/>
+  <text x="515" y="235" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600">16 claimed success</text>
+  <rect x="500" y="268" width="170" height="44" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="515" y="295" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">6 timed out, no summary</text>
+  <rect x="500" y="328" width="170" height="44" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="515" y="355" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">3 rig unreachable</text>
+  <rect x="500" y="388" width="170" height="44" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="515" y="408" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">1 admitted failure</text>
+  <text x="515" y="424" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12.5">1 answered, left the app</text>
+  <line x1="670" y1="230" x2="710" y2="230" stroke="#38bdf8" stroke-width="2"/>
+  <rect x="710" y="80" width="160" height="80" rx="8" fill="#1e293b" stroke="#64748b"/>
+  <text x="790" y="110" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">graded by the phone</text>
+  <text x="790" y="138" fill="#e2e8f0" font-family="ui-monospace,Menlo,monospace" font-size="15" font-weight="600" text-anchor="middle">322 = 92.3%</text>
+  <rect x="710" y="190" width="160" height="80" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+  <text x="790" y="220" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">graded by summary</text>
+  <text x="790" y="248" fill="#38bdf8" font-family="ui-monospace,Menlo,monospace" font-size="15" font-weight="600" text-anchor="middle">338 = 96.8%</text>
+  <text x="40" y="455" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">Physical iPhone 14 Pro, iOS 26.3.1, run xv2, 05:06 to 12:28 UTC on 9 September 2026</text>
+</svg>
+<figcaption>The 16 claimed failures are the gap between the two graders. Nothing flows the other
+way: no device pass was self-reported as a failure.</figcaption>
+</figure>
+
+<p>Three of the claims show the shape clearly. GPT-5.1 reported the wrong number itself, 52 for
+an expression that equals 100, and still called the task done. Claude Opus 4.8 cited real
+evidence, a list count moving from 7 to 8, for a reminder whose title the device could not find
+after scrolling. <code>FINDINGS.md</code> section 16 records the same count rising for a reminder
+that was saved empty: keystrokes sent with no focused field are discarded while the keyboard
+still animates in. And DeepSeek v3.2 described the top level of Settings as the General page. In
+each case the summary is internally consistent and wrong about the world, which is the case a
+transcript-reading judge is least equipped to catch.</p>
+
+<p>One cluster is contested, and we are not counting it as settled. Five of six models reported a
+running five-minute timer; Claude Opus 4.8 quoted "03:15 with a Pause button". The check reads
+the accessibility tree for a countdown like 3:15, and it did not match. We could not verify from
+these rows whether the timer was running with its value exposed differently, or not running.
+Leave <code>clock.timer.set</code> out and the count is 11 claimed of 22 failures on 9 September
+and 9 of 18 on 8 September, still half.</p>
+
+<figure>
+<svg viewBox="0 0 900 420" role="img" style="width:100%;height:auto"
+  aria-label="Grouped bar chart comparing device-graded and self-reported scores on two paired sweeps on a physical iPhone. The 8 September 2026 run of 144 cells scored 82.6 percent by device checks and would have scored 93.8 percent by the models' summaries, a gap of 11.1 points. The 9 September 2026 sweep of 349 cells scored 92.3 percent by device and 96.8 percent by summary, a gap of 4.5 points.">
+  <rect x="0" y="0" width="900" height="420" fill="#0f172a"/>
+  <text x="40" y="36" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">The self-reported score is always the higher one</text>
+  <text x="40" y="60" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="13">Pass rate by device checks (grey) and by the model's own summary (blue), full 0 to 100% scale</text>
+  <line x1="110" y1="330" x2="860" y2="330" stroke="#334155"/>
+  <g stroke="#1e293b"><line x1="110" y1="90" x2="860" y2="90"/><line x1="110" y1="150" x2="860" y2="150"/><line x1="110" y1="210" x2="860" y2="210"/><line x1="110" y1="270" x2="860" y2="270"/></g>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#64748b" text-anchor="end">
+    <text x="100" y="334">0%</text><text x="100" y="274">25%</text><text x="100" y="214">50%</text><text x="100" y="154">75%</text><text x="100" y="94">100%</text>
+  </g>
+  <rect x="190" y="131.8" width="110" height="198.2" fill="#64748b"/>
+  <rect x="310" y="104.9" width="110" height="225.1" fill="#38bdf8"/>
+  <rect x="540" y="108.5" width="110" height="221.5" fill="#64748b"/>
+  <rect x="660" y="97.7" width="110" height="232.3" fill="#38bdf8"/>
+  <g font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="600" text-anchor="middle">
+    <text x="245" y="123" fill="#e2e8f0">82.6%</text><text x="365" y="96" fill="#38bdf8">93.8%</text>
+    <text x="595" y="100" fill="#e2e8f0">92.3%</text><text x="715" y="89" fill="#38bdf8">96.8%</text>
+  </g>
+  <g font-family="Montserrat,sans-serif" font-size="12" fill="#e2e8f0" text-anchor="middle">
+    <text x="245" y="350">device</text><text x="365" y="350">summary</text><text x="595" y="350">device</text><text x="715" y="350">summary</text>
+  </g>
+  <text x="305" y="378" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600" text-anchor="middle">8 Sep 2026, 144 runs: +11.1 points</text>
+  <text x="655" y="378" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" font-weight="600" text-anchor="middle">9 Sep 2026, 349 runs: +4.5 points</text>
+  <text x="110" y="405" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">Summary score = device passes + failures whose summary claimed completion (16 on each run)</text>
+</svg>
+<figcaption>Both runs, same direction. The gap shrinks as the suite gets easier because there are
+fewer failures left to misreport, not because the reports improved.</figcaption>
+</figure>
+
+<h2 id="correction">A correction to our own sweep: three failures were the rig's</h2>
+
+<p>Reading every failure also found three that should not have been scored at all. Claude Opus 4.8
+on <code>resilience.wrong_app</code>, Gemini 3.1 Pro on <code>settings.bluetooth.reach</code> and
+Kimi K3 on <code>weather.open</code> each ended with the model saying WebDriverAgent had stopped
+answering, and each check detail reads "could not read the phone". Our rule is that an
+environment fault is never a capability result. The runner enforced that when the rig was down
+before a task started, but not when it died during one. Removing the three cells changes no
+conclusion in the 10 September note: the widest pair is still Kimi K3 against Qwen3-Max at 4 to
+0, p = 0.125, on 56 tasks instead of 58.</p>
+
+<h2 id="what-it-means">What this changes if you evaluate agents</h2>
+
+<p>Treat a completion claim as an input to audit, never as a grade. On these runs it was wrong
+about the world in 16 of 27 failures and never wrong in the pessimistic direction, so any score
+built on it is an upper bound. The inflation is largest exactly where a benchmark still has
+headroom: 11.1 points on the harder 24-task run, 4.5 on the easier 58-task one.</p>
+
+<p>Put state into the judge's evidence. Judgement, not measurement: a trajectory judge like
+iOSWorld's, at 89% agreement with humans, would see the Reminders count go from 7 to 8 and read
+it as confirmation. Only a lookup for the reminder's text, after scrolling, catches the empty
+reminder. An 11% judge error rate is also wider than the 6.9-point spread separating all six
+models on our sweep, 89.7% to 96.6%.</p>
+
+<p>Make the unreachable state a first-class outcome. A check that returns "could not read the
+phone" is a measurement of the rig. It belongs with rate limits and locked phones as not scored,
+whether the rig failed before the task or during it.</p>
+
+<p>Read the summaries anyway. They are poor grades and good diagnostics: all three rig outages
+and the five contested timer claims were found by reading what the agent said.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<p>The public export has every run's pass flag and check details, but not the model summaries,
+which were stripped from these two files before publishing. The 27 failures and their check text
+reproduce from the dataset:</p>
+
+<pre><code>curl -sLO https://huggingface.co/datasets/blolabel/phoneshell-bench/resolve/main/results/xv2.jsonl
+python3 - &lt;&lt;'EOF'
+import json
+rows = [json.loads(l) for l in open("xv2.jsonl") if l.strip()]
+print(len(rows), "runs,", sum(r["passed"] for r in rows), "passed")      # 349 runs, 322 passed
+for r in rows:
+    if not r["passed"]:
+        print(r["model"], r["task_id"], "|", r["error"], "|",
+              [(c["kind"], c["passed"], c["detail"][:60]) for c in r["checks"]])
+EOF</code></pre>
+
+<p>The three rig cells are the rows whose check detail starts "could not read the phone". The
+summaries quoted in the tables above are the <code>agent_said</code> field of the unredacted run
+files on the rig. The check vocabulary is in <code>phoneshell/bench/verify.py</code>; the not-scored
+rules and the timed-out-cannot-pass guard are in <code>Runner.run</code> in
+<code>phoneshell/bench/runner.py</code>, both in
+<a href="https://github.com/Blomega/phoneshell">github.com/Blomega/phoneshell</a>. The
+McNemar figure uses <code>mcnemar_exact(4, 0)</code> from <code>phoneshell/bench/stats.py</code>,
+which returns 0.125.</p>
+
+<h2 id="falsification">What would prove this wrong</h2>
+
+<p>The claim is that an agent's own completion summary is biased upward, not merely noisy. The
+prediction, with a date: <b>on the next paired sweep of at least 300 runs on this suite, before
+31 December 2026, at least 40% of device-graded failures will carry a completion claim, and no
+more than 1% of device-graded passes will carry an admission of failure.</b> A sweep where
+false admissions are as common as false claims falsifies the direction of the bias, and we will
+publish it.</p>
+
+<p>The limit on everything above: one phone, first-party apps only, and summaries labelled by one
+reader. The labels for all 52 failures across both runs are short enough to recheck by hand, and
+a second reader disagreeing on more than five of them would weaken the count.</p>
+
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do you grade an agent task without trusting the agent's own report?", "acceptedAnswer": {"@type": "Answer", "text": "Read the device after the agent stops. In Blolabel's iPhone benchmark each task ends with checks that query the phone directly (foreground app, element present after scrolling, switch state), and the agent never sees them. On the 9 September 2026 sweep, those checks failed 27 of 349 runs, and the model's own summary claimed success on 16 of the 27."}}, {"@type": "Question", "name": "Is an agent's self-reported success rate reliable?", "acceptedAnswer": {"@type": "Answer", "text": "Not on Blolabel's data. Across two paired sweeps on a physical iPhone, grading by the models' summaries would have reported 96.8% instead of 92.3% and 93.8% instead of 82.6%. The error ran one way: none of the 441 runs the device passed had a summary admitting failure."}}, {"@type": "Question", "name": "What is the difference between a failed task and a task that was never scored?", "acceptedAnswer": {"@type": "Answer", "text": "A failed task is one the model attempted on a working rig and did not complete. A task that was never scored is one where a rate limit, a locked phone, a missing app or a setup fault stopped the attempt. Blolabel excludes the second kind from the denominator, and found three cells in its 9 September 2026 sweep where the rig became unreachable mid-task and was scored as a failure by mistake."}}]}
+</script>
+
+  <section class="sources">
+    <h2 id="sources">Sources</h2>
+    <ol>
+      <li>Blolabel, <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">phoneshell-bench</a> on Hugging Face, <code>results/xv2.jsonl</code> (349 runs, 9 September 2026, iPhone 14 Pro, iOS 26.3.1) and <code>results/xv.jsonl</code> (144 runs, 8 September 2026). Dataset updated 9 September 2026.</li>
+<li>Blolabel, <a href="https://blolabel.ai/blog/leaderboard-that-cannot-rank/">Six models, 58 tasks on one iPhone, and not a single pair separates</a>, 10 September 2026.</li>
+<li>Lawrence Keunho Jang et al., <a href="https://arxiv.org/abs/2606.09764">iOSWorld: A Benchmark for Personally Intelligent Phone Agents</a>, arXiv:2606.09764, submitted 8 June 2026. GPT-5.4 Mini judge; kappa 0.77 and 89% accuracy on 128 human-labelled Opus trajectories.</li>
+<li>Yifan Sui et al., <a href="https://arxiv.org/abs/2605.27761">AndroidDaily: A Verifiable Benchmark for Mobile GUI Agents on Real-World Closed-Source Applications</a>, arXiv:2605.27761, submitted 26 May 2026. 350 tasks, 94 apps, GRADE at 87.37% human agreement, best model 62.0%.</li>
+<li>Florian Brand and Greg Burnham, Epoch AI, <a href="https://epoch.ai/publications/what-does-osworld-tell-us-about-ais-ability-to-use-computers">What does OSWorld tell us about AI's ability to use computers?</a>, 30 October 2025.</li>
+<li>Blolabel, <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">FINDINGS.md</a>, sections 12, 16 and 22: failure audits, typing without a witness, and the not-scored rules. Committed 8 and 9 September 2026.</li>
+<li>Blolabel, <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/bench/verify.py">phoneshell/bench/verify.py</a> and <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/bench/runner.py">runner.py</a>, the device checks and scoring rules.</li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
