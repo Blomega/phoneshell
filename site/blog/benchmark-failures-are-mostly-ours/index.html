@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Four of six failures in our first trusted run were our own bugs, not the model's &mdash; Blolabel</title>
+<meta name="description" content="An audit of every failure in a 32-task iPhone benchmark run found three broken checks, one unfair task and one or two genuine model failures. The same run had already produced four other numbers that were not true, and every one of them was a harness fault.">
+<link rel="canonical" href="https://blolabel.ai/blog/benchmark-failures-are-mostly-ours/">
+<meta property="og:title" content="Four of six failures in our first trusted run were our own bugs, not the model's &mdash; Blolabel">
+<meta property="og:description" content="An audit of every failure in a 32-task iPhone benchmark run found three broken checks, one unfair task and one or two genuine model failures. The same run had already produced four other numbers that were not true, and every one of them was a harness fault.">
+<meta property="og:url" content="https://blolabel.ai/blog/benchmark-failures-are-mostly-ours/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Four of six failures in our first trusted run were our own bugs, not the model's","description":"An audit of every failure in a 32-task iPhone benchmark run found three broken checks, one unfair task and one or two genuine model failures. The same run had already produced four other numbers that were not true, and every one of them was a harness fault.",
+ "datePublished":"2026-09-17","dateModified":"2026-09-17",
+ "url":"https://blolabel.ai/blog/benchmark-failures-are-mostly-ours/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/benchmark-failures-are-mostly-ours/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How do you tell a failed agent task from one that was never scored?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "The model tried and got it wrong, and we could not ask the model, are different facts. In our runner a rate limit or a locked phone raises UsageLimitReached or RigUnavailable, the row is marked skipped with a reason, and scoring excludes it while reporting the count. A first run that conflated the two would have published 12.5% when 27 of 32 tasks were never attempted."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Should a timed-out agent task be allowed to pass its checks?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. One of our tasks hit its 240 second budget with zero completed turns and $0.00 spent, then satisfied both of its checks from what was left on screen, because a digit pattern matched an unrelated alarm in the list behind the sheet. The fix is result.passed = passed and not timed_out, plus checks that match the control's own value."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do you audit an agent benchmark's failures?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Put each failed task's device-state check next to the agent's own transcript and ask which of the two is wrong. The transcript is not evidence that the agent succeeded, but it is excellent evidence about the harness. Of six failures in one run, four belonged to the benchmark."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-17">17 September 2026</time>
+    <span>8 min read</span>
+  </div>
+  <h1>Four of six failures in our first trusted run were our own bugs, not the model's</h1>
+  <p class="standfirst">The score said 85.4% of attempted tasks passed. Reading every failure against the agent's own transcript said something more useful: the instrument was wrong in three places, and no number of reruns would have found it.</p>
+
+      <p>The first run of this benchmark that we trusted scored 85.4% of attempted tasks. Then we read
+every failure against what the agent actually said and did on the phone. Of six failures, three were
+caused by our own checks, one was a task that could only be failed because of the owner's device,
+and one or two were the model's. The audit changed the interpretation of the run completely, and it
+took less time than the run did.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/benchmark-failures-are-mostly-ours-hero.png" alt="Abstract technical illustration of a measuring instrument whose own scale is bent, so the reading it produces is a property of the instrument rather than the sample" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">What the audit found, task by task</h2>
+
+<p>The method is the cheap part: for each failed task, put the agent's own transcript next to the
+device-state check that failed it, and ask which of the two is wrong. The agent's account is not
+evidence that it succeeded, because a model that believes it tapped Send will say it sent the
+message. It is excellent evidence about the harness, because a model that says "I created the
+reminder and the list went from 5 items to 6" and then fails a check is telling you the check is
+looking in the wrong place.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>task</th><th>what the check said</th><th>what the transcript showed</th><th>verdict</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td><code>contacts.search</code></td><td>no "Cancel" button found</td><td>the agent completed the search and listed the results</td><td>our bug: that UI has no Cancel</td><td>FINDINGS s.12</td></tr>
+    <tr><td><code>multi.settings_to_safari</code></td><td>task abandoned mid-way</td><td>the agent read the iOS version correctly, then stopped</td><td>our bug: shared mode paused it, believing the owner had picked the phone up</td><td>FINDINGS s.12</td></tr>
+    <tr><td><code>reminders.create</code></td><td>the reminder text was not on screen</td><td>the agent created it and verified the list count going 5 to 6</td><td>our bug: the check refused to scroll</td><td>FINDINGS s.12</td></tr>
+    <tr><td><code>safari.newtab</code></td><td>no new tab</td><td>the agent diagnosed 502 open tabs and that iOS disables the control at roughly 500</td><td>our unfair task, retired rather than fixed</td><td>FINDINGS s.12</td></tr>
+    <tr><td><code>safari.navigate.example</code></td><td>foreground is springboard</td><td>"Safari is open and showing example.com"</td><td>genuine catch, and the reason the checks exist</td><td>FINDINGS s.12</td></tr>
+    <tr><td><code>clock.timer.set</code></td><td>no timer set</td><td>26 turns, 228 seconds, no result</td><td>genuine model failure: picker wheels are hard</td><td>FINDINGS s.12, s.15</td></tr>
+    <tr><td><code>system.notifications.open</code></td><td>no "Clear" button</td><td>Notification Centre was open and empty</td><td>our bug, found later: Clear exists only when notifications are waiting</td><td>FINDINGS s.17</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The last row is the one that matters most, because it was found after the first three were fixed.
+It is the fourth check of the same shape: an assertion on a control that only exists in one of the
+device's two legitimate states. On an empty phone the task is unpassable no matter what the agent
+does, and nothing in the result file says so.</p>
+
+<figure>
+<svg viewBox="0 0 900 340" role="img" style="width:100%;height:auto"
+  aria-label="Bar chart of how six failures in one audited benchmark run were attributed. Three failures were harness bugs in our own checks, one was an unfair task that depended on the owner's device state and was retired, and two were genuine model failures, of which one was a false claim of success caught by a device-state check and one was a picker wheel task that ran for 26 turns and 228 seconds without a result.">
+  <rect x="0" y="0" width="900" height="340" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Where six failures actually came from</text>
+  <text x="40" y="58" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="13">One run, 32 tasks, every failure read against the agent's own transcript</text>
+  <line x1="150" y1="90" x2="150" y2="280" stroke="#334155" stroke-width="2"/>
+  <line x1="150" y1="280" x2="860" y2="280" stroke="#334155" stroke-width="2"/>
+  <rect x="152" y="105" width="360" height="42" fill="#16a3e8"/>
+  <text x="524" y="132" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="15" font-weight="700">3</text>
+  <text x="140" y="132" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" text-anchor="end">our check was wrong</text>
+  <rect x="152" y="160" width="120" height="42" fill="#16a3e8" opacity="0.6"/>
+  <text x="284" y="187" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="15" font-weight="700">1</text>
+  <text x="140" y="187" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" text-anchor="end">unfair task, retired</text>
+  <rect x="152" y="215" width="240" height="42" fill="#f59e0b"/>
+  <text x="404" y="242" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="15" font-weight="700">2</text>
+  <text x="140" y="242" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" text-anchor="end">the model's</text>
+  <text x="152" y="300" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">0</text>
+  <text x="392" y="300" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">2</text>
+  <text x="512" y="300" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">3 failures</text>
+  <text x="150" y="325" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">Four of six belonged to the benchmark. The run's headline number was the same either way.</text>
+</svg>
+<figcaption>The attribution is the result. A benchmark that is not read this way publishes its own
+defects as somebody else's incapability, and the score looks respectable in both cases.</figcaption>
+</figure>
+
+<h2 id="evidence">Five ways this rig produced a number that was not true</h2>
+
+<p>Four of them made the number look better. That direction is not a coincidence: a harness fault
+usually removes work from the model or credits work it did not finish, and only rarely invents extra
+difficulty. Each one is now a guard in code rather than a note in a document.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>fault</th><th>what would have been published</th><th>the guard now</th><th>where</th></tr></thead>
+  <tbody>
+    <tr><td>Rate limit after 5 of 32 tasks, the other 27 recorded as model failures</td><td>12.5%</td><td><code>UsageLimitReached</code>, the task is marked skipped and the run aborts with an explanation</td><td><code>bench/runner.py</code></td></tr>
+    <tr><td>The phone locked mid-run, every task after it failed identically</td><td>a page of red that reads as a model that cannot use a phone</td><td><code>RigUnavailable</code>, raised on a locked phone that does not come back</td><td><code>bench/runner.py</code></td></tr>
+    <tr><td>A verification step created a WebDriverAgent session, which sent the phone home before reading it</td><td>every task failing with "foreground is springboard"</td><td>the observation path uses only sessionless routes</td><td>FINDINGS s.6</td></tr>
+    <tr><td><code>clock.alarm.set_time</code> hit its 240 second budget with zero completed turns and $0.00 spent, then passed both checks from what was left on screen</td><td>a pass</td><td><code>result.passed = passed and not timed_out</code>, and checks match the wheel's own value rather than any digits on screen</td><td><code>bench/runner.py</code>, FINDINGS s.21</td></tr>
+    <tr><td>Retired tasks kept their last result in the file and kept being counted; a leaderboard over 74 tasks sat above a footer over 60</td><td>two different rates on one page</td><td>scoring keeps only live tasks and only the latest attempt per task, with a publication mode that scores over published tasks</td><td><code>bench/runner.py</code> <code>score()</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The pattern behind all five is one distinction: <em>the model tried and got it wrong</em> and
+<em>we could not ask the model</em> are different facts. A benchmark that cannot tell them apart is
+not producing a noisy number, it is producing fiction, and the fiction is stable across reruns
+because the cause is in the harness.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of the path from one task attempt to a published number, showing the four points where an environment problem can be recorded as a capability result. A task can be blocked before the model is asked by a rate limit or a locked phone, blocked during the attempt by a time or turn budget, scored by a check that asserts on a control the device does not draw, or aggregated together with retired tasks. Each point now routes to not scored or to failed explicitly rather than defaulting to failed.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Four places an environment problem becomes a capability result</text>
+  <rect x="40" y="70" width="150" height="56" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="115" y="94" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">task starts</text>
+  <text x="115" y="112" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">setup, then ask</text>
+  <rect x="230" y="70" width="150" height="56" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="305" y="94" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">agent runs</text>
+  <text x="305" y="112" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">turns and budget</text>
+  <rect x="420" y="70" width="150" height="56" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="495" y="94" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">checks read device</text>
+  <text x="495" y="112" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">state, not the report</text>
+  <rect x="610" y="70" width="150" height="56" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="685" y="94" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">aggregate</text>
+  <text x="685" y="112" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">score() over live tasks</text>
+  <path d="M190 98 L230 98 M380 98 L420 98 M570 98 L610 98" stroke="#64748b" stroke-width="2" fill="none"/>
+  <text x="115" y="175" fill="#f59e0b" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">rate limit, locked phone</text>
+  <text x="305" y="175" fill="#f59e0b" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">240 s budget, max turns</text>
+  <text x="495" y="175" fill="#f59e0b" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">check asserts on a control</text>
+  <text x="495" y="191" fill="#f59e0b" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">the device may not draw</text>
+  <text x="685" y="175" fill="#f59e0b" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">retired tasks still counted</text>
+  <path d="M115 130 L115 160 M305 130 L305 160 M495 130 L495 160 M685 130 L685 160" stroke="#f59e0b" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+  <rect x="40" y="225" width="340" height="58" rx="8" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="210" y="249" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">NOT SCORED</text>
+  <text x="210" y="269" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">excluded from the rate, counted and reported</text>
+  <rect x="420" y="225" width="340" height="58" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="590" y="249" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">FAILED</text>
+  <text x="590" y="269" fill="#fecaca" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">the model was asked, had the budget, and did not do it</text>
+  <text x="40" y="325" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">The default matters. Before the guards, every one of these arrows pointed at FAILED, and</text>
+  <text x="40" y="345" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">nothing in the results file recorded that the model had never been asked.</text>
+  <text x="40" y="378" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">phoneshell/bench/runner.py: UsageLimitReached, RigUnavailable, timed_out, score() over live tasks only</text>
+</svg>
+<figcaption>Every arrow that used to point at FAILED made the model look worse, except the timeout,
+which made it look better. Both directions are errors of the same kind.</figcaption>
+</figure>
+
+<h2 id="mechanism">This is not a local problem</h2>
+
+<p>The Agentic Benchmark Checklist (arXiv:2507.02825, first posted 3 July 2025, v5 on 7 August 2025)
+reports the same class of defect in published benchmarks: SWE-bench Verified uses insufficient test
+cases, TAU-bench counts empty responses as successful, and the authors put the resulting
+misestimation at up to 100% in relative terms. Applying the checklist to CVE-Bench reduced its
+performance overestimation by 33%. TAU-bench counting an empty response as a success is the same
+fault as our timed-out alarm task passing its checks with zero turns and no spend: a grader that
+reads the environment without asking whether the agent was ever in a position to change it.</p>
+
+<p>The method we used by hand has since been automated. "Automated Transcript Analysis for Detecting
+Flaws in Agentic Benchmarks" (arXiv:2607.27518, 29 July 2026) runs scanners over benchmark
+transcripts looking for ground truth access, tool failure, guessing vulnerability and answer format
+ambiguity, and reports verified quality issues in five widely used benchmarks. Our four categories
+were different only because our environment is a phone: a check asserting on a control iOS does not
+draw, a courtesy feature pausing a measured run, a check that would not scroll, and a task whose
+outcome depended on how many Safari tabs the owner happened to have open.</p>
+
+<h2 id="consequences">What to do with this if you run an agent benchmark</h2>
+
+<p>Read the transcripts of your failures before you publish the number. Not a sample: all of them,
+at least once, at the point where the suite is small enough that this is possible. It is the
+cheapest quality control available and it is the only one that catches a check that is wrong in the
+same direction every time.</p>
+
+<p>Then make the two failure modes structurally different in your results file. A boolean
+<code>passed</code> cannot express "we could not ask the model", and if the only place that fact
+lives is an exception message, the aggregate will silently absorb it. Our row carries
+<code>skipped</code> and <code>skip_reason</code> alongside <code>passed</code>, and the published
+rate is computed over scored tasks with the skip count printed next to it.</p>
+
+<p>Three rules came out of the audit and each generalises beyond phones. "Not visible right now" and
+"not there" are different facts, so a check that refuses to scroll blames the model for the
+harness's impatience. Assert on the surface, not on a specific button, because button sets change
+between OS versions and an assertion on one makes the benchmark rot. And a measured run must take
+the device: a feature that politely yields to a human who is not there is a scoring bug during
+measurement.</p>
+
+<p>A judgement, marked as one: the audit is worth more than the run. The score told us roughly what
+we already believed. The audit found four defects in the instrument, and three of them would have
+survived any number of reruns.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>The guards are all in one file, and the results are line-delimited JSON, so the arithmetic is
+inspectable without running anything on a phone.</p>
+
+<pre><code>git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+
+# the three guards, in order of the diagram above
+grep -n "class UsageLimitReached" -A 8 phoneshell/bench/runner.py
+grep -n "class RigUnavailable" -A 8 phoneshell/bench/runner.py
+grep -n "result.passed = passed and not timed_out" -B 6 phoneshell/bench/runner.py
+
+# scoring excludes skipped tasks and retired tasks, and keeps the latest attempt only
+grep -n "def score" -A 30 phoneshell/bench/runner.py
+
+# on your own results file: how many rows were never scored, and why
+jq -r 'select(.skipped==true) | [.task_id,.model,.skip_reason] | @tsv' runtime/bench/latest.jsonl
+
+# the audit itself: every failure next to what the agent said about it
+jq -r 'select(.passed==false and .skipped!=true) | [.task_id,.turns,.seconds,.agent_said] | @tsv' \
+  runtime/bench/latest.jsonl</code></pre>
+
+<p>The last command is the whole method. If the fourth column explains the task and the check still
+failed it, the defect is yours.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>Take our published task set, run it against a model on your own iPhone, and audit every
+  failure the same way. If fewer than one in four of your failures turns out to be a harness defect,
+  our claim that this is the normal ratio for a young benchmark is wrong, and we would rather know.
+  We predict a rate above one in four for any device benchmark under a year old, through
+  30 June 2027.</li>
+  <li>Show a results file where <code>skipped</code> and <code>passed==false</code> aggregate to the
+  same published rate. That would mean the distinction we built the guards around does not move the
+  number in practice, and the guards are ceremony.</li>
+  <li>The claim we are least sure of: that four of the five fabrication modes made the score look
+  better. That is an observation over five incidents on one rig, which is an anecdote with a pattern,
+  not a measured asymmetry. A larger sample from any device benchmark would settle it.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>phoneshell, FINDINGS.md sections 7, 12, 17 and 21, the audit and the five fabricated numbers, published 16 September 2026. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>phoneshell, phoneshell/bench/runner.py: UsageLimitReached, RigUnavailable, the timeout rule and score() over live tasks only. <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/bench/runner.py">https://github.com/Blomega/phoneshell/blob/main/phoneshell/bench/runner.py</a></li>
+      <li>Zhu et al., Establishing Best Practices for Building Rigorous Agentic Benchmarks, arXiv:2507.02825, 3 July 2025, v5 on 7 August 2025. SWE-bench Verified's insufficient tests, TAU-bench counting empty responses as successful, misestimation up to 100% in relative terms. <a href="https://arxiv.org/abs/2507.02825">https://arxiv.org/abs/2507.02825</a></li>
+      <li>Mohl et al., Automated Transcript Analysis for Detecting Flaws in Agentic Benchmarks, arXiv:2607.27518, 29 July 2026. <a href="https://arxiv.org/abs/2607.27518">https://arxiv.org/abs/2607.27518</a></li>
+      <li>Blolabel, phoneshell-bench, the published task set and results. <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">https://huggingface.co/datasets/blolabel/phoneshell-bench</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
