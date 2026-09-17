@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iOS Settings ships accessibility identifiers containing a MAC address and a raw pointer &mdash; Blolabel</title>
+<meta name="description" content="Real identifiers from iOS 26.6 Settings carry a UUID, a MAC address and a heap pointer. They are stable within one app launch and different on the next, so a screen fingerprint hashed from raw identifiers treats every revisit as a new screen.">
+<link rel="canonical" href="https://blolabel.ai/blog/ios-identifiers-carry-instance-data/">
+<meta property="og:title" content="iOS Settings ships accessibility identifiers containing a MAC address and a raw pointer &mdash; Blolabel">
+<meta property="og:description" content="Real identifiers from iOS 26.6 Settings carry a UUID, a MAC address and a heap pointer. They are stable within one app launch and different on the next, so a screen fingerprint hashed from raw identifiers treats every revisit as a new screen.">
+<meta property="og:url" content="https://blolabel.ai/blog/ios-identifiers-carry-instance-data/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"iOS Settings ships accessibility identifiers containing a MAC address and a raw pointer","description":"Real identifiers from iOS 26.6 Settings carry a UUID, a MAC address and a heap pointer. They are stable within one app launch and different on the next, so a screen fingerprint hashed from raw identifiers treats every revisit as a new screen.",
+ "datePublished":"2026-09-17","dateModified":"2026-09-17",
+ "url":"https://blolabel.ai/blog/ios-identifiers-carry-instance-data/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/ios-identifiers-carry-instance-data/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Are iOS accessibility identifiers stable across app launches?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Not always. iOS Settings ships identifiers such as com.apple.settings.connectedHeadphone.38:C4:3A:26:96:EE-0x85a8cf0f0, which contains a MAC address and a raw heap pointer, and a follow-up row carrying a UUID. Those are stable within one app launch and change on the next."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do you build a screen fingerprint that survives an app relaunch?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Normalise the volatile parts of every identifier first: UUIDs, 0x pointers, MAC addresses, digit runs of four or more and hex runs of twelve or more, each replaced by a token. Then hash element type, normalised identifier or label, and position rounded to a 32 point grid."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Does an element's accessibility label match the text drawn on screen?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Only for some types. Verifying every element's label against the pixels raised a false alarm on 39% of them, because icons, images, text fields, webviews and containers carry labels describing something else. Scoped to Button, StaticText, Link, MenuItem, Tab and SegmentedControl, the false-alarm rate was zero over 46 elements."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-17">17 September 2026</time>
+    <span>8 min read</span>
+  </div>
+  <h1>iOS Settings ships accessibility identifiers containing a MAC address and a raw pointer</h1>
+  <p class="standfirst">The identifier is the most resilient locator iOS offers, right up to the point where the system's own apps put instance data inside one. Five normalisation patterns before hashing is the difference between an agent that remembers a screen and one that meets it for the first time on every launch.</p>
+
+      <p>iOS Settings ships accessibility identifiers with instance data inside them. Two real
+examples from a physical iPhone 17 Pro Max on iOS 26.6:
+<code>com.apple.settings.followUpGroupAsItem...account.61932825-AFFA-4F26-...</code> carries a UUID,
+and <code>com.apple.settings.connectedHeadphone.38:C4:3A:26:96:EE-0x85a8cf0f0</code> carries a MAC
+address and a raw pointer. Both are stable within one app launch and different on the next. Any
+screen fingerprint hashed from raw identifiers therefore treats every revisit as a screen it has
+never seen, and an agent's memory of the phone never accumulates.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/ios-identifiers-carry-instance-data-hero.png" alt="Abstract technical illustration of identical keys cut from the same blank, each stamped with a different serial number, so a lock that reads the serial rejects every one of them" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">Why the best locator on iOS is also the least stable one</h2>
+
+<p>The received advice is correct as far as it goes: the accessibility identifier is the most
+resilient locator XCUITest offers, because it does not move when the label is translated or the
+layout changes. Apple's own documentation treats it as the stable handle. Every real-device testing
+guide says to use it in preference to visible text.</p>
+
+<p>That advice assumes the identifier was written by a person naming a control. The two above were
+written by code naming an <em>instance</em>: this particular linked account, this particular paired
+headphone. The pointer is the clearest tell. <code>0x85a8cf0f0</code> is a heap address, and a heap
+address survives exactly as long as the process that allocated it.</p>
+
+<figure class="embed">
+  <div style="position:relative;width:100%;aspect-ratio:16/9">
+    <iframe src="https://www.youtube-nocookie.com/embed/JPMSIglp3OE" title="PART 3 | XCUITest Automation Tutorial: Adding Accessibility Identifiers" loading="lazy" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:10px"></iframe>
+  </div>
+  <figcaption>"PART 3: XCUITest Automation Tutorial, Adding Accessibility Identifiers",
+  <a href="https://www.youtube.com/@QAUnderground">@QAUnderground</a>, 6 January 2021.
+  Supports the standard practice this note qualifies: identifiers are the preferred locator because
+  a developer assigns them deliberately, which is exactly what does not happen in the system
+  Settings rows above.</figcaption>
+</figure>
+
+<h2 id="evidence">What gets stripped before hashing, and why</h2>
+
+<p>A fingerprint is meant to answer one question: have I been on this screen before? It has to be
+insensitive to content (a restaurant list with different restaurants is the same screen) and
+sensitive to structure (the list and the checkout sheet are not). Identifiers are the strongest
+structural signal available, so they are kept, with the volatile pieces replaced by tokens rather
+than dropped.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>pattern</th><th>replaced with</th><th>real example</th><th>why it changes</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td><code>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}</code></td><td><code>#uuid</code></td><td><code>61932825-AFFA-4F26-...</code> in a Settings follow-up row</td><td>identifies one account record</td><td><code>phoneshell/memory.py</code></td></tr>
+    <tr><td><code>0x[0-9a-f]{4,}</code></td><td><code>#ptr</code></td><td><code>0x85a8cf0f0</code> on a connected headphone row</td><td>a heap address, new on every launch</td><td><code>phoneshell/memory.py</code></td></tr>
+    <tr><td><code>(?:[0-9a-f]{2}:){5}[0-9a-f]{2}</code></td><td><code>#mac</code></td><td><code>38:C4:3A:26:96:EE</code></td><td>identifies one paired device</td><td><code>phoneshell/memory.py</code></td></tr>
+    <tr><td><code>\b\d{4,}\b</code></td><td><code>#n</code></td><td>row indices, ids, timestamps</td><td>ordering and content, not structure</td><td><code>phoneshell/memory.py</code></td></tr>
+    <tr><td><code>\b[0-9a-f]{12,}\b</code></td><td><code>#hex</code></td><td>bare hashes and tokens</td><td>same as above, without the 0x</td><td><code>phoneshell/memory.py</code></td></tr>
+    <tr><td>numbers with units, clock times, relative dates</td><td><code>#</code></td><td><code>14:19</code>, <code>2.4 km</code>, <code>40%</code>, "just now"</td><td>content that changes while the screen does not</td><td><code>_VOLATILE</code>, same file</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The fingerprint is then the bundle id, plus one line per structural element giving its type, its
+normalised identifier (falling back to a normalised label), and its position rounded to a 32 point
+grid, sorted and hashed to 16 hex characters. The coarse grid is deliberate: a row that shifts by a
+few points because a banner appeared above it is still the same row.</p>
+
+<figure>
+<svg viewBox="0 0 900 420" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of how a screen fingerprint is built on iOS. A raw accessibility identifier for a connected headphone row contains a MAC address and a raw pointer. Hashing it directly gives a different fingerprint on every app launch, so a revisited screen looks new. Stripping the UUID, pointer, MAC address, long digit runs and long hex runs into tokens first gives a fingerprint that is the same across launches, which is what lets an agent remember which control on which screen led where.">
+  <rect x="0" y="0" width="900" height="420" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">The same row, hashed two ways</text>
+  <rect x="40" y="60" width="820" height="46" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="56" y="80" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11">raw identifier, as WebDriverAgent reports it</text>
+  <text x="56" y="98" fill="#e2e8f0" font-family="monospace" font-size="13">com.apple.settings.connectedHeadphone.38:C4:3A:26:96:EE-0x85a8cf0f0</text>
+  <path d="M250 106 L250 140 M650 106 L650 140" stroke="#64748b" stroke-width="2" fill="none"/>
+  <rect x="40" y="145" width="400" height="120" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="240" y="168" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="14" font-weight="700" text-anchor="middle">hash the raw string</text>
+  <text x="240" y="194" fill="#fecaca" font-family="monospace" font-size="12" text-anchor="middle">launch 1: a3f0c41d8b2e5577</text>
+  <text x="240" y="214" fill="#fecaca" font-family="monospace" font-size="12" text-anchor="middle">launch 2: 71bd9e04cc136a2f</text>
+  <text x="240" y="240" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">every revisit is a new screen,</text>
+  <text x="240" y="256" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">so nothing is ever learned</text>
+  <rect x="460" y="145" width="400" height="120" rx="8" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="660" y="168" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="14" font-weight="700" text-anchor="middle">strip instance data, then hash</text>
+  <text x="660" y="194" fill="#a7f3d0" font-family="monospace" font-size="11" text-anchor="middle">...connectedHeadphone.#mac-#ptr</text>
+  <text x="660" y="216" fill="#a7f3d0" font-family="monospace" font-size="12" text-anchor="middle">launch 1 and 2: 5c2e7a1f90b4d833</text>
+  <text x="660" y="242" fill="#6ee7b7" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">the screen has an identity, and the</text>
+  <text x="660" y="258" fill="#6ee7b7" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">controls on it can accumulate history</text>
+  <text x="40" y="305" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">basis for the hash, per element</text>
+  <rect x="40" y="318" width="820" height="40" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="56" y="343" fill="#e2e8f0" font-family="monospace" font-size="12">type | normalised identifier or label | round(x/32), round(y/32)    sorted, joined, sha1, first 16 chars</text>
+  <text x="40" y="385" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">The hash values above are illustrative of the two behaviours. The normalisation patterns, the 32 point grid</text>
+  <text x="40" y="403" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">and the 16 character truncation are the real ones, in phoneshell/memory.py.</text>
+</svg>
+<figcaption>Screen memory is worth building only if the key is stable. On iOS the key has to be
+repaired before it is used, because the system's own apps put instance data in it.</figcaption>
+</figure>
+
+<h2 id="mechanism">The second half: a label is not what is drawn</h2>
+
+<p>The same assumption fails in the other direction at action time. A model that reads "Confirm
+booking" in a serialised tree will tap that element even when the pixels under it now say something
+else, because the structural claim is what it was given. "Do GUI Agents Believe Their Eyes?"
+(arXiv:2607.04334, 5 July 2026) measures this directly: on outdated snapshots, models follow the
+outdated structure on up to 0.88 of probes while image-only accuracy stays near ceiling, and a
+single mis-sourced belief at the first step has a self-recovery rate of at most 0.03.</p>
+
+<p>So before any tap, our harness crops the element's rectangle out of the current frame and asks
+macOS Vision what those pixels actually read. The first version of that check ran on everything and
+was unusable: a <strong>39% false-alarm rate</strong>, because icons, images, text fields, webviews
+and containers all carry labels describing something other than their own rendering. An app name
+printed under an icon, a caption rather than a value, a label for a whole page.</p>
+
+<p>Scoping the check to the six element types whose label <em>is</em> the text drawn on them
+(<code>Button</code>, <code>StaticText</code>, <code>Link</code>, <code>MenuItem</code>,
+<code>Tab</code>, <code>SegmentedControl</code>) took that to <strong>zero false alarms over 46
+elements</strong>, and it still catches a relabelled button, which is the case the gate exists for.</p>
+
+<figure>
+<svg viewBox="0 0 900 320" role="img" style="width:100%;height:auto"
+  aria-label="Bar chart comparing the false alarm rate of a pixel versus label consistency check on three real screens. Checking every element on screen raised a false alarm on 39 percent of them. Restricting the check to the six element types whose accessibility label is the text drawn on them, namely Button, StaticText, Link, MenuItem, Tab and SegmentedControl, produced zero false alarms over 46 elements, and a minimum token coverage of 60 percent is what separates Place order from Cancel order.">
+  <rect x="0" y="0" width="900" height="320" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">False alarms from checking the pixels against the label</text>
+  <text x="40" y="58" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="13">Measured on three real screens, 46 elements in the scoped set</text>
+  <line x1="260" y1="86" x2="260" y2="250" stroke="#334155" stroke-width="2"/>
+  <line x1="260" y1="250" x2="860" y2="250" stroke="#334155" stroke-width="2"/>
+  <rect x="262" y="105" width="234" height="44" fill="#ef4444"/>
+  <text x="510" y="133" fill="#fecaca" font-family="Montserrat,sans-serif" font-size="15" font-weight="700">39%</text>
+  <text x="250" y="133" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" text-anchor="end">every element</text>
+  <rect x="262" y="175" width="3" height="44" fill="#10b981"/>
+  <text x="280" y="203" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="15" font-weight="700">0%</text>
+  <text x="250" y="197" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" text-anchor="end">six types whose label</text>
+  <text x="250" y="213" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" text-anchor="end">is the rendering</text>
+  <text x="262" y="272" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">0</text>
+  <text x="440" y="272" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">30%</text>
+  <text x="590" y="272" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">55% of elements flagged wrongly</text>
+  <text x="40" y="302" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">A gate that fires on 39% of elements is not a gate. Scope decides whether the check is usable at all.</text>
+</svg>
+<figcaption>The check did not get smarter. It got narrower, and narrowness is what took it from
+noise to a usable safety property.</figcaption>
+</figure>
+
+<p>Matching then has to be strict about which words agree. Any-token overlap matched "Place order"
+against a Cancel button, because both contain "order": the shared word is the one that does not
+matter and the differing word is the one that does. The rule is 60% coverage of the claimed label's
+tokens, with two concessions that are stated rather than hidden: a label longer than four tokens
+passes on two solid hits, because the crop clips long labels, and a crop containing only
+glyph-sized text comes back inconclusive rather than failing, because a bare chevron has nothing to
+verify against.</p>
+
+<h2 id="consequences">What this changes if you build on the tree</h2>
+
+<p>Do not hash identifiers raw. If you keep any per-screen or per-control state on iOS, normalise
+UUIDs, MAC addresses, pointers, long digit runs and long hex runs out first, or your memory will
+look like it is working in a single session and silently reset itself between app launches, which
+is the worst failure shape available: no error, no warning, just an agent that never gets better at
+a screen it has seen forty times.</p>
+
+<p>Treat the identifier as a name with unknown provenance rather than a key. It may be a developer's
+deliberate <code>login_email_input</code>, or it may be a description of one row of live data. The
+two are indistinguishable without looking at the string, which is why the normalisation is a list of
+patterns rather than a policy.</p>
+
+<p>And when you verify an element before acting on it, choose the types you verify. The 39% number
+is what a well-intentioned global check costs: it does not fail loudly, it just makes the gate
+useless, and a gate that is usually wrong gets turned off.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>Everything here is one accessibility tree dump and forty lines of Python. No agent required.</p>
+
+<pre><code>git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+bin/phoneshell up
+
+# open Settings on the phone, then dump the tree and look for instance data
+curl -s localhost:8100/source?format=json &gt; /tmp/tree.json
+grep -oE '"name":"[^"]*(0x[0-9a-f]{4,}|([0-9A-F]{2}:){5}[0-9A-F]{2}|[0-9A-F]{8}-[0-9A-F]{4})[^"]*"' /tmp/tree.json | sort -u
+
+# what the normaliser does to them
+python3 - &lt;&lt;'PY'
+from phoneshell.memory import _norm_id
+for s in ["com.apple.settings.connectedHeadphone.38:C4:3A:26:96:EE-0x85a8cf0f0",
+          "com.apple.settings.followUpGroupAsItem.group.account.61932825-AFFA-4F26-9E30-000000000000"]:
+    print(_norm_id(s))
+PY
+
+# the scoped label check and the 60% coverage rule
+grep -n "LABEL_IS_RENDERED" -A 6 phoneshell/agent/verify.py
+grep -n "def label_matches" -A 35 phoneshell/perception/ocr.py</code></pre>
+
+<p>To reproduce the launch instability, dump the tree, force-quit Settings, reopen it, dump again,
+and diff the identifiers of the connected-device rows. The prefix is stable and the tail is not.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>Dump Settings twice across a force-quit on any iOS 26 device and find the pointer suffix
+  unchanged. That would mean the value is not an address, or is allocated deterministically, and our
+  reading of it is wrong. We predict it changes, on iOS 26.x, through 30 June 2027.</li>
+  <li>Run the unscoped pixel-versus-label check on your own screens and get a false-alarm rate well
+  under 39%. Ours is three screens, which is a small sample; if the number is really 5% on a
+  typical app, the scoping is over-cautious and the gate could cover more element types.</li>
+  <li>The claim we are least sure of: that 60% token coverage is the right threshold rather than
+  merely a working one. It was chosen to separate "Place order" from "Cancel order" and has not been
+  swept. A measured precision and recall curve over a labelled set would beat our reasoning.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>phoneshell, phoneshell/memory.py: the identifier noise patterns and the fingerprint basis. <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/memory.py">https://github.com/Blomega/phoneshell/blob/main/phoneshell/memory.py</a></li>
+      <li>phoneshell, phoneshell/agent/verify.py and phoneshell/perception/ocr.py: the scoped consistency gate and the 60% token coverage rule. <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/agent/verify.py">https://github.com/Blomega/phoneshell/blob/main/phoneshell/agent/verify.py</a></li>
+      <li>phoneshell, FINDINGS.md section 3, measured on a physical iPhone 17 Pro Max running iOS 26.6. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>Zhang et al., Do GUI Agents Believe Their Eyes? Diagnosing State-Belief Reliance on Pixels versus Structure, arXiv:2607.04334, 5 July 2026. <a href="https://arxiv.org/abs/2607.04334">https://arxiv.org/abs/2607.04334</a></li>
+      <li>Apple, UIAccessibilityIdentification accessibilityIdentifier, the documented purpose of the identifier. <a href="https://developer.apple.com/documentation/uikit/uiaccessibilityidentification/accessibilityidentifier">https://developer.apple.com/documentation/uikit/uiaccessibilityidentification/accessibilityidentifier</a></li>
+      <li>QA Underground, PART 3: XCUITest Automation Tutorial, Adding Accessibility Identifiers, 6 January 2021. <a href="https://www.youtube.com/watch?v=JPMSIglp3OE">https://www.youtube.com/watch?v=JPMSIglp3OE</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
