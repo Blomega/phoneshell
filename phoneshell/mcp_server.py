@@ -364,6 +364,28 @@ def phone_scroll_to(text: str, max_swipes: int = 8, direction: Literal["up", "do
 @mcp.tool(
     structured_output=False,
     description=(
+        "Put a picture or video from this Mac into the phone's camera roll, so an app on the "
+        "phone can pick it. Takes a path on the Mac, e.g. '/Users/me/shot.jpg'. Accepts jpg, "
+        "jpeg, png, heic, gif, mov, mp4, m4v, up to 100 MB. Use this before any task that has "
+        "to upload, post or attach a photo: nothing else here can put a file on the phone. "
+        "It adds to the library and never deletes or reads anything already there."
+    )
+)
+def phone_push_media(path: str) -> list[ContentBlock]:
+    blocked = _unlocked_or_message() or _turn_or_message()
+    if blocked:
+        return blocked
+    result = BRIDGE.phone.push_media(path)
+    if not result.ok:
+        return _text(f"could not push {path!r}: {result.error}")
+    BRIDGE.guard.audit("push_media", path=str(path))
+    BRIDGE.recorder.record("push_media", {"path": str(path)})
+    return _act_and_report(result.detail)
+
+
+@mcp.tool(
+    structured_output=False,
+    description=(
         "Open an app by name or bundle id, e.g. 'WhatsApp', 'Grab', 'com.apple.mobilesafari'. "
         "Always prefer this over hunting for an icon on the home screen."
     )

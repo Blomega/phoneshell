@@ -545,6 +545,34 @@ class WDAClient:
             "content": base64.b64encode(content.encode()).decode(), "contentType": content_type,
         })
 
+    def import_media(self, payload: bytes, name: str, kind: str | None = None) -> dict:
+        """Put a picture or a video in the phone's camera roll.
+
+        Needs the importMedia route from phoneshell/wda/patches.py, which is why
+        this raises a WDAError naming that patch rather than a bare 404 when the
+        runner was built from stock WebDriverAgent.
+
+        Not AFC. Writing into /var/mobile/Media/DCIM over usbmux succeeds and the
+        photo library never notices, because the library is a database rather
+        than a directory listing; measured on iOS 26.6.2, the item count did not
+        move. Going through PHPhotoLibrary on the device does move it.
+        """
+        body: dict[str, Any] = {
+            "data": base64.b64encode(payload).decode(),
+            "name": name,
+        }
+        if kind:
+            body["kind"] = kind
+        try:
+            return self.post("/wda/importMedia", body, in_session=False) or {}
+        except WDAError as exc:
+            if "404" in str(exc) or "unhandled endpoint" in str(exc).lower():
+                raise WDAError(
+                    "this WebDriverAgent has no /wda/importMedia route. Run "
+                    "`phoneshell setup` to rebuild the runner with the phoneshell patches."
+                ) from exc
+            raise
+
     def get_pasteboard(self, content_type: str = "plaintext") -> str:
         raw = self.post("/wda/getPasteboard", {"contentType": content_type})
         return base64.b64decode(raw).decode(errors="replace")

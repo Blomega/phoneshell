@@ -11,6 +11,7 @@ import logging
 import math
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Literal
 
 from PIL import Image
@@ -234,6 +235,49 @@ class Phone:
         y = min(max(y, 2), geo.point_h - 2)
         self.wda.tap_w3c(x, y)
         return self._after("tap", f"[{element.idx}] {element.type} {element.text!r} at ({int(x)},{int(y)})", before)
+
+    # Formats iOS will accept into the photo library. Anything else is rejected
+    # here rather than on the phone, where the error is a Photos error code.
+    PUSHABLE = {".jpg": "photo", ".jpeg": "photo", ".png": "photo", ".heic": "photo",
+                ".gif": "photo", ".mov": "video", ".mp4": "video", ".m4v": "video"}
+    # 100 MB. Base64 inflates by a third and the whole body is held in memory on
+    # both sides, so a feature-length video is not what this is for.
+    PUSH_MAX_BYTES = 100 * 1024 * 1024
+
+    def push_media(self, path: str | Path, before: Snapshot | None = None) -> ActionResult:
+        """Copy a local picture or video into the phone's camera roll.
+
+        The one direction this project could not previously go. Everything else
+        here reads the phone or acts on it; nothing put a file on it, so a task
+        that starts "upload this photo" could not start at all.
+        """
+        source = Path(path).expanduser()
+        if not source.is_file():
+            return ActionResult(ok=False, action="push_media",
+                                error=f"{source} is not a file")
+        suffix = source.suffix.lower()
+        kind = self.PUSHABLE.get(suffix)
+        if kind is None:
+            return ActionResult(ok=False, action="push_media",
+                                error=f"iOS will not take {suffix or 'a file with no extension'} "
+                                      f"into the photo library; use one of "
+                                      f"{', '.join(sorted(self.PUSHABLE))}")
+        size = source.stat().st_size
+        if size > self.PUSH_MAX_BYTES:
+            return ActionResult(ok=False, action="push_media",
+                                error=f"{size / 1e6:.0f} MB is over the {self.PUSH_MAX_BYTES / 1e6:.0f} MB "
+                                      "limit; the payload is base64 in one HTTP body")
+        if size == 0:
+            return ActionResult(ok=False, action="push_media", error=f"{source} is empty")
+        try:
+            result = self.wda.import_media(source.read_bytes(), source.name, kind)
+        except WDAError as exc:
+            return ActionResult(ok=False, action="push_media", error=str(exc))
+        return self._after(
+            "push_media",
+            f"{source.name} ({size / 1024:.0f} KB) is now in the camera roll",
+            before,
+        )
 
     def tap_point(self, x: float, y: float, before: Snapshot | None = None) -> ActionResult:
         self.wda.tap_w3c(x, y)
@@ -1036,6 +1080,7 @@ class Phone:
             max_edge=self.cfg.brain.screenshot_max_edge,
             force_som=force_som,
             include_image=include_image,
+            blind=self.cfg.blind,
         )
         if hint:
             obs.notes.append(hint)
