@@ -70,6 +70,16 @@ def doctor() -> None:
         str(app_path) if app_path.exists() else "not built yet",
         fix="run `phoneshell setup`",
     ))
+    # Report the patches separately from the build, because the failure they
+    # cause is specific: everything works except putting a file on the phone,
+    # and the error for that arrives from the phone as a bare 404.
+    from .wda import patches as wda_patches
+    from .config import WDA_SRC
+    for state in wda_patches.status(WDA_SRC):
+        checks.append(dev.Check(
+            state.name, state.applied, state.detail,
+            fix="run `phoneshell setup` to rebuild WebDriverAgent with them",
+        ))
     if checks[1].ok:
         checks.append(dev.ddi_check(udid))
     checks.extend(dev.health(cfg, udid)[1:])
@@ -116,6 +126,19 @@ def setup(
     console.print(escape(src.line()))
     if not src.ok:
         raise typer.Exit(1)
+
+    # Add our routes to WebDriverAgent's own source before it is compiled. These
+    # are idempotent, so this is also what re-applies them after a re-clone or a
+    # tag bump. See phoneshell/wda/patches.py for why each one has to exist.
+    from .wda import patches as wda_patches
+    from .config import WDA_SRC
+    try:
+        for state in wda_patches.apply(WDA_SRC):
+            console.print(f"[{'OK  ' if state.applied else 'FAIL'}] {state.name}: {state.detail}")
+    except ValueError as exc:
+        console.print(f"[yellow]WebDriverAgent patches did not apply: {exc}[/yellow]")
+        console.print("[yellow]continuing unpatched; phone_push and a sessionless button press "
+                      "will not work[/yellow]")
 
     app_path = dev.wda_paths()["app"]
     if not skip_build:
@@ -488,6 +511,22 @@ def install_agent(remove: bool = typer.Option(False, help="remove it again")) ->
         console.print(f"[yellow]launchctl said: {res.stderr.strip()}[/yellow]")
     console.print(f"installed {plist_path}\nit will retry every 30s, which is what you want when the "
                   "cable is not plugged in yet")
+
+
+@app.command()
+def push(
+    path: str = typer.Argument(..., help="a picture or video on this Mac"),
+) -> None:
+    """Put a picture or video from this Mac into the phone's camera roll."""
+    from .actions import Phone
+    cfg = _cfg()
+    phone = Phone(cfg)
+    result = phone.push_media(path)
+    if result.ok:
+        console.print(f"[green]{result.detail}[/green]")
+    else:
+        console.print(f"[red]{result.error}[/red]")
+        raise typer.Exit(1)
 
 
 @app.command()

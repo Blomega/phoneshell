@@ -25,15 +25,19 @@ import signal
 import threading
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.background import BackgroundTask
+import tempfile
+import zipfile
 
 from .actions import Phone
 from .apps import installed_apps
 from .bringup import Bridge, checks_for, diagnose, scan as scan_devices
 from .config import Config, ROOT, RUNTIME
+from .farm import Farm
 from .crawl import (CRAWLS, DENY_BUNDLES, Crawler, Plan as CrawlPlan, is_user_app,
-                    list_runs, new_run_dir, plan_from_prompt)
+                    earlier_scans, list_runs, new_run_dir, plan_from_prompt, shot_filenames)
 from .lock import DeviceBusy, device_lock
 from .safety import Guard
 from .wda.client import WDAError, WDAUnreachable
@@ -105,6 +109,8 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["content-type"],
+    # A download is fetched as a blob, and the file name rides in this header.
+    expose_headers=["content-disposition"],
 )
 
 
@@ -546,6 +552,77 @@ def devices() -> dict:
     return {"devices": [c.as_dict() for c in scan_devices()], "bridge": BRIDGE.state()}
 
 
+# --------------------------------------------------------------------------
+# The farm: every phone on this Mac, not just the configured one.
+# --------------------------------------------------------------------------
+
+FARM = Farm(BRIDGE)
+
+
+@app.get("/farm")
+def farm_page() -> FileResponse:
+    return FileResponse(UI_DIR / "farm.html")
+
+
+@app.get("/api/farm")
+def farm_state(deep: bool = False) -> dict:
+    """Every phone, its slot, its ports and how it is.
+
+    `deep` costs an HTTP round trip to each phone we hold a bridge for, so the
+    grid's timer asks shallowly and a card someone opened asks deeply.
+    """
+    members = FARM.members(deep=deep)
+    return {
+        "members": [m.as_dict() for m in members],
+        "live": sum(1 for m in members if m.bridge.get("up")),
+        "seen": len(members),
+        "configured": Config.load().device.udid,
+    }
+
+
+@app.get("/api/farm/screenshot")
+def farm_screenshot(udid: str) -> Response:
+    """One still from one phone. The grid polls this; it never opens a stream."""
+    png = FARM.screenshot(udid)
+    if png is None:
+        return Response(status_code=503, content=b"", media_type="image/png")
+    return Response(content=png, media_type="image/png",
+                    headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/farm/connect")
+async def farm_connect(payload: dict) -> dict:
+    """Bring one phone up on its own ports, and report every rung of the ladder."""
+    udid = str(payload.get("udid") or "").strip()
+    if not udid:
+        return {"ok": False, "error": "which phone? pass a udid"}
+    relaunch = bool(payload.get("relaunch"))
+
+    def work() -> list[dict]:
+        return list(FARM.connect(udid, relaunch=relaunch))
+
+    try:
+        events = await asyncio.to_thread(work)
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)[:300]}
+    failed = [e for e in events if not e.get("ok")]
+    return {
+        "ok": not failed,
+        "events": events,
+        "member": next((m.as_dict() for m in FARM.members(deep=True) if m.udid == udid), None),
+    }
+
+
+@app.post("/api/farm/disconnect")
+async def farm_disconnect(payload: dict) -> dict:
+    udid = str(payload.get("udid") or "").strip()
+    if not udid:
+        return {"ok": False, "error": "which phone? pass a udid"}
+    return await asyncio.to_thread(
+        FARM.disconnect, udid, bool(payload.get("stop_runner"))
+    )
+
+
 @app.get("/api/checks")
 def device_checks(udid: str = "") -> dict:
     return {"checks": checks_for(udid or None)}
@@ -613,14 +690,20 @@ async def plan_endpoint(payload: dict) -> dict:
         catalog = installed_apps(Config.load())
     except Exception:
         catalog = None
-    plan, notes = plan_from_prompt(prompt, Config.load(), catalog)
+    # The app picked in the page is the DEFAULT, not an override: an app named in
+    # the sentence still wins, and a sentence that names none keeps the pick
+    # instead of falling back to Settings.
+    picked = (str(payload.get("label") or payload["app"]), str(payload["app"])) if payload.get("app") else None
+    plan, notes = plan_from_prompt(prompt, Config.load(), catalog, default_app=picked,
+                                   fresh=bool(payload.get("fresh")))
     for key in ("max_screens", "max_depth", "max_minutes", "variant_cap", "scroll_cap",
-                "per_app_screens", "per_app_minutes", "scope", "app", "label"):
+                "per_app_screens", "per_app_minutes"):
         if key in payload and payload[key] not in (None, ""):
             setattr(plan, key, type(getattr(plan, key))(payload[key]))
     if payload.get("apps"):
         plan.apps = [str(a) for a in payload["apps"]]
-    return {"plan": plan.as_dict(), "notes": notes}
+    earlier = earlier_scans(plan.app) if plan.scope == "app" else {"runs": 0, "screens": 0}
+    return {"plan": plan.as_dict(), "notes": notes, "earlier": earlier}
 
 
 @app.get("/api/crawls")
@@ -634,6 +717,67 @@ def crawl_manifest(run: str) -> dict:
     if not str(path).startswith(str(CRAWLS.resolve())) or not path.is_file():
         return {"error": "no such run"}
     return json.loads(path.read_text())
+
+
+def _run_dir(run: str) -> Path | None:
+    out = (CRAWLS / run).resolve()
+    return out if out.parent == CRAWLS.resolve() and out.is_dir() else None
+
+
+def _run_label(out: Path) -> tuple[str, str]:
+    """`20260911-123729-talika` -> ("talika", "20260911-123729")."""
+    parts = out.name.split("-", 2)
+    return (parts[2] if len(parts) == 3 else out.name), "-".join(parts[:2])
+
+
+def _shot_file(out: Path, rel: str) -> Path | None:
+    """The full PNG, or its thumbnail when the run was told not to keep PNGs."""
+    for cand in (out / rel, out / rel.replace("shots/", "thumbs/", 1).replace(".png", ".jpg")):
+        cand = cand.resolve()
+        if cand.is_file() and cand.parent in (out / "shots", out / "thumbs"):
+            return cand
+    return None
+
+
+@app.get("/api/crawl/{run}/shot")
+def crawl_shot(run: str, shot: str):
+    """One screenshot at full resolution, as a download named for its screen."""
+    out = _run_dir(run)
+    path = _shot_file(out, shot) if out else None
+    if not out or not path:
+        return JSONResponse({"error": "no such screenshot"}, status_code=404)
+    name = Path(shot_filenames(out).get(shot, path.name)).stem
+    return FileResponse(path, filename=f"{_run_label(out)[0]}-{name}{path.suffix}")
+
+
+@app.get("/api/crawl/{run}/zip")
+def crawl_zip(run: str):
+    """Every screenshot in a run, as one zip a person can open without AppScan.
+
+    Stored, not deflated: PNGs are already compressed, and deflating them again
+    costs seconds per hundred screens for a file a few percent smaller.
+    """
+    out = _run_dir(run)
+    if not out:
+        return JSONResponse({"error": "no such scan"}, status_code=404)
+    label, stamp = _run_label(out)
+    folder = f"{label}-{stamp}" if stamp else label
+    fd, tmp = tempfile.mkstemp(suffix=".zip")
+    os.close(fd)
+    count = 0
+    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_STORED) as z:
+        for rel, name in shot_filenames(out).items():
+            path = _shot_file(out, rel)
+            if path:
+                z.write(path, f"{folder}/{Path(name).stem}{path.suffix}")
+                count += 1
+        if (out / "manifest.json").is_file():
+            z.write(out / "manifest.json", f"{folder}/manifest.json")
+    if not count:
+        os.unlink(tmp)
+        return JSONResponse({"error": "this scan has no screenshots yet"}, status_code=404)
+    return FileResponse(tmp, media_type="application/zip", filename=f"{folder}.zip",
+                        background=BackgroundTask(os.unlink, tmp))
 
 
 if CRAWLS.exists() or CRAWLS.mkdir(parents=True, exist_ok=True) is None:
@@ -689,8 +833,11 @@ async def collect_ws(ws: WebSocket) -> None:
                 await asyncio.to_thread(bring_up)
 
             elif kind == "disconnect":
-                BRIDGE.disconnect(stop_runner=bool(msg.get("stop_runner")))
-                await ws.send_json({"type": "connected", "bridge": BRIDGE.state()})
+                # Disconnect means the automation goes off, banner and all. Dropping
+                # only the tunnel left the runner on the phone, still "running".
+                state = await asyncio.to_thread(BRIDGE.park)
+                await ws.send_json({"type": "connected", "bridge": state})
+                await ws.send_json({"type": "parked", "why": "asked"})
 
             elif kind == "crawl":
                 thread = CRAWL.get("thread")
@@ -705,10 +852,12 @@ async def collect_ws(ws: WebSocket) -> None:
                 await ws.send_json({"type": "run", "run": out.name, "plan": plan.as_dict()})
 
                 def work() -> None:
+                    ran = False
                     try:
                         with device_lock(f"collect {out.name}"):
                             crawler = Crawler(phone(), plan, out, emit=push)
                             CRAWL["crawler"] = crawler
+                            ran = True
                             crawler.run()
                     except DeviceBusy as exc:
                         push({"type": "error", "text": str(exc)})
@@ -717,6 +866,16 @@ async def collect_ws(ws: WebSocket) -> None:
                         push({"type": "error", "text": f"{type(exc).__name__}: {exc}"[:400]})
                     finally:
                         CRAWL["crawler"] = None
+                        # Hand the phone back when the scan ends, however it ends. Left
+                        # up, the runner sits idle under iOS's "Automation Running"
+                        # banner with nothing moving. (Not after DeviceBusy: then the
+                        # phone is someone else's, and so is the automation.)
+                        if ran:
+                            try:
+                                BRIDGE.park()
+                                push({"type": "parked", "why": "scan"})
+                            except Exception as exc:   # noqa: BLE001 - never fail a finished scan
+                                log.warning("could not turn the automation off: %s", exc)
 
                 worker = threading.Thread(target=work, name=f"crawl-{out.name}", daemon=True)
                 CRAWL["thread"] = worker

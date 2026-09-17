@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>phoneshell farm</title>
+<style>
+  :root{
+    --bg:#0e1013; --panel:#15181d; --panel2:#1b1f26; --line:#262b33;
+    --text:#e7eaf0; --dim:#8b93a1; --accent:#5b8cff; --ok:#3ddc84; --warn:#ffb020; --err:#ff5c5c;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);
+       font:14px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+  header{display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:1px solid var(--line);
+         background:var(--panel);position:sticky;top:0;z-index:5}
+  header h1{font-size:14px;margin:0;font-weight:600}
+  header .meta{color:var(--dim);font-size:12px;font-family:var(--mono)}
+  header .spacer{flex:1}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;
+         padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+  button:hover:not(:disabled){border-color:#3a424f}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  button.danger{color:#ffb4b4;border-color:#5a2020}
+  button:disabled{opacity:.45;cursor:default}
+
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;padding:20px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+        display:flex;flex-direction:column}
+  .card.configured{border-color:#2f4a86}
+  .screen{position:relative;aspect-ratio:9/19.5;background:#05070a;display:flex;align-items:center;
+          justify-content:center;border-bottom:1px solid var(--line);overflow:hidden}
+  .screen img{width:100%;height:100%;object-fit:contain;display:block}
+  .screen .placeholder{color:#495060;font-size:12px;text-align:center;padding:0 18px;font-family:var(--mono)}
+  .badge{position:absolute;top:8px;left:8px;background:rgba(5,7,10,.82);border:1px solid var(--line);
+         border-radius:999px;padding:2px 9px;font-family:var(--mono);font-size:10px;color:var(--dim)}
+  .body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+  .name{font-weight:600;display:flex;align-items:center;gap:7px}
+  .dot{width:8px;height:8px;border-radius:50%;background:#3a424f;flex:none}
+  .dot.ready{background:var(--ok);box-shadow:0 0 7px var(--ok)}
+  .dot.standby{background:var(--warn)}
+  .dot.absent{background:#3a424f}
+  .dot.error,.dot.idle{background:var(--err)}
+  .sub{color:var(--dim);font-size:12px;font-family:var(--mono);word-break:break-all}
+  .state{font-size:12px;color:var(--dim)}
+  .state b{color:var(--text);font-weight:600}
+  .fix{font-size:12px;color:var(--warn)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+  .ports{color:#5c6472;font-family:var(--mono);font-size:11px}
+  #empty{padding:60px 20px;text-align:center;color:var(--dim)}
+  #events{position:fixed;right:18px;bottom:18px;width:380px;max-height:44vh;overflow:auto;
+          background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;
+          font-family:var(--mono);font-size:11.5px;display:none}
+  #events.on{display:block}
+  #events .ev{padding:3px 0;border-bottom:1px solid #1d222a;color:var(--dim)}
+  #events .ev:last-child{border-bottom:0}
+  #events .ev.bad{color:#ffb4b4}
+  #events .ev b{color:var(--text)}
+  #events h4{margin:0 0 6px;font-size:11px;color:var(--text);font-family:inherit;
+             display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+<header>
+  <h1>phoneshell farm</h1>
+  <span class="meta" id="summary">looking…</span>
+  <span class="spacer"></span>
+  <a href="/">chat &amp; control</a>
+  <a href="/collect">AppScan</a>
+  <button id="refresh">Refresh</button>
+</header>
+
+<div id="grid"></div>
+<div id="empty" hidden>
+  No iPhone is visible to this Mac. Plug one in with a data cable, unlock it, and trust this
+  computer. USB enumeration happens before trust and before the lock screen, so a phone on a
+  working cable shows up here even locked.
+</div>
+
+<div id="events"><h4><span>bringing up</span><button id="closeev" style="padding:0 6px">×</button></h4><div id="evlist"></div></div>
+
+<script>
+// A still per card on a timer, never a stream. Six MJPEG feeds is six phones
+// encoding video continuously for a page nobody is looking closely at; the live
+// feed belongs to the one screen someone actually opened.
+const GRID = document.getElementById('grid');
+const EMPTY = document.getElementById('empty');
+const SUMMARY = document.getElementById('summary');
+const EVENTS = document.getElementById('events');
+const EVLIST = document.getElementById('evlist');
+const STILL_MS = 4000;
+let members = [];
+let busy = new Set();
+
+function esc(s){ return (s ?? '').toString().replace(/[<>&"]/g, c => (
+  {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+
+async function load(deep){
+  let data;
+  try {
+    data = await (await fetch('/api/farm' + (deep ? '?deep=1' : ''))).json();
+  } catch {
+    SUMMARY.textContent = 'the helper on this Mac stopped answering';
+    return;
+  }
+  members = data.members || [];
+  SUMMARY.textContent = members.length
+    ? `${data.live} of ${data.seen} up`
+    : 'no phone visible';
+  EMPTY.hidden = members.length > 0;
+  render();
+}
+
+function render(){
+  GRID.innerHTML = '';
+  for (const m of members){
+    const card = document.createElement('div');
+    card.className = 'card' + (m.configured ? ' configured' : '');
+    const up = m.bridge && m.bridge.up;
+    const working = busy.has(m.udid);
+    card.innerHTML = `
+      <div class="screen">
+        ${up
+          ? `<img alt="${esc(m.name)}" data-udid="${esc(m.udid)}" src="/api/farm/screenshot?udid=${encodeURIComponent(m.udid)}&t=${Date.now()}">`
+          : `<div class="placeholder">${esc(placeholder(m))}</div>`}
+        <span class="badge">slot ${m.slot}</span>
+      </div>
+      <div class="body">
+        <div class="name"><span class="dot ${esc(m.state)}"></span>${esc(m.name)}${m.configured ? ' · default' : ''}</div>
+        <div class="sub">${esc(m.model)} · iOS ${esc(m.ios || '?')} · ${esc(m.transport || 'unknown')}</div>
+        <div class="state"><b>${esc(m.title || m.state)}</b>${m.detail ? ' — ' + esc(m.detail) : ''}</div>
+        ${m.fix ? `<div class="fix">${esc(m.fix)}</div>` : ''}
+        <div class="ports">wda :${m.wda_port} · mjpeg :${m.mjpeg_port}</div>
+        <div class="row">
+          ${up
+            ? `<button data-act="disconnect" data-udid="${esc(m.udid)}" ${working?'disabled':''}>Disconnect</button>
+               <button data-act="relaunch" data-udid="${esc(m.udid)}" ${working?'disabled':''}>Relaunch</button>`
+            : `<button class="primary" data-act="connect" data-udid="${esc(m.udid)}" ${working||!m.connected?'disabled':''}>${working?'Connecting…':'Connect'}</button>`}
+        </div>
+      </div>`;
+    GRID.appendChild(card);
+  }
+}
+
+function placeholder(m){
+  if (m.state === 'absent') return 'not on the cable and not on this network';
+  if (m.state === 'standby') return 'plugged in — press Connect to bring it up';
+  if (m.state === 'idle') return 'a bridge was started for this phone but it is not answering';
+  return m.title || 'no screen';
+}
+
+// Refresh only the images, so a slow phone cannot blank the whole grid.
+function refreshStills(){
+  for (const img of GRID.querySelectorAll('img[data-udid]')){
+    const next = new Image();
+    next.onload = () => { img.src = next.src; };
+    next.src = `/api/farm/screenshot?udid=${encodeURIComponent(img.dataset.udid)}&t=${Date.now()}`;
+  }
+}
+
+function showEvents(title, events){
+  EVENTS.classList.add('on');
+  EVENTS.querySelector('h4 span').textContent = title;
+  EVLIST.innerHTML = events.map(e =>
+    `<div class="ev ${e.ok ? '' : 'bad'}"><b>${esc(e.step || '')}</b> ${esc(e.detail || e.title || '')}${
+      e.fix ? '<br>' + esc(e.fix) : ''}</div>`).join('');
+}
+
+GRID.addEventListener('click', async (ev) => {
+  const button = ev.target.closest('button[data-act]');
+  if (!button) return;
+  const udid = button.dataset.udid;
+  const act = button.dataset.act;
+  busy.add(udid); render();
+  try {
+    if (act === 'disconnect'){
+      await fetch('/api/farm/disconnect', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({udid})});
+    } else {
+      const res = await (await fetch('/api/farm/connect', {method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({udid, relaunch: act === 'relaunch'})})).json();
+      showEvents(res.ok ? 'brought up' : 'could not bring it up', res.events || [
+        {step:'error', ok:false, detail: res.error || 'no events'}]);
+    }
+  } catch (e) {
+    showEvents('could not reach the helper', [{step:'helper', ok:false, detail:String(e)}]);
+  } finally {
+    busy.delete(udid);
+    await load(true);
+  }
+});
+
+document.getElementById('refresh').onclick = () => load(true);
+document.getElementById('closeev').onclick = () => EVENTS.classList.remove('on');
+
+load(true);
+setInterval(() => load(false), 6000);
+setInterval(refreshStills, STILL_MS);
+</script>
+</body>
+</html>

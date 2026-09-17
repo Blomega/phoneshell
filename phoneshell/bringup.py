@@ -94,6 +94,51 @@ def scan() -> list[Candidate]:
     return sorted(found.values(), key=lambda c: (not c.configured, c.source != "usbmux", c.name))
 
 
+# iOS can take a runner's permission to drive the screen away while the runner
+# itself keeps running: holding both volume buttons (the gesture the "Automation
+# Running" banner offers) does it, and so, sometimes, does a lock. /status still
+# answers, so a check that stops there calls the phone ready while every
+# screenshot fails with XCTDaemonErrorDomain Code=41 and the live view is black.
+# Only a real UI call tells the two apart. A pass is cached briefly (one
+# screenshot per health poll is waste); a failure never is, so a relaunch shows.
+# Written by Bridge.park() when the automation is turned off ON PURPOSE (a scan
+# finished, or Disconnect). While it exists, "WDA is not answering" is the state
+# someone asked for, not a fault, and heal() does not start it again.
+PARKED = LOGS.parent / "automation-off"
+
+
+def _parked_state(name: str) -> dict:
+    return {
+        "state": "parked", "ok": False,
+        "title": "Automation is off",
+        "detail": f"It was turned off when the last scan finished, so {name} is yours again and "
+                  f"the Automation Running banner is gone.",
+        "fix": "Press Start for another scan; it is turned back on first.",
+        "action": "",
+    }
+
+
+_UNAUTHORIZED = "Not authorized for performing UI testing"
+_AUTH_OK: dict[str, float] = {}
+_RESTARTING = ("WebDriverAgent is answering, but iOS has taken away its permission to drive the "
+               "screen, so I am restarting it")
+
+
+def ui_authorized(client: WDAClient, max_age: float = 10.0) -> bool:
+    url = str(getattr(client, "base_url", ""))
+    if _AUTH_OK.get(url, 0.0) > time.time() - max_age:
+        return True
+    try:
+        client.screenshot()
+    except WDAError as exc:
+        if _UNAUTHORIZED in str(exc):
+            _AUTH_OK.pop(url, None)
+            return False
+        return True              # some other failure: not this one, and not ours to name
+    _AUTH_OK[url] = time.time()
+    return True
+
+
 def diagnose(bridge: "Bridge | None" = None) -> dict:
     """One sentence about why the phone is not usable, and what to do about it.
 
@@ -113,8 +158,14 @@ def diagnose(bridge: "Bridge | None" = None) -> dict:
       WDA fine, phone locked    -> iOS refuses to launch apps from the lock
                                    screen, and every launch fails with an
                                    unhelpful error until it is unlocked.
+      WDA fine, UI taken away   -> the runner answers but may not touch or
+                                   see the screen (see ui_authorized). Relaunch.
+
+    Diagnoses the bridge's OWN phone when given one, so a farm can ask the same
+    question of each device and get an answer about that device rather than
+    about whichever one the config file happens to name.
     """
-    cfg = Config.load()
+    cfg = bridge._cfg() if bridge is not None else Config.load()
     want = cfg.device.udid
     seen = scan()
     # usbmux is the authority on "is it on the cable". CoreDevice keeps reporting
@@ -179,6 +230,8 @@ def diagnose(bridge: "Bridge | None" = None) -> dict:
     except OSError:
         pass
 
+    if not port_open and PARKED.exists():
+        return _parked_state(chosen.name)
     if not port_open:
         return {
             "state": "no_tunnel", "ok": False,
@@ -193,6 +246,8 @@ def diagnose(bridge: "Bridge | None" = None) -> dict:
     try:
         status = client.status()
     except WDAError as exc:
+        if PARKED.exists():
+            return _parked_state(chosen.name)
         text = str(exc)
         # An iproxy from a previous helper outlives it, keeps the port, accepts
         # the connection and resets it. The port looks open and nothing is behind
@@ -228,6 +283,18 @@ def diagnose(bridge: "Bridge | None" = None) -> dict:
     except WDAError:
         pass
 
+    if not ui_authorized(client):
+        return {
+            "state": "not_authorized", "ok": False,
+            "title": "The phone took control back from the automation",
+            "detail": "The runner on the phone is still running, but iOS has taken away its "
+                      "permission to see and touch the screen, so the live view is black and a "
+                      "scan could not take a single screenshot. Holding both volume buttons does "
+                      "this, and so, sometimes, does the phone locking.",
+            "fix": "Press Relaunch. It restarts the runner and the picture comes back.",
+            "action": "relaunch",
+        }
+
     return {
         "state": "ready", "ok": True,
         "title": f"{status.get('device') or chosen.name} is ready",
@@ -262,13 +329,21 @@ def checks_for(udid: str | None) -> list[dict]:
 class Bridge:
     """The live connection to one phone, owned by this process.
 
-    One instance per server. `connect` is idempotent: if WDA already answers, it
-    adopts the existing bridge (started by a terminal `phoneshell up`, say) rather
-    than fighting it, and says so.
+    `connect` is idempotent: if WDA already answers, it adopts the existing
+    bridge (started by a terminal `phoneshell up`, say) rather than fighting it,
+    and says so.
+
+    A bridge can be handed its own `Config` instead of reading the one on disk.
+    That is what lets more than one exist at a time: each phone in a farm gets a
+    config carrying its own udid and its own pair of ports, and nothing in here
+    has to know whether it is the only phone on the desk or the fourth of six.
+    With no config passed the behaviour is exactly what it was, which is what
+    keeps the single-phone path honest.
     """
 
-    def __init__(self) -> None:
-        self.udid: str | None = None
+    def __init__(self, cfg: Config | None = None) -> None:
+        self._cfg_override = cfg
+        self.udid: str | None = cfg.device.udid if cfg else None
         self.forward: dev.PortForward | None = None
         self.held: subprocess.Popen | None = None      # tethered launcher, if we needed one
         self.adopted = False                            # someone else's bridge
@@ -278,10 +353,14 @@ class Bridge:
         self.last_error: str = ""
         self.started_at: float = 0.0
 
+    def _cfg(self) -> Config:
+        """This bridge's config: its own if it was given one, else the shared one."""
+        return self._cfg_override or Config.load()
+
     # ------------------------------------------------------------------ state
 
     def alive(self) -> bool:
-        cfg = Config.load()
+        cfg = self._cfg()
         try:
             return WDAClient(base_url=cfg.wda_base_url, timeout=4).is_alive()
         except Exception:
@@ -311,19 +390,24 @@ class Bridge:
         Silent on purpose when there is nothing to do, and it never fights a
         healthy bridge: `connect` adopts one that already answers.
         """
+        if PARKED.exists():                            # off on purpose: stays off
+            return []
         try:
             state = diagnose(self)
         except Exception as exc:                       # never block startup
             log.debug("heal: diagnose failed: %s", exc)
             return []
-        if state["state"] in {"ready", "no_device", "wrong_device", "locked"}:
+        # not_authorized is left alone: it was not caused by a helper restart, and
+        # it is usually someone holding the volume buttons to stop the automation.
+        if state["state"] in {"ready", "no_device", "wrong_device", "locked", "not_authorized"}:
             return [state]
         log.info("healing the bridge: %s", state["title"])
-        return list(self.connect(Config.load().device.udid))
+        return list(self.connect(self._cfg().device.udid, restart_unauthorized=False))
 
     # ---------------------------------------------------------------- connect
 
-    def connect(self, udid: str | None = None, relaunch: bool = False) -> Iterator[dict]:
+    def connect(self, udid: str | None = None, relaunch: bool = False,
+                restart_unauthorized: bool = True) -> Iterator[dict]:
         """Walk the ladder, yielding one event per rung so the page can show it.
 
         Generator rather than a function with a callback because the whole point
@@ -331,17 +415,25 @@ class Bridge:
         and says nothing is the thing this replaces.
         """
         with self._lock:
-            cfg = Config.load()
+            cfg = self._cfg()
             self.last_error = ""
+            PARKED.unlink(missing_ok=True)             # asked for it back on
 
             if not relaunch and self.alive():
-                self.adopted = self.forward is None and self.held is None
-                self.udid = udid or cfg.device.udid or self.udid
-                self.started_at = self.started_at or time.time()
-                yield _ev("wda", True, "WebDriverAgent is already answering"
-                          + (" (bridge started outside this app)" if self.adopted else ""))
-                yield from self._finish(cfg)
-                return
+                # Answering is not the same as usable: pressing Connect on a runner
+                # iOS has taken the screen away from used to adopt it as it was,
+                # leaving the phone black however many times you pressed.
+                if not restart_unauthorized or ui_authorized(
+                        WDAClient(base_url=cfg.wda_base_url, timeout=8), max_age=0):
+                    self.adopted = self.forward is None and self.held is None
+                    self.udid = udid or cfg.device.udid or self.udid
+                    self.started_at = self.started_at or time.time()
+                    yield _ev("wda", True, "WebDriverAgent is already answering"
+                              + (" (bridge started outside this app)" if self.adopted else ""))
+                    yield from self._finish(cfg)
+                    return
+                yield _ev("wda", True, _RESTARTING)
+                relaunch = True
 
             check = dev.device_check(udid or cfg.device.udid or None)
             yield _ev("device", check.ok, check.detail, check.fix)
@@ -393,7 +485,11 @@ class Bridge:
                 return
 
             client = WDAClient(base_url=cfg.wda_base_url, timeout=10)
-            if relaunch or not client.is_alive():
+            alive = client.is_alive()
+            if alive and restart_unauthorized and not ui_authorized(client, max_age=0):
+                yield _ev("wda", True, _RESTARTING)
+                relaunch = True
+            if relaunch or not alive:
                 # Terminate before launching. A launch onto a live process is a
                 # no-op that reports success (FINDINGS s29), which is how a wedged
                 # runner survives twenty minutes of "relaunching".
@@ -560,7 +656,7 @@ class Bridge:
         loop: if two launches do not fix it, the fault is the HID layer or the
         cable and only a human can clear it.
         """
-        cfg = Config.load()
+        cfg = self._cfg()
         client = WDAClient(base_url=cfg.wda_base_url, timeout=6)
         misses = 0
         relaunches = 0
@@ -605,6 +701,30 @@ class Bridge:
         if stop_runner and self.udid and not self.adopted:
             dev.terminate_runner(self.udid)
         self.started_at = 0.0
+        return self.state()
+
+    def park(self) -> dict:
+        """Turn the automation off on the phone, on purpose, and remember that.
+
+        A finished scan used to leave the runner up and idle, with iOS's
+        "Automation Running" banner across the phone and nothing moving under it.
+        Now the phone is handed back. Unlike disconnect(), this stops the runner
+        even if this process adopted it: turning it off is the point. The marker
+        keeps heal() from starting it again after a helper restart; connect()
+        removes it.
+        """
+        udid = self.udid or self._cfg().device.udid
+        self._stop.set()                               # or the supervisor relaunches it
+        if self.held is not None and self.held.poll() is None:
+            self.held.terminate()
+            self.held = None
+        if udid:
+            dev.terminate_runner(udid)
+        if self.forward:
+            self.forward.stop()
+            self.forward = None
+        self.started_at = 0.0
+        PARKED.write_text(str(time.time()))
         return self.state()
 
 
