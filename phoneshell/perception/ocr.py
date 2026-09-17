@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import io
 import re
+from dataclasses import dataclass
 from functools import lru_cache
 
 from PIL import Image
@@ -30,10 +31,21 @@ _WORD = re.compile(r"[a-z0-9]+")
 _STOP = {"the", "a", "an", "to", "of", "and", "or", "in", "on", "for", "is", "it", "your", "you"}
 
 
-def _cgimage(img: Image.Image):
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    raw = buf.getvalue()
+def _cgimage(img: Image.Image | bytes):
+    """A CGImage, re-encoding only when we are not already holding bytes.
+
+    Worth stating because it was measured: encoding a 1320x2868 PIL image to PNG
+    so Quartz can decode it again costs 105ms, which was 47% of the whole OCR
+    call. The screenshot arrives from WebDriverAgent as PNG bytes in the first
+    place, so callers that still have them should pass them straight through --
+    CGImageSource decodes lazily and the same step then costs nothing.
+    """
+    if isinstance(img, (bytes, bytearray)):
+        raw = bytes(img)
+    else:
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        raw = buf.getvalue()
     data = NSData.dataWithBytes_length_(raw, len(raw))
     source = Quartz.CGImageSourceCreateWithData(data, None)
     if source is None:
@@ -65,6 +77,83 @@ def read_text(img: Image.Image, fast: bool = True) -> list[str]:
         if candidates and len(candidates):
             found.append(str(candidates[0].string()))
     return found
+
+
+@dataclass
+class TextBox:
+    """One line Vision read, with where it sits in the image, in pixels."""
+    text: str
+    x: float
+    y: float
+    w: float
+    h: float
+    confidence: float
+
+    @property
+    def cx(self) -> float:
+        return self.x + self.w / 2
+
+    @property
+    def cy(self) -> float:
+        return self.y + self.h / 2
+
+
+def read_boxes(img: Image.Image | bytes, fast: bool = False,
+               min_confidence: float = 0.3) -> list[TextBox]:
+    """Every line Vision can find, with its rectangle.
+
+    `read_text` throws the geometry away because the consistency gate only ever
+    asks "is this string here". Blind mode needs the opposite: the rectangle IS
+    the answer, because a line of text nobody exposed in the tree is still a
+    thing a finger can hit.
+
+    Accurate recognition rather than fast, because this runs once per screen for
+    a tap target rather than once per element for a yes/no, and fast mode drops
+    short strings like "OK" often enough to matter.
+    """
+    if not AVAILABLE:
+        return []
+    cg = _cgimage(img)
+    if cg is None:
+        return []
+    width = float(Quartz.CGImageGetWidth(cg))
+    height = float(Quartz.CGImageGetHeight(cg))
+    if width < 1 or height < 1:
+        return []
+    handler = Vision.VNImageRequestHandler.alloc().initWithCGImage_options_(cg, None)
+    request = Vision.VNRecognizeTextRequest.alloc().init()
+    request.setRecognitionLevel_(1 if fast else 0)
+    request.setUsesLanguageCorrection_(False)
+    ok, _err = handler.performRequests_error_([request], None)
+    if not ok:
+        return []
+    out: list[TextBox] = []
+    for observation in request.results() or []:
+        candidates = observation.topCandidates_(1)
+        if not candidates or not len(candidates):
+            continue
+        best = candidates[0]
+        confidence = float(best.confidence())
+        if confidence < min_confidence:
+            continue
+        text = str(best.string()).strip()
+        if not text:
+            continue
+        # Vision's boundingBox is normalised with the origin at the BOTTOM left.
+        # Everything else in this codebase is top-left, so flip y here once
+        # rather than in every caller.
+        box = observation.boundingBox()
+        ox, oy = float(box.origin.x), float(box.origin.y)
+        bw, bh = float(box.size.width), float(box.size.height)
+        out.append(TextBox(
+            text=text,
+            x=ox * width,
+            y=(1.0 - oy - bh) * height,
+            w=bw * width,
+            h=bh * height,
+            confidence=confidence,
+        ))
+    return out
 
 
 def tokens(text: str) -> set[str]:

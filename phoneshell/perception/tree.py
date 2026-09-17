@@ -82,6 +82,11 @@ class Element:
     depth: int = 0
     path: tuple[int, ...] = ()
     children_text: list[str] = field(default_factory=list)
+    # Where this element came from. "tree" is something the app named through
+    # the accessibility API and is therefore true; anything else was inferred
+    # from pixels and is a guess, with `confidence` saying how good a one.
+    source: str = "tree"
+    confidence: float = 1.0
 
     @property
     def cx(self) -> float:

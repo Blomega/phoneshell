@@ -167,6 +167,27 @@ class MemoryConfig:
 
 
 @dataclass
+class BlindConfig:
+    """Reading a screen from its pixels when the app names nothing.
+
+    Off would mean an app that exposes no accessibility tree is simply
+    undriveable, which is the largest gap this project documents. On costs about
+    135ms, and only on the screens that need it: a screen whose tree is healthy
+    never pays for this.
+    """
+    enabled: bool = True
+    # Text is reliable, glyph shapes are a decent guess, and a bare blob says
+    # only "something is drawn here". Each can be turned off on its own.
+    text: bool = True
+    icons: bool = True
+    shapes: bool = True
+    # Unidentified blobs are much the noisiest source: they say only "something
+    # is drawn here", and on any screen with artwork on it there is a lot drawn.
+    # Capped low so they can supplement the list without burying it.
+    max_shapes: int = 8
+
+
+@dataclass
 class BrainConfig:
     """Which LLM drives the loop."""
     provider: str = "claude-cli"  # "claude-cli" (uses the local subscription) | "anthropic-api"
@@ -202,6 +223,7 @@ class Config:
     device: DeviceConfig = field(default_factory=DeviceConfig)
     safety: SafetyConfig = field(default_factory=SafetyConfig)
     brain: BrainConfig = field(default_factory=BrainConfig)
+    blind: BlindConfig = field(default_factory=BlindConfig)
     server_host: str = "127.0.0.1"
     server_port: int = 8765
 

@@ -66,6 +66,11 @@ class Observation:
 
 def _flags(e: Element) -> str:
     flags = []
+    # Say where the row came from. A model that cannot tell a control the app
+    # declared from one this harness guessed at will treat both as certain, and
+    # the guessed one is the whole reason the consistency gate exists.
+    if e.source == "pixel":
+        flags.append(f"pixel:{e.confidence:.2f}")
     if e.is_input:
         flags.append("input")
     if e.focused:
@@ -105,10 +110,27 @@ def needs_som(elements: list[Element], screen_w: float, screen_h: float) -> tupl
         (e for e in elements if e.type in OPAQUE_TYPES and e.area > screen_area * 0.4),
         None,
     )
-    if big_opaque is not None and len(actionable) < 5:
+    if big_opaque is None:
+        return False, ""
+    # Count what the tree exposes INSIDE the opaque view, not on the whole
+    # screen, and decide "inside" by tree descent rather than by rectangle.
+    #
+    # Measured on Safari at bruno-simon.com: eleven nodes, ten of them Safari's
+    # own toolbar and the eleventh a single 440x956 WebView holding the entire
+    # page. Counting controls screen-wide says "ten, this is fine" and hands the
+    # agent a browser it can drive and a page it cannot see. Counting by
+    # rectangle says the same, because the WebView's rect covers the toolbars
+    # too. Only the path separates them: the toolbar is a sibling of the
+    # WebView, and exactly two nodes are its descendants.
+    prefix = big_opaque.path
+    inside = [
+        e for e in actionable
+        if e is not big_opaque and prefix and e.path[:len(prefix)] == prefix
+    ]
+    if len(inside) < 5:
         return True, (
             f"a {big_opaque.type} covers most of the screen and the tree exposes only "
-            f"{len(actionable)} controls, so the screenshot carries numbered boxes"
+            f"{len(inside)} controls inside it, so the screenshot carries numbered boxes"
         )
     return False, ""
 
@@ -127,10 +149,31 @@ def build(
     max_edge: int = 512,
     force_som: bool = False,
     include_image: bool = True,
+    blind: "BlindConfig | None" = None,
 ) -> Observation:
     t0 = time.time()
     som, som_reason = needs_som(elements, screen_w, screen_h)
     som = som or force_som
+
+    # The tree being too thin to trust is exactly the condition that makes
+    # numbered boxes necessary, and it is exactly the condition blind mode
+    # exists for. Recover the targets first, so the boxes get drawn over them
+    # too -- numbering one opaque WebView helps nobody.
+    recovery = None
+    if som and png is not None and blind is not None and blind.enabled:
+        from ..perception import blind as _blind
+        try:
+            recovery = _blind.recover(
+                png, elements, scale,
+                want_text=blind.text, want_icons=blind.icons,
+                want_shapes=blind.shapes, shape_limit=blind.max_shapes,
+            )
+        except Exception:  # perception must degrade, never fail the step
+            recovery = None
+        if recovery is not None and recovery.elements:
+            named = len(elements)
+            elements = elements + recovery.elements
+            som_reason = _blind.describe(recovery, named)
     image_b64 = None
     image_size = None
     if png and include_image:
