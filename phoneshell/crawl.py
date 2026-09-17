@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import json
 import logging
+import shutil
 import threading
 import time
 from dataclasses import dataclass, field, asdict
@@ -189,6 +190,9 @@ class Plan:
     cautious: bool = True
     full_res: bool = True
     label: str = ""
+    # Carry on from every earlier scan of this app: keep what they collected, never
+    # tap a control they already tapped, and only walk back to unfinished screens.
+    resume: bool = False
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -263,6 +267,8 @@ class Crawler:
         self._asked_about: dict[str, bool] = {}        # one login question per app
         self._app_started = 0.0
         self._app_screens = 0
+        self.seeded = 0                               # screens carried over from earlier scans
+        self._backless: set[str] = set()              # layouts where back never works
 
     # ------------------------------------------------------------------ events
 
@@ -410,9 +416,12 @@ class Crawler:
         knowledge reaches the person using AppScan, so it goes here and not into
         a log file.
         """
+        carried = summary.get("carried_over", 0)
         out = [
-            f"**Done.** {summary['screens']} screens, {summary['shots']} screenshots, "
-            f"{summary['taps']} taps, {summary['seconds']:.0f}s. "
+            f"**Done.** {summary['screens']} screens"
+            + (f" in all: {summary['screens'] - carried} new this time, {carried} kept from earlier "
+               f"scans" if carried else "")
+            + f". {summary['taps']} taps, {summary['seconds']:.0f}s. "
             f"Stopped because {summary['reason']}."
         ]
         recovery = summary.get("relaunches", 0) + summary.get("tapbacks", 0)
@@ -571,6 +580,7 @@ class Crawler:
         except WDAError as exc:
             log.debug("terminate %s before crawling: %s", bundle, exc)
         name = self.phone.name_for_bundle(bundle) or target
+        todo = self._seed(bundle, name) if self.plan.resume and self.plan.scope == "app" else []
         self.say(f"Opening {name}.")
         before = self.phone.wda.screenshot()
         res = self.phone.open_app(target)
@@ -600,13 +610,112 @@ class Crawler:
         self._app_root = root
         self._ask_for_help_if_walled(snap, name)
         try:
-            self._explore(root)
+            self._explore(root, todo)
         except Lost as exc:
             self.emit("lost", screen=root.sid, reason=str(exc))
 
+    # ---------------------------------------------------------------- carry on
+
+    def _seed(self, bundle: str, name: str) -> list[Screen]:
+        """Carry on from every earlier scan of this app instead of starting over.
+
+        Their screens, screenshots and edges are copied into this run, renumbered
+        so two scans' s001 do not collide and de-duplicated by content, so this
+        folder is the whole collection and no screen is collected twice. Every
+        control an earlier scan tapped (or refused) is marked tried and is not
+        tapped again. Returned: the screens that still have untried controls, the
+        only ones worth walking back to.
+        """
+        wanted = {bundle, self.plan.app}
+        earlier = sorted(r["run"] for r in list_runs()
+                         if (r.get("plan") or {}).get("app") in wanted and r["run"] != self.out.name)
+        for run in earlier:
+            src = CRAWLS / run
+            try:
+                old = json.loads((src / "manifest.json").read_text())
+            except (OSError, json.JSONDecodeError) as exc:
+                log.warning("carry on: cannot read %s: %s", run, exc)
+                continue
+            sids: dict[str, str] = {}
+            for s in old.get("screens", []):
+                # Earlier scans hold one live screen many times over (11 copies of
+                # "Calculating your library" at different percentages): fold them.
+                known = self.screens.get(s.get("textual", "")) or next(
+                    (x for x in self.screens.values()
+                     if _alike(s.get("bundle_id", ""), s.get("title", ""),
+                               {c.get("key") for c in s.get("controls") or []}, x)), None)
+                if known is not None:
+                    sids[s["sid"]] = known.sid
+                    continue
+                sid = f"s{len(self.screens) + 1:03d}"
+                sids[s["sid"]] = sid
+                shots = [self._adopt_shot(src, rel, sid if i == 0 else f"{sid}-v{i}")
+                         for i, rel in enumerate(s.get("shots") or [])]
+                fields = {k: v for k, v in s.items() if k in Screen.__dataclass_fields__}
+                screen = Screen(**{**fields, "sid": sid, "shots": [p for p in shots if p]})
+                self.screens[screen.textual] = screen
+                self.by_sid[sid] = screen
+            for e in old.get("edges", []):
+                frm = sids.get(e.get("frm", ""))
+                if frm is None:
+                    continue
+                to = sids.get(e.get("to", ""), "")
+                if e.get("kind") == "crossing":
+                    to = self._adopt_shot(src, e.get("to", ""), f"{frm}-out")
+                self.edges.append(Edge(frm, to, e.get("label", ""), e.get("key", ""), e.get("kind", "tap")))
+                self.tried.add((self.by_sid[frm].structural, e.get("key", "")))
+            seen = {(k.get("screen"), k.get("what")) for k in self.skipped}
+            for k in old.get("skipped", []):
+                k = {**k, "screen": sids.get(k.get("screen", ""), k.get("screen", ""))}
+                if (k.get("screen"), k.get("what")) not in seen:
+                    self.skipped.append(k)
+                    seen.add((k.get("screen"), k.get("what")))
+        if not self.screens:
+            return []
+        # A refused control would be refused again for the same reason: skip the look.
+        for screen in self.screens.values():
+            for c in screen.controls:
+                if c.get("skip"):
+                    self.tried.add((screen.structural, c.get("key", "")))
+        todo: list[Screen] = []
+        layouts: dict[str, int] = {}
+        for screen in sorted(self.screens.values(), key=lambda s: (s.depth, s.sid)):
+            n = layouts.get(screen.structural, 0)
+            layouts[screen.structural] = n + 1
+            if screen.depth >= self.plan.max_depth or n >= self.plan.variant_cap:
+                continue
+            if any((screen.structural, c.get("key", "")) not in self.tried for c in screen.controls):
+                todo.append(screen)
+        self.variants = {k: min(v, self.plan.variant_cap) for k, v in layouts.items()}
+        self.seeded = len(self.screens)
+        for screen in sorted(self.screens.values(), key=lambda s: s.sid):
+            self.emit("screen", **screen.as_dict(), shot=screen.shots[0] if screen.shots else "",
+                      carried=True, total=len(self.screens))
+        scans = f"{len(earlier)} earlier scan" + ("s" if len(earlier) != 1 else "")
+        self.say(f"Carrying on from {scans} of {name}: **{self.seeded} screens** are already "
+                 f"collected, so I will not take those again. " + (
+                     f"{len(todo)} of them still have controls nobody has tried, and those are "
+                     f"the only ones I will walk back to." if todo else
+                     "Every control on them has been tried, so I will only look for anything new "
+                     "on the first screen."))
+        return todo
+
+    def _adopt_shot(self, src: Path, rel: str, tag: str) -> str:
+        """Copy one screenshot, and its thumbnail, in from an earlier run, renamed."""
+        png = src / rel if rel else None
+        if png is None or not png.is_file():
+            return ""
+        self.shot_count += 1
+        name = f"{self.shot_count:04d}-{tag}.png"
+        shutil.copy2(png, self.shots_dir / name)
+        thumb = src / rel.replace("shots/", "thumbs/", 1).replace(".png", ".jpg")
+        if thumb.is_file():
+            shutil.copy2(thumb, self.thumbs_dir / name.replace(".png", ".jpg"))
+        return f"shots/{name}"
+
     # ------------------------------------------------------------- traversal
 
-    def _explore(self, root: Screen) -> None:
+    def _explore(self, root: Screen, carried: Iterable[Screen] = ()) -> None:
         """Breadth-first from the app's first screen.
 
         Breadth, not depth, and the reason is what the collection is FOR. A
@@ -621,7 +730,9 @@ class Crawler:
         right trade at these depths, and `_goto` takes the cheap route when the
         cheap route is available.
         """
-        frontier: list[Screen] = [root]
+        # Carried-over screens with untried controls queue behind the root: a
+        # screen seen before is never re-queued by a revisit (visits > 1).
+        frontier: list[Screen] = [root] + [s for s in carried if s is not root]
         while frontier:
             self._check_budget()
             spent = self._app_budget_spent()
@@ -750,6 +861,15 @@ class Crawler:
             return None
         self._dead_taps = 0
 
+        # Still the same screen: its contents moved on their own (Talika's
+        # "Calculating your library" ring ticks up every second). Recording that as
+        # a new screen, then relaunching the app to get "back" to the screen the
+        # crawl never left, was 12 relaunches in two minutes of one scan.
+        if self._same_screen(snap, screen):
+            self.edges.append(Edge(screen.sid, screen.sid, label, key, "no-op"))
+            self.emit("noop", screen=screen.sid, control=label, moved=round(moved, 4), live=True)
+            return None
+
         child = self._record(snap, parent=screen, via={"label": label, "key": key}, depth=screen.depth + 1)
         if child is None:
             self._return_to(screen, scrolls)
@@ -797,6 +917,12 @@ class Crawler:
         textual = snap.signature
         structural = fingerprint(snap.bundle_id, snap.elements)
         known = self.screens.get(textual)
+        if known is None:
+            # A live screen never reads the same twice, so match it by what it is.
+            title = self._title(snap.elements)
+            keys = {control_key(c) for c in self._controls(snap)}
+            known = next((s for s in self.screens.values()
+                          if _alike(snap.bundle_id or "", title, keys, s)), None)
         if known is not None:
             known.visits += 1
             self.emit("revisit", screen=known.sid, visits=known.visits)
@@ -856,11 +982,12 @@ class Crawler:
         if self.plan.full_res:
             (self.shots_dir / name).write_bytes(png)
         # A thumbnail as well as the full frame: the gallery loads 200 of these and
-        # a page of 200 full-resolution PNGs is 300 MB of decode.
+        # a page of 200 full-resolution PNGs is 300 MB of decode. 960 tall, because
+        # a gallery card is ~220px wide on a 2x screen and 420 was visibly soft there.
         try:
-            thumb = downscale(load_image(png), max_edge=420)
+            thumb = downscale(load_image(png), max_edge=960)
             thumb.convert("RGB").save(self.thumbs_dir / name.replace(".png", ".jpg"),
-                                      "JPEG", quality=72, optimize=True)
+                                      "JPEG", quality=82, optimize=True)
         except Exception as exc:            # a thumbnail is never worth failing a run
             log.debug("thumbnail failed: %s", exc)
         return f"shots/{name}"
@@ -1166,13 +1293,20 @@ class Crawler:
             if scrolls:
                 self._rescroll(scrolls)
             return
-        for attempt in range(2):
-            self._back_conservatively()
-            if self._at(screen):
-                if scrolls:
-                    self._rescroll(scrolls)
-                return
-            self.emit("back_missed", screen=screen.sid, attempt=attempt + 1)
+        # A layout that ignored two back attempts ignores them every time (Talika's
+        # library flow: 26 misses in one run, ~4s each), so it is remembered and
+        # the crawl goes straight to the routes that do work there.
+        here = self._layout_here()
+        if here not in self._backless:
+            for attempt in range(2):
+                self._back_conservatively()
+                if self._at(screen):
+                    if scrolls:
+                        self._rescroll(scrolls)
+                    return
+                self.emit("back_missed", screen=screen.sid, attempt=attempt + 1)
+            if here:
+                self._backless.add(here)
         if self._tap_way_back(screen):
             if scrolls:
                 self._rescroll(scrolls)
@@ -1180,6 +1314,17 @@ class Crawler:
         self._replay(screen)
         if scrolls:
             self._rescroll(scrolls)
+
+    def _same_screen(self, snap: Snapshot, screen: Screen) -> bool:
+        return _alike(snap.bundle_id or "", self._title(snap.elements),
+                      {control_key(c) for c in self._controls(snap)}, screen)
+
+    def _layout_here(self) -> str:
+        try:
+            snap = self.phone.snapshot(with_screenshot=False, stable=False)
+        except WDAError:
+            return ""
+        return fingerprint(snap.bundle_id, snap.elements)
 
     def _back_conservatively(self) -> None:
         """Prefer the nav bar's own back, then Cancel/Close, then the edge swipe.
@@ -1286,7 +1431,15 @@ class Crawler:
         """Home, relaunch, and tap the recorded path again, verifying as we go."""
         self.relaunches += 1
         self.emit("replay", screen=screen.sid, depth=len(screen.path))
-        self.say(f"Lost my place, so I am restarting the app and walking back to {screen.title or screen.sid}.")
+        # From the phone this looks exactly like the app crashing. Say what it is
+        # once, then only count: twelve identical sentences explained nothing.
+        if self.relaunches == 1:
+            self.say(f"The screen I was on has no Back button that works, so to get back to "
+                     f"{screen.title or screen.sid} I close the app and open it again. When you see "
+                     f"it vanish and reopen, that is me, not a crash.")
+        elif self.relaunches % 5 == 0:
+            self.say(f"Closed and reopened the app {self.relaunches} times so far, to get back "
+                     f"from screens that have no Back button.")
         self._recover_to_root()
         for step in screen.path:
             target = self._find_control(step["key"])
@@ -1413,6 +1566,7 @@ class Crawler:
             "relaunches": self.relaunches,
             "tapbacks": self.tapbacks,
             "crossings": self.crossings,
+            "carried_over": self.seeded,
             "reason": self.stop_reason or "the crawl ran out of new screens",
         }
         manifest = {
@@ -1507,6 +1661,55 @@ def write_gallery(out: Path, manifest: dict) -> Path:
     return path
 
 
+def shot_filenames(out: Path) -> dict[str, str]:
+    """A readable name for every screenshot in a run, keyed by its path in the run.
+
+    On disk a shot is `0007-s007.png`, which records the order it was taken in and
+    nothing else. Downloaded, it is `s007-explore.png`: which screen, and what it
+    is. A run still in progress has no manifest yet, so its shots keep disk names.
+    """
+    try:
+        screens = json.loads((out / "manifest.json").read_text()).get("screens", [])
+    except (OSError, json.JSONDecodeError):
+        screens = []
+    names: dict[str, str] = {}
+    for s in screens:
+        base = "-".join(p for p in (s.get("sid", ""), _slug(s.get("title") or "")) if p) or "screen"
+        for i, shot in enumerate(s.get("shots") or []):
+            names[shot] = f"{base}-scroll{i}.png" if i else f"{base}.png"
+    for path in sorted((out / "shots").glob("*.png")):
+        names.setdefault(f"shots/{path.name}", path.name)
+    # Crossings and alerts are not screens and keep their disk names, and a name
+    # is only as good as its uniqueness inside one zip, so settle that here.
+    seen: set[str] = set()
+    for key, name in names.items():
+        stem, n = name[:-4], 2
+        while name in seen:
+            name, n = f"{stem}-{n}.png", n + 1
+        names[key] = name
+        seen.add(name)
+    return names
+
+
+def _slug(text: str, limit: int = 40) -> str:
+    words = "".join(c if c.isalnum() else " " for c in str(text).lower()).split()
+    return "-".join(words)[:limit].strip("-")
+
+
+def _alike(bundle: str, title: str, keys: set, other: Screen) -> bool:
+    """Same app, same title, most of the same controls: the same screen.
+
+    For screens whose contents never hold still. A progress ring or a counter
+    changes the content signature on every read, and the layout fingerprint too
+    (element labels are part of it), so neither can say "this again". The title
+    and the controls around the moving part do not move.
+    """
+    if not title or bundle != other.bundle_id or title != other.title:
+        return False
+    want = {c.get("key") for c in other.controls}
+    return bool(want and keys) and len(want & keys) / len(want) >= 0.7
+
+
 def _words(text: str) -> str:
     """A control's label, normalised for whole-label matching."""
     return " ".join(str(text or "").lower().replace("\u2019", "'").split()).strip(" .…›>")
@@ -1551,8 +1754,36 @@ def list_runs() -> list[dict]:
     return out
 
 
+def earlier_scans(app: str) -> dict:
+    """Finished scans of one app, and how many distinct screens they hold between them.
+
+    Folded exactly the way `Crawler._seed` folds them (oldest run first, same
+    content or `_alike`), so the number the page promises is the number kept.
+    """
+    runs, seen, kept = 0, set(), []
+    fields = Screen.__dataclass_fields__
+    for r in sorted(list_runs(), key=lambda r: r["run"]):
+        if (r.get("plan") or {}).get("app") != app:
+            continue
+        runs += 1
+        try:
+            screens = json.loads((CRAWLS / r["run"] / "manifest.json").read_text()).get("screens", [])
+        except (OSError, json.JSONDecodeError):
+            continue
+        for s in screens:
+            keys = {c.get("key") for c in s.get("controls") or []}
+            if s.get("textual") in seen or any(
+                    _alike(s.get("bundle_id", ""), s.get("title", ""), keys, k) for k in kept):
+                continue
+            seen.add(s.get("textual"))
+            kept.append(Screen(**{k: v for k, v in s.items() if k in fields}))
+    return {"runs": runs, "screens": len(kept)}
+
+
 def plan_from_prompt(prompt: str, cfg: Config | None = None,
-                     catalog: dict[str, str] | None = None) -> tuple[Plan, list[str]]:
+                     catalog: dict[str, str] | None = None,
+                     default_app: tuple[str, str] | None = None,
+                     fresh: bool = False) -> tuple[Plan, list[str]]:
     """Read a plain-language instruction into a Plan, and say what was understood.
 
     Deterministic on purpose. A model could parse this more gracefully, but then
@@ -1591,11 +1822,25 @@ def plan_from_prompt(prompt: str, cfg: Config | None = None,
         plan.app = hit[1]
         plan.label = hit[0]
         notes.append(f"scope: {hit[0]} only ({hit[1]})")
+    elif default_app and default_app[1]:
+        # The app picked in the list. "take the rest and skip what you have" names
+        # no app, and used to become a scan of Settings.
+        plan.scope = "app"
+        plan.app = default_app[1]
+        plan.label = default_app[0] or default_app[1]
+        notes.append(f"scope: {plan.label} only (the app you picked)")
     else:
         plan.scope = "app"
         plan.app = "com.apple.Preferences"
         plan.label = "Settings"
         notes.append("no app named in the prompt, so: Settings. Name an app to crawl that instead.")
+
+    # Carrying on is the default whenever this app has been scanned before: nobody
+    # asks for the same 11 screenshots twice. Starting over has to be said.
+    over = any(w in text for w in ("start over", "from scratch", "fresh", "all again", "rescan",
+                                   "re-scan", "redo"))
+    if plan.scope == "app" and not fresh and not over and earlier_scans(plan.app)["runs"]:
+        plan.resume = True
 
     numbers = [int(t) for t in text.replace(",", " ").split() if t.isdigit()]
     if numbers:
