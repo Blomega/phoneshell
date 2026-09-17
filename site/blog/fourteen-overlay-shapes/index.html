@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fourteen overlay shapes, and the ordered moves that close each one &mdash; Blolabel</title>
+<meta name="description" content="The popup catalogue a phone agent works through, published as data: what each of fourteen overlay shapes looks like in the iOS accessibility tree, the moves that close it in order from safest to most destructive, and the controls that must never be tapped.">
+<link rel="canonical" href="https://blolabel.ai/blog/fourteen-overlay-shapes/">
+<meta property="og:title" content="Fourteen overlay shapes, and the ordered moves that close each one &mdash; Blolabel">
+<meta property="og:description" content="The popup catalogue a phone agent works through, published as data: what each of fourteen overlay shapes looks like in the iOS accessibility tree, the moves that close it in order from safest to most destructive, and the controls that must never be tapped.">
+<meta property="og:url" content="https://blolabel.ai/blog/fourteen-overlay-shapes/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Fourteen overlay shapes, and the ordered moves that close each one","description":"The popup catalogue a phone agent works through, published as data: what each of fourteen overlay shapes looks like in the iOS accessibility tree, the moves that close it in order from safest to most destructive, and the controls that must never be tapped.",
+ "datePublished":"2026-09-17","dateModified":"2026-09-17",
+ "url":"https://blolabel.ai/blog/fourteen-overlay-shapes/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/fourteen-overlay-shapes/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How should a phone agent dismiss a popup or sheet?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "By shape, with an ordered list of moves per shape, most certain and least destructive first. A labelled Not now beats tapping a backdrop, which beats a back swipe that might leave the screen you wanted. Fourteen shapes cover almost everything a consumer iOS app puts in the way."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do you detect a bottom sheet in the iOS accessibility tree?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "By vertical offset, not size. A sheet starts part-way down the screen and reaches the bottom. Picking the largest container selects the app's own full-screen window every time, which is how the iOS share sheet, a Popover with its top edge at y=478, went undetected. The search has to run on the raw tree, because element filters drop unlabelled containers as scaffolding."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can you just tell the model to ignore popups?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "It has been measured and it does not work well. Adversarial popups in OSWorld and VisualWebArena reached an 86% attack success rate and cut task success by 47%, and prompt-level defenses, including instructing the agent to ignore pop-ups, reduced the attack success rate by no more than 25%."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind registry">registry</span>
+    <time datetime="2026-09-17">17 September 2026</time>
+    <span>8 min read</span>
+  </div>
+  <h1>Fourteen overlay shapes, and the ordered moves that close each one</h1>
+  <p class="standfirst">A sheet is recognised by starting part-way down the screen, not by being large, which is why the iOS share sheet at y=478 was invisible to a size-based detector. The reflex lives in the harness because instructing a model to ignore popups has been measured and does not work.</p>
+
+      <p>Almost everything an app puts in front of a phone agent is one of fourteen shapes, and each
+shape has a known way out. This is the catalogue our harness works through, published as data: what
+each overlay looks like in the accessibility tree, the ordered moves that close it, and the two
+things that must never be tapped. The reason it lives in the harness rather than in the prompt is
+that telling a model to ignore popups does not work, and there is a measurement for that.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/fourteen-overlay-shapes-hero.png" alt="Abstract technical illustration of fourteen translucent panels stacked at different depths and offsets in front of a single surface, each with a distinct exit path traced through it" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="evidence">The catalogue</h2>
+
+<p>The ordering inside each row matters: it runs from the move that is most certain and least
+destructive to the one most likely to have a side effect. Tapping a labelled "Not now" beats
+guessing at a backdrop, which beats a back swipe that might also leave the screen you wanted.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>#</th><th>shape</th><th>how it shows up in the tree</th><th>first move</th><th>never</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>bottom sheet with a grabber</td><td>a container starting part-way down and reaching the bottom, with a small wide element roughly 30 to 70 pt by 3 to 8 pt centred at its top</td><td>drag down from the grabber, about 60% of screen height</td><td></td></tr>
+    <tr><td>2</td><td>full-screen modal</td><td>a container covering more than 85% of the screen that was not there a moment ago</td><td>tap the X: <code>xmark</code>, <code>xmark.circle.fill</code>, <code>close</code>, <code>btn_close</code>, <code>ic_close</code></td><td></td></tr>
+    <tr><td>3</td><td>interstitial advert</td><td>a full-screen WebView or Image with no useful labels</td><td>wait 2 to 4 seconds for the close control to exist, then look again</td><td></td></tr>
+    <tr><td>4</td><td>action sheet</td><td>type <code>Sheet</code>, or a bottom-anchored group whose last button is Cancel</td><td>tap Cancel</td><td></td></tr>
+    <tr><td>5</td><td>system alert</td><td>type <code>Alert</code>, or <code>GET /alert/text</code> returns something</td><td>read it and decide</td><td>never auto-accept a permission, a payment, or anything agreeing to terms</td></tr>
+    <tr><td>6</td><td>rating or review prompt</td><td>an Alert containing rate, review, enjoying or feedback</td><td>tap Not Now</td><td></td></tr>
+    <tr><td>7</td><td>onboarding tour or coach mark</td><td>a small overlay with a highlighted cut-out and the rest dimmed</td><td>tap Skip</td><td></td></tr>
+    <tr><td>8</td><td>paywall or upsell</td><td>a full-screen modal containing prices, "per month", "free trial", "upgrade"</td><td>tap the X, which may take a second or two to appear</td><td>never tap Subscribe or Start free trial</td></tr>
+    <tr><td>9</td><td>cookie or consent banner</td><td>a WebView containing cookie, consent, privacy or GDPR</td><td>tap Reject all or Only necessary</td><td>do not agree to terms on the user's behalf</td></tr>
+    <tr><td>10</td><td>update nag</td><td>an Alert or sheet containing update, version or what's new</td><td>tap Later</td><td>do not tap Update: it leaves the app for the App Store</td></tr>
+    <tr><td>11</td><td>notification banner</td><td>a transient element near the top, above the app's own content</td><td>swipe it up, or wait 4 seconds</td><td></td></tr>
+    <tr><td>12</td><td>toast or snackbar</td><td>a small element near the bottom with no buttons</td><td>wait 2 to 3 seconds, it leaves on its own</td><td>acting on it usually means tapping through it</td></tr>
+    <tr><td>13</td><td>keyboard covering the content</td><td><code>Key</code> elements present, or the bottom third is a keyboard</td><td>scroll the target above the keyboard</td><td></td></tr>
+    <tr><td>14</td><td>popover with an arrow</td><td>type <code>Popover</code>, or a small panel with the rest dimmed</td><td>tap anywhere outside it</td><td></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Source: <code>phoneshell/agent/playbook.py</code>, which is the file the harness reads and also
+the text handed to the model when the reflex fails. Fourteen entries, each with a <code>tell</code>,
+an ordered <code>moves</code> list, and an optional <code>never</code>.</p>
+
+<h2 id="mechanism">A sheet is recognised by where it starts, not by how big it is</h2>
+
+<p>The detector that looks for the largest container picks the app's own full-screen window every
+time. That is how the iOS share sheet stayed invisible to ours: it is a <code>Popover</code> whose
+top edge sits at y=478, well inside a window that starts at zero and is larger than it. The rule
+that works is geometric and boring. A sheet starts part-way down the screen and reaches the bottom.
+Size is not the signal, offset is.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Diagram comparing two ways of detecting an overlay sheet on iOS. Picking the largest container selects the application's own full-screen window, which starts at y equals zero, so the iOS share sheet is never found. Picking the container that starts part-way down the screen and reaches the bottom finds the share sheet, a Popover whose top edge is at y equals 478 points. The search must run on the raw accessibility tree because the element filter drops unlabelled containers as layout scaffolding, and the sheet grabber bar is decorative and usually absent from the tree, so the drag has to aim at the sheet's top edge plus a few points.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Largest container, versus the one that starts part-way down</text>
+  <rect x="70" y="70" width="180" height="280" rx="14" fill="#111827" stroke="#475569"/>
+  <text x="160" y="62" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">the screen</text>
+  <rect x="78" y="78" width="164" height="264" rx="10" fill="#1e293b" stroke="#64748b" stroke-dasharray="4 3"/>
+  <text x="160" y="110" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">app window</text>
+  <text x="160" y="128" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">y = 0, full height</text>
+  <rect x="78" y="228" width="164" height="114" rx="10" fill="#0e7490" stroke="#22d3ee"/>
+  <text x="160" y="254" fill="#e0f2fe" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">share sheet</text>
+  <text x="160" y="272" fill="#cffafe" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">type Popover</text>
+  <text x="160" y="292" fill="#cffafe" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle" font-weight="700">y = 478</text>
+  <line x1="60" y1="228" x2="78" y2="228" stroke="#22d3ee" stroke-width="2"/>
+  <rect x="300" y="90" width="250" height="110" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="425" y="116" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">pick the largest container</text>
+  <text x="425" y="142" fill="#fecaca" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">selects the app window</text>
+  <text x="425" y="164" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">the sheet is never detected, and the</text>
+  <text x="425" y="182" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">agent reads the screen as "stuck"</text>
+  <rect x="300" y="225" width="250" height="110" rx="8" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="425" y="251" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">pick by vertical offset</text>
+  <text x="425" y="277" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">starts part-way down,</text>
+  <text x="425" y="295" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">reaches the bottom</text>
+  <text x="425" y="319" fill="#6ee7b7" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">finds the Popover at y = 478</text>
+  <rect x="595" y="90" width="265" height="245" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="727" y="116" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">two conditions on the search</text>
+  <text x="612" y="148" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="12">run it on the RAW tree: the element</text>
+  <text x="612" y="166" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="12">filter drops unlabelled containers as</text>
+  <text x="612" y="184" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="12">scaffolding, and a sheet is one</text>
+  <text x="612" y="216" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="12">the grabber bar is decorative and</text>
+  <text x="612" y="234" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="12">usually absent from the tree, so aim</text>
+  <text x="612" y="252" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="12">the drag at the sheet's top edge plus</text>
+  <text x="612" y="270" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="12">a few points, where it physically sits</text>
+  <text x="612" y="302" fill="#f59e0b" font-family="Montserrat,sans-serif" font-size="12">tapping the grabber does nothing at</text>
+  <text x="612" y="320" fill="#f59e0b" font-family="Montserrat,sans-serif" font-size="12">all: iOS sheets dismiss on a drag</text>
+  <text x="40" y="378" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">phoneshell FINDINGS.md sections 4 and 5. Measured on a physical iPhone 17 Pro Max running iOS 26.6.</text>
+</svg>
+<figcaption>The share sheet is the case that makes the rule obvious: a small overlay inside a large
+window, which every size-based heuristic ranks last.</figcaption>
+</figure>
+
+<p>Three related gesture facts fall out of the same geometry, and each was a real bug. A drag through
+the middle of the screen pans the map underneath instead of scrolling the results sheet on top of
+it, which reads to an agent as "scrolling does nothing", so the drag has to start inside the
+container that actually scrolls, found in the raw tree. A page flip needs momentum, because a drag
+that ends stationary snaps back to the page it started on. And a top-edge gesture must start at
+exactly y=0: from there the top-left swipe opens Notification Centre and the top-right opens Control
+Centre, repeatably. Whether y=1 also works is untested.</p>
+
+<h2 id="what-changed">Why the reflex sits in code rather than in the prompt</h2>
+
+<p>One alternative is to describe the popups in the system prompt and let the model deal with
+them. That has been measured, and it does not work. "Attacking Vision-Language Computer Agents via
+Pop-ups" (arXiv:2411.02391) puts adversarial popups into OSWorld and VisualWebArena and reports an
+86% attack success rate, meaning the frequency with which agents click the popup, along with a 47%
+drop in task success. The defenses tested are the ones you would reach for first: instructing the
+agent to ignore popups in the system prompt, and adding an advertisement notice. Neither reduced the
+attack success rate by more than 25%.</p>
+
+<p>That is an adversarial setting, and ordinary commercial popups are not adversarial. The relevant
+part transfers anyway: a model asked to reason about an overlay in the same context where it is
+reasoning about the task will attend to the overlay, and the overlay is designed by someone whose
+job is to capture attention. A deterministic dismissal in the harness does not have attention to
+capture.</p>
+
+<figure class="embed">
+  <div style="position:relative;width:100%;aspect-ratio:16/9">
+    <iframe src="https://www.youtube-nocookie.com/embed/AF1nOPvH9f4" title="Appium Tutorial 24 : Handling Alerts/Popups in iOS App" loading="lazy" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:10px"></iframe>
+  </div>
+  <figcaption>"Appium Tutorial 24: Handling Alerts/Popups in iOS App",
+  <a href="https://www.youtube.com/@sdetpavan">@sdetpavan</a>, 31 May 2019. Supports the claim that
+  the established mobile automation answer to an overlay is a driver-level routine, the alert API or
+  an auto-accept capability, rather than instructions to the thing being tested. Row 5 of the table
+  above is where we depart from it: auto-accepting a permission or a payment is not ours to do.</figcaption>
+</figure>
+
+<p>The cost argument is the same shape. An agent that has to reason about a promo sheet burns its
+budget narrating it, and turns are the expensive unit on a phone, not milliseconds. Fourteen ordered
+lists of moves cost nothing per step and remove that reasoning entirely.</p>
+
+<figure>
+<svg viewBox="0 0 900 360" role="img" style="width:100%;height:auto"
+  aria-label="Flow diagram of the overlay reflex. After each observation the harness matches the screen against fourteen catalogued shapes. If one matches, it applies that shape's moves in order from most certain to most destructive, checks whether the overlay is gone, and returns control to the model with the overlay already closed. A never-tap gate blocks purchases, permissions, terms and app updates in every case, and those are escalated to the user rather than decided by the agent. Only if no shape matches is the whole cheatsheet handed to the model as text.">
+  <rect x="0" y="0" width="900" height="360" fill="#0f172a"/>
+  <text x="40" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Where the decision is made</text>
+  <rect x="40" y="60" width="160" height="50" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="120" y="90" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">observe screen</text>
+  <rect x="240" y="60" width="180" height="50" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="330" y="83" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">match the 14 tells</text>
+  <text x="330" y="101" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">type, geometry, keywords</text>
+  <rect x="460" y="60" width="180" height="50" rx="8" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="550" y="83" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">apply moves in order</text>
+  <text x="550" y="101" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">certain first, destructive last</text>
+  <rect x="680" y="60" width="180" height="50" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="770" y="90" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle">model sees a clean screen</text>
+  <path d="M200 85 L240 85 M420 85 L460 85 M640 85 L680 85" stroke="#64748b" stroke-width="2" fill="none"/>
+  <rect x="460" y="150" width="400" height="70" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="660" y="175" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">never-tap gate, applied to every move</text>
+  <text x="660" y="198" fill="#fecaca" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">Subscribe, Start free trial, Update, any permission, any terms</text>
+  <path d="M550 110 L550 150" stroke="#ef4444" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+  <rect x="40" y="150" width="380" height="70" rx="8" fill="#1e293b" stroke="#f59e0b"/>
+  <text x="230" y="175" fill="#fde68a" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">no shape matches</text>
+  <text x="230" y="198" fill="#fcd34d" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">hand the whole cheatsheet to the model as text</text>
+  <path d="M330 110 L330 150" stroke="#f59e0b" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+  <text x="40" y="262" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">why not simply tell the model to ignore popups</text>
+  <text x="40" y="286" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">Adversarial popups in OSWorld and VisualWebArena: 86% attack success rate, task success down 47%.</text>
+  <text x="40" y="306" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">Prompt-level defenses, including "ignore pop-ups" and an advertisement notice, cut that by no more than 25%.</text>
+  <text x="40" y="340" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">Zhang et al., arXiv:2411.02391. Catalogue: phoneshell/agent/playbook.py, 14 entries.</text>
+</svg>
+<figcaption>The gate is the part that cannot be delegated. Everything above it is a lookup; the
+never-tap list is a policy about whose money and whose consent are in play.</figcaption>
+</figure>
+
+<h2 id="consequences">What to take from this if you are building one</h2>
+
+<p>Write your own version of this table before you write dismissal logic, because the table is the
+part that survives. Our moves reference our gesture layer, but the tells are properties of iOS: a
+Popover is a Popover, an action sheet ends in Cancel, a paywall contains the word "month".</p>
+
+<p>Keep the never-tap list separate from the moves. It is the only part with a consequence that
+cannot be undone by observing again, and it is the part a model should not be allowed to override
+with reasoning, however good the reasoning sounds.</p>
+
+<p>Last, make the stability gate tolerate motion rather than demand stillness, or overlays will cost
+you far more than they should. Waiting for two byte-identical frames never converges on a screen
+with a countdown timer: a promotional sheet reading "40% off flash deals 14:19" made every
+observation pay the full timeout and turned a 2 second step into a 50 second one. The gate now
+settles when under 1.2% of pixels differ, because a clock moves well under 1% of the screen and a
+real transition moves tens of percent.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>The catalogue is one Python file with no dependencies, so it can be read, printed and diffed
+without a phone attached.</p>
+
+<pre><code>git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+
+# the catalogue as the model receives it
+python3 -c "from phoneshell.agent import playbook; print(playbook.as_text())"
+
+# the fourteen entries, their tells and their never-tap rules
+grep -n "kind=" phoneshell/agent/playbook.py
+grep -n "never=" phoneshell/agent/playbook.py
+
+# reproduce the share sheet case: open Safari, tap share, then dump the raw tree
+bin/phoneshell up
+curl -s "localhost:8100/source?format=json" | python3 -c "
+import json,sys
+def walk(n,d=0):
+    r=n.get('rect') or {}
+    if n.get('type')in('Popover','Sheet','Other') and (r.get('y') or 0)>100:
+        print(n.get('type'), 'y=',r.get('y'), 'h=',r.get('height'), n.get('label') or '')
+    for c in n.get('children') or []: walk(c,d+1)
+walk(json.load(sys.stdin)['value'])"</code></pre>
+
+<p>The last command prints the candidate overlays by vertical offset. On a screen with the share
+sheet open, the row you want is the one that starts well below zero and runs to the bottom, not the
+tallest one.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>Find a fifteenth shape that none of these fourteen tells matches, on a top-100 iOS app, and
+  the claim that the catalogue is near-complete for consumer apps is wrong. We expect to be told
+  about at least one: our prediction is that the catalogue needs fewer than five additions to cover
+  the top 100 free iOS apps in the US App Store, and we would revise it on the sixth, through
+  30 June 2027.</li>
+  <li>Measure a deterministic dismissal reflex against a model instructed to dismiss overlays itself,
+  on the same task set, and find no difference in turns or in success. That would undercut the
+  reason this is in the harness at all. We have not run that ablation; the popup-attack result is
+  evidence about adversarial overlays, not about ordinary ones, and we are borrowing it.</li>
+  <li>The number we are least sure of is y=478 for the share sheet. It is one observation on one
+  device on iOS 26.6, and the geometry will differ by device and by OS version. The rule that
+  matters is "starts part-way down", not the specific value.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>phoneshell, phoneshell/agent/playbook.py, the fourteen catalogued overlay shapes with tells, ordered moves and never-tap rules. <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/agent/playbook.py">https://github.com/Blomega/phoneshell/blob/main/phoneshell/agent/playbook.py</a></li>
+      <li>phoneshell, FINDINGS.md sections 3, 4 and 5, measured on a physical iPhone 17 Pro Max running iOS 26.6. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>Zhang, Yu and Yang, Attacking Vision-Language Computer Agents via Pop-ups, arXiv:2411.02391. <a href="https://arxiv.org/abs/2411.02391">https://arxiv.org/abs/2411.02391</a></li>
+      <li>SALT-NLP, PopupAttack, the code for the paper above. <a href="https://github.com/SALT-NLP/PopupAttack">https://github.com/SALT-NLP/PopupAttack</a></li>
+      <li>SDET-QA, Appium Tutorial 24: Handling Alerts/Popups in iOS App, 31 May 2019. <a href="https://www.youtube.com/watch?v=AF1nOPvH9f4">https://www.youtube.com/watch?v=AF1nOPvH9f4</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
