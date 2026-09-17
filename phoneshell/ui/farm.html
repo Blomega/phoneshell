@@ -131,7 +131,7 @@ function render(){
       <div class="body">
         <div class="name"><span class="dot ${esc(m.state)}"></span>${esc(m.name)}${m.configured ? ' · default' : ''}</div>
         <div class="sub">${esc(m.model)} · iOS ${esc(m.ios || '?')} · ${esc(m.transport || 'unknown')}</div>
-        <div class="state"><b>${esc(m.title || m.state)}</b>${m.detail ? ' — ' + esc(m.detail) : ''}</div>
+        <div class="state"><b>${esc(m.title || m.state)}</b>${m.detail ? ': ' + esc(m.detail) : ''}</div>
         ${m.fix ? `<div class="fix">${esc(m.fix)}</div>` : ''}
         <div class="ports">wda :${m.wda_port} · mjpeg :${m.mjpeg_port}</div>
         <div class="row">
@@ -147,7 +147,7 @@ function render(){
 
 function placeholder(m){
   if (m.state === 'absent') return 'not on the cable and not on this network';
-  if (m.state === 'standby') return 'plugged in — press Connect to bring it up';
+  if (m.state === 'standby') return 'plugged in, press Connect to bring it up';
   if (m.state === 'idle') return 'a bridge was started for this phone but it is not answering';
   return m.title || 'no screen';
 }
