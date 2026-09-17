@@ -357,6 +357,29 @@ class Bridge:
         """This bridge's config: its own if it was given one, else the shared one."""
         return self._cfg_override or Config.load()
 
+    def _persist(self, cfg: Config) -> None:
+        """Write the config to disk, unless this bridge belongs to a farm.
+
+        runtime/config.yaml describes ONE phone: the default. A farm bridge holds
+        a copy scoped to another phone, with that phone's udid and ports in it,
+        so saving it would quietly make the second phone the default and move
+        the first one off 8100. Its changes (a pinned udid, wifi versus cable)
+        stay in its own copy in memory, which is all it needs.
+        """
+        if self._cfg_override is None:
+            cfg.save()
+
+    def _forward_pairs(self, cfg: Config) -> tuple[tuple[int, int], ...]:
+        """Local-to-device port pairs for this phone's usbmux tunnel.
+
+        The runner is launched with USE_PORT and MJPEG_SERVER_PORT set to this
+        config's ports, so it listens on those ports on the device, and the
+        tunnel has to use them at both ends. Before this, every bridge forwarded
+        8100 and 9100, and PortForward frees its local ports before binding, so
+        connecting a second phone killed the first phone's tunnel.
+        """
+        return ((cfg.wda.port, cfg.wda.port), (cfg.wda.mjpeg_port, cfg.wda.mjpeg_port))
+
     # ------------------------------------------------------------------ state
 
     def alive(self) -> bool:
@@ -459,19 +482,19 @@ class Bridge:
             if cfg.device.udid != resolved:
                 cfg.device.udid = resolved
                 cfg.device.name = check.data.get("raw", {}).get("DeviceName") or cfg.device.name
-                cfg.save()
+                self._persist(cfg)
                 yield _ev("pinned", True, f"config now pins {resolved}")
 
             if cfg.wda.transport == "wifi":
                 # The cable is back. Prefer it: it is faster, and it does not put
                 # an unauthenticated automation server on the wifi.
                 cfg.wda.transport = "usb"
-                cfg.save()
+                self._persist(cfg)
                 yield _ev("transport", True, "the cable is back, so using it instead of wifi")
             if cfg.wda.transport != "wifi":
                 if self.forward:
                     self.forward.stop()
-                self.forward = dev.PortForward(resolved)
+                self.forward = dev.PortForward(resolved, self._forward_pairs(cfg))
                 res = self.forward.start()
                 yield _ev("forward", res.ok, res.detail, res.fix)
                 if not res.ok:
@@ -565,7 +588,7 @@ class Bridge:
         yield _ev("wifi", True, f"no cable, so going over the network to {host}")
         cfg.wda.transport = "wifi"
         cfg.wda.wifi_host = host
-        cfg.save()
+        self._persist(cfg)
         self.udid = udid
 
         client = WDAClient(base_url=cfg.wda_base_url, timeout=8)
@@ -615,7 +638,7 @@ class Bridge:
             return
         if ip and ip != cfg.wda.wifi_host:
             cfg.wda.wifi_host = ip
-            cfg.save()
+            self._persist(cfg)
             yield _ev("wifi", True, f"learned its wifi address ({ip}), so the cable is optional "
                                     f"from now on")
 

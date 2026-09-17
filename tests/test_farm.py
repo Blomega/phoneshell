@@ -86,3 +86,28 @@ def test_a_full_farm_refuses_rather_than_walking_into_ephemeral_ports(clean):
     assert max(f._slots.values()) == farm_module.MAX_SLOTS - 1
     with pytest.raises(RuntimeError, match="full"):
         f.slot_for("one-too-many")
+
+
+def test_a_farm_bridge_never_writes_the_shared_config(clean, monkeypatch):
+    """runtime/config.yaml names the default phone. A farm bridge saving its
+    copy would make the second phone the default and move the first off 8100."""
+    from phoneshell.bringup import Bridge
+    from phoneshell.config import Config
+    writes = []
+    monkeypatch.setattr(Config, "save", lambda self: writes.append(self.device.udid))
+    scoped = Farm().config_for("BBB")
+    Bridge(scoped)._persist(scoped)
+    assert writes == []
+    Bridge()._persist(Config())
+    assert len(writes) == 1, "the unscoped bridge must still persist"
+
+
+def test_each_phone_tunnels_its_own_ports(clean):
+    """Every bridge used to forward 8100, and PortForward frees its ports before
+    binding, so bringing up a second phone killed the first phone's tunnel."""
+    from phoneshell.bringup import Bridge
+    f = Farm()
+    first = f.config_for("AAA")
+    second = f.config_for("BBB")
+    assert Bridge(first)._forward_pairs(first) == ((8100, 8100), (9100, 9100))
+    assert Bridge(second)._forward_pairs(second) == ((8101, 8101), (9101, 9101))
