@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>An iOS point release stopped the automation runner, and every check still reported success &mdash; Blolabel</title>
+<meta name="description" content="iOS 26.6.1 shipped on 17 August 2026 with 29 CVEs fixed. A phone that took it overnight left a WebDriverAgent runner that launches, reports success, exits without a crash report, and refuses connections on port 8100. The runner is tied to the OS build, not the OS version.">
+<link rel="canonical" href="https://blolabel.ai/blog/point-release-stopped-the-runner/">
+<meta property="og:title" content="An iOS point release stopped the automation runner, and every check still reported success &mdash; Blolabel">
+<meta property="og:description" content="iOS 26.6.1 shipped on 17 August 2026 with 29 CVEs fixed. A phone that took it overnight left a WebDriverAgent runner that launches, reports success, exits without a crash report, and refuses connections on port 8100. The runner is tied to the OS build, not the OS version.">
+<meta property="og:url" content="https://blolabel.ai/blog/point-release-stopped-the-runner/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"An iOS point release stopped the automation runner, and every check still reported success","description":"iOS 26.6.1 shipped on 17 August 2026 with 29 CVEs fixed. A phone that took it overnight left a WebDriverAgent runner that launches, reports success, exits without a crash report, and refuses connections on port 8100. The runner is tied to the OS build, not the OS version.",
+ "datePublished":"2026-09-17","dateModified":"2026-09-17",
+ "url":"https://blolabel.ai/blog/point-release-stopped-the-runner/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/point-release-stopped-the-runner/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Does an iOS point update break WebDriverAgent?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "It can. After a phone updated from iOS 26.6 to 26.6.1, devicectl device process launch reported success, the runner appeared and exited, port 8100 refused connections and no crash report was written. The runner is built against the OS build, so a point release is enough to invalidate it, and the repair is a rebuild, strip, re-sign and reinstall."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "What is IXUserPresentableErrorDomain error 1 when installing WebDriverAgent?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "It is what iOS returns when an installed app is replaced by a build signed by a different Apple team. The message does not mention teams. On a Mac with two signing identities in the keychain, a build that picks the first one it finds produces exactly this at install time."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why must the embedded XCTest frameworks be removed from the runner bundle?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "testmanagerd was renamed in iOS 17, and the frameworks embedded in the bundle bind to the old name, so the bundle has to link the device's own copies. Removing them invalidates the code signature, which is why a re-sign follows the strip."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind event">event</span>
+    <time datetime="2026-09-17">17 September 2026</time>
+    <span>8 min read</span>
+  </div>
+  <h1>An iOS point release stopped the automation runner, and every check still reported success</h1>
+  <p class="standfirst">devicectl said success. The process list said nothing was running. Developer Mode was on, the bundle was installed, and the only fix was a rebuild, a framework strip, a re-sign with the right team and a reinstall.</p>
+
+      <p>Apple shipped iOS 26.6.1 on 17 August 2026, a security release with 29 CVEs fixed. Our
+benchmark phone took it overnight. The next morning <code>xcrun devicectl device process launch</code>
+reported success, the automation runner appeared on the phone, the process was gone from the process
+list seconds later, port 8100 refused connections, and iOS wrote no crash report. Developer Mode was
+still enabled and the app was still installed, so every check we had passed. The runner is built
+against the OS build, not the OS version, and a point release is enough to invalidate it.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/point-release-stopped-the-runner-hero.png" alt="Abstract technical illustration of a bridge whose far anchor has shifted by a few millimetres overnight, leaving the span visually intact but carrying nothing" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">Every instrument reading was green</h2>
+
+<p>The reason this took a morning rather than a minute is that nothing reported an error. A launch
+that reports success and then exits produces the same observable state as a launch that never
+happened, minus the error message that would tell you which.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>what we checked</th><th>what it reported</th><th>what was true</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td><code>devicectl device process launch</code></td><td>success, with a pid</td><td>the process was not there seconds later</td><td>FINDINGS s.11</td></tr>
+    <tr><td>the phone's screen</td><td>AutomationModeUI started</td><td>it started and went away</td><td>FINDINGS s.11</td></tr>
+    <tr><td>the process list</td><td>no WebDriverAgent</td><td>correct, and the only true signal</td><td>FINDINGS s.11</td></tr>
+    <tr><td><code>curl localhost:8100/status</code></td><td>connection refused</td><td>correct, and the symptom we started from</td><td>FINDINGS s.11</td></tr>
+    <tr><td>crash reports on the device</td><td>none written</td><td>no crash report was generated at all</td><td>FINDINGS s.11</td></tr>
+    <tr><td>Developer Mode</td><td>enabled</td><td>true, and irrelevant</td><td><code>phoneshell/device.py</code></td></tr>
+    <tr><td>the runner bundle on the phone</td><td>installed</td><td>true, and irrelevant: it was built against the previous OS build</td><td><code>phoneshell/device.py</code></td></tr>
+    <tr><td>WebDriverAgent release notes, 30 Aug to 11 Sep 2026</td><td>ten releases, v16.11.4 to v16.12.8</td><td>none of them mention iOS build coupling, because it is not their layer</td><td>GitHub releases</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Only two of those eight readings were informative, and both of them are downstream symptoms
+rather than causes. Nothing anywhere said "the runner is stale".</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of a silent failure after an iOS point release. The Mac asks devicectl to launch the WebDriverAgent runner, devicectl reports success with a process id, the runner briefly appears on the phone, then the process exits with no crash report, so port 8100 refuses connections. Four checks that would normally catch a broken rig all pass: Developer Mode is enabled, the developer image is mounted, the runner bundle is installed, and the WebDriverAgent source is current. The only remedy is to rebuild, strip the embedded XCTest frameworks, re-sign with the correct team and reinstall against the updated operating system build. The xcodebuild step is allowed up to 1800 seconds by the harness.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">What a stale runner looks like from the Mac</text>
+  <rect x="40" y="66" width="170" height="52" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="125" y="88" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">devicectl launch</text>
+  <text x="125" y="106" fill="#10b981" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">reports success + pid</text>
+  <rect x="245" y="66" width="170" height="52" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="330" y="88" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">AutomationModeUI</text>
+  <text x="330" y="106" fill="#10b981" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">appears on the phone</text>
+  <rect x="450" y="66" width="170" height="52" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="535" y="88" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">process exits</text>
+  <text x="535" y="106" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">no crash report</text>
+  <rect x="655" y="66" width="205" height="52" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="757" y="88" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">port 8100 refused</text>
+  <text x="757" y="106" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">the only symptom you see</text>
+  <path d="M210 92 L245 92 M415 92 L450 92 M620 92 L655 92" stroke="#64748b" stroke-width="2" fill="none"/>
+  <text x="40" y="160" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="14" font-weight="700">meanwhile, every health check passes</text>
+  <rect x="40" y="175" width="195" height="44" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="137" y="202" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">Developer Mode: on</text>
+  <rect x="250" y="175" width="195" height="44" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="347" y="202" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">developer image: mounted</text>
+  <rect x="460" y="175" width="195" height="44" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="557" y="202" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">runner bundle: installed</text>
+  <rect x="670" y="175" width="190" height="44" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="765" y="202" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">WDA source: current</text>
+  <text x="40" y="258" fill="#f59e0b" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">the fact none of them carries: the bundle was built against iOS 26.6, the phone now runs 26.6.1</text>
+  <rect x="40" y="278" width="820" height="60" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="56" y="302" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="12">remedy: xcodebuild build-for-testing  &#8594;  remove embedded XC*.framework  &#8594;  codesign --force with the team's identity  &#8594;  install  &#8594;  launch</text>
+  <text x="56" y="324" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">our harness allows the xcodebuild step up to 1800 seconds; none of it can run while the phone sits at the lock screen after a reboot</text>
+  <text x="40" y="372" fill="#64748b" font-family="Montserrat,sans-serif" font-size="12">iOS 26.6.1 shipped 17 August 2026 with 29 CVEs fixed. phoneshell FINDINGS.md section 11.</text>
+</svg>
+<figcaption>The software on both sides was unchanged. The only thing that moved overnight was the
+operating system build number, and it was enough.</figcaption>
+</figure>
+
+<h2 id="evidence">The repair has a trap in it</h2>
+
+<p>The rebuild is four steps, and the second and third exist because of two separate iOS behaviours
+that produce unhelpful errors.</p>
+
+<p>The runner must not carry its own copy of XCTest. <code>testmanagerd</code> was renamed in
+iOS 17, embedded frameworks bind to the old name, and the bundle has to link the device's copies
+instead. The failure without this is a generic launch error that says nothing about frameworks. So
+the build is followed by deleting everything matching <code>XC*</code> plus
+<code>Testing.framework</code> and <code>libXCTestSwiftSupport.dylib</code> from the bundle's
+<code>Frameworks</code> directory, and then a re-sign, because deleting a file from a signed bundle
+invalidates the signature.</p>
+
+<p>The re-sign is where the second trap sits. A Mac with two Apple signing teams in its keychain
+will happily build with whichever identity sorts first, and iOS then refuses the install over the
+existing app with <code>IXUserPresentableErrorDomain error 1</code>. That error's text says nothing
+about teams. An installed app cannot be replaced by a build from a different team, and the only way
+to know that is to already know it.</p>
+
+<figure>
+<svg viewBox="0 0 900 380" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of the WebDriverAgent rebuild pipeline and where it goes wrong. The pipeline is four steps. Step one runs xcodebuild build for testing with DEVELOPMENT_TEAM set explicitly and automatic code signing, because automatic signing refuses an explicit identity hash. Step two deletes the embedded XCTest frameworks, which invalidates the bundle signature. Step three re-signs with the identity SHA-1 for the same team, which a direct codesign call does accept. Step four installs and launches. If the team differs from the team of the app already on the phone, the install fails with IXUserPresentableErrorDomain error 1, an error whose text does not mention teams.">
+  <rect x="0" y="0" width="900" height="380" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Rebuild, and the one place two signing teams break it</text>
+  <rect x="40" y="70" width="190" height="86" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="135" y="94" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">1. build</text>
+  <text x="135" y="116" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">build-for-testing</text>
+  <text x="135" y="132" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">DEVELOPMENT_TEAM=...</text>
+  <text x="135" y="148" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">CODE_SIGN_STYLE=Automatic</text>
+  <rect x="255" y="70" width="190" height="86" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="350" y="94" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">2. strip</text>
+  <text x="350" y="116" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">rm Frameworks/XC*</text>
+  <text x="350" y="132" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">Testing.framework</text>
+  <text x="350" y="148" fill="#f59e0b" font-family="Montserrat,sans-serif" font-size="10" text-anchor="middle">signature now invalid</text>
+  <rect x="470" y="70" width="190" height="86" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="565" y="94" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">3. re-sign</text>
+  <text x="565" y="116" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">codesign --force</text>
+  <text x="565" y="132" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">--sign &lt;identity sha1&gt;</text>
+  <text x="565" y="148" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">--preserve-metadata</text>
+  <rect x="685" y="70" width="175" height="86" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="772" y="94" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">4. install</text>
+  <text x="772" y="116" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="10" text-anchor="middle">over the existing app</text>
+  <text x="772" y="136" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="10" text-anchor="middle">then launch detached</text>
+  <path d="M230 113 L255 113 M445 113 L470 113 M660 113 L685 113" stroke="#64748b" stroke-width="2" fill="none"/>
+  <rect x="470" y="200" width="390" height="92" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="665" y="224" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">team mismatch with the installed copy</text>
+  <text x="665" y="248" fill="#fecaca" font-family="monospace" font-size="12" text-anchor="middle">IXUserPresentableErrorDomain error 1</text>
+  <text x="665" y="272" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">the message never mentions teams, certificates or signing</text>
+  <path d="M772 156 L772 200" stroke="#ef4444" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+  <rect x="40" y="200" width="390" height="92" rx="8" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="235" y="224" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">the rule that avoids it</text>
+  <text x="235" y="248" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">never let the build pick an identity from the keychain</text>
+  <text x="235" y="268" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">order. Pin the team; refuse to guess when there are two.</text>
+  <text x="40" y="330" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">Automatic signing rejects an explicit identity hash with "conflicting provisioning settings", so the team id does the</text>
+  <text x="40" y="350" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">disambiguating during the build, and the SHA-1 is used only for the re-sign after the strip. phoneshell/device.py.</text>
+</svg>
+<figcaption>Two teams in one keychain is a normal state for a contractor's Mac. The build gives no
+warning, and the error arrives one step later in a different vocabulary.</figcaption>
+</figure>
+
+<h2 id="mechanism">What this says about running a phone rig continuously</h2>
+
+<p>The runner is a build artifact, not an app. Every guide treats installing WebDriverAgent as a
+setup step you do once, and for a test suite run from a developer's Mac that is true, because the
+developer notices the failure and rebuilds. For an unattended rig it is false in a way that costs a
+night: the phone updates itself, the artifact stops matching, and the rig reports a network error.</p>
+
+<p>Two things follow. The rebuild has to be part of the runtime rather than the setup, triggered by
+the symptom rather than by a person. And the health check that decides whether the rig is alive
+cannot be the launcher's exit code, because that is exactly the reading that was wrong here. It has
+to be a request to port 8100 that comes back with a body.</p>
+
+<p>Our own gap, stated plainly: the doctor checks Xcode, the device, Developer Mode, the developer
+image, the runner bundle, the launch and the port, and it does <em>not</em> compare the OS build the
+bundle was built against with the build now on the phone. That comparison is the check that would
+have named this failure in one line, and we have not written it yet.</p>
+
+<p>A judgement, marked as one: a device rig should treat the OS build string as a dependency version
+and rebuild on change, in the same way a lockfile change triggers a reinstall. Nothing in the
+toolchain does this for you, and WebDriverAgent shipping ten releases in thirteen days (v16.11.4 on
+30 August 2026 through v16.12.8 on 11 September 2026) means the client side moves too, so the
+version pair is what has to be recorded next to every benchmark result.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>You do not need our harness for any of this. The diagnostic is three commands, and the important
+one is the third, because it is the one that disagrees with the first.</p>
+
+<pre><code># what the phone is running now
+xcrun devicectl list devices
+xcrun devicectl device info details --device &lt;udid&gt; | grep -i -E 'osVersion|buildVersion'
+
+# launch the runner and believe nothing
+xcrun devicectl device process launch --device &lt;udid&gt; --start-stopped=false \
+  com.facebook.WebDriverAgentRunner.xctrunner
+xcrun devicectl device info processes --device &lt;udid&gt; | grep -i webdriver   # the true answer
+curl -s -m 3 localhost:8100/status || echo "port 8100 refused"
+
+# how many signing teams this Mac has, which decides whether a rebuild can succeed at all
+security find-identity -v -p codesigning
+
+# our build path, including the strip and the re-sign
+grep -n "def build_wda" -A 45 phoneshell/device.py
+grep -n "def strip_xctest_frameworks" -A 20 phoneshell/device.py</code></pre>
+
+<p>To see the failure itself you need a phone that has just taken a point release, which is the one
+part that cannot be arranged on demand. Apple's security note for iOS 26.6.1 is at
+<a href="https://support.apple.com/en-us/148282">support.apple.com/en-us/148282</a>, and the release went out on
+17 August 2026.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>Take a phone through the next iOS point release with a runner built against the previous
+  build, and have it keep working. That would mean the coupling is to the major version rather than
+  the build, and our reading of this incident is wrong. We predict a rebuild will be required on the
+  next 26.x point release, through 30 June 2027.</li>
+  <li>Reinstall the same unmodified bundle, without rebuilding, and have the runner stay up. That
+  would mean the failure was install-state corruption rather than staleness, which is a different
+  and cheaper problem.</li>
+  <li>The claim we are least sure of: that no crash report was generated. Absence of evidence on a
+  device where crash reporting is itself a service is weak. If you can reproduce this and find a
+  report under Analytics Data, the exit had a cause we never saw, and the diagnosis above is a
+  correlation.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>Apple, About the security content of iOS 26.6.1 and iPadOS 26.6.1, 17 August 2026. <a href="https://support.apple.com/en-us/148282">https://support.apple.com/en-us/148282</a></li>
+      <li>MacRumors, iOS 26.6.1 and macOS Tahoe 26.6.2 fix nearly 30 security vulnerabilities, 17 August 2026. <a href="https://www.macrumors.com/2026/08/17/ios-26-6-1-security-fixes/">https://www.macrumors.com/2026/08/17/ios-26-6-1-security-fixes/</a></li>
+      <li>Appium WebDriverAgent releases, v16.11.4 on 30 August 2026 through v16.12.8 on 11 September 2026. <a href="https://github.com/appium/WebDriverAgent/releases">https://github.com/appium/WebDriverAgent/releases</a></li>
+      <li>Appium XCUITest driver, real device configuration, signing and provisioning. <a href="https://appium.github.io/appium-xcuitest-driver/latest/preparation/real-device-config/">https://appium.github.io/appium-xcuitest-driver/latest/preparation/real-device-config/</a></li>
+      <li>phoneshell, FINDINGS.md section 11, and phoneshell/device.py: build_wda, strip_xctest_frameworks and detect_team. <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/device.py">https://github.com/Blomega/phoneshell/blob/main/phoneshell/device.py</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
