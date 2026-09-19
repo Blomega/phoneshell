@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A reboot ends an unattended iPhone session: after a cold boot iOS withholds developer services until a person enters the passcode | Blolabel</title>
+<meta name="description" content="On 9 September 2026 a reboot cleared a wedged test session on our iPhone 17 Pro Max and ended the run: lockdown answered with PasswordProtected true, devicectl reported the device unavailable, and WebDriverAgent could not start to type the stored passcode. iOS 27 and 26.7 installs (14 September 2026) and the 72 hour inactivity reboot cause the same state.">
+<link rel="canonical" href="https://blolabel.ai/blog/reboot-ends-unattended-iphone-session/">
+<meta property="og:title" content="A reboot ends an unattended iPhone session: after a cold boot iOS withholds developer services until a person enters the passcode | Blolabel">
+<meta property="og:description" content="On 9 September 2026 a reboot cleared a wedged test session on our iPhone 17 Pro Max and ended the run: lockdown answered with PasswordProtected true, devicectl reported the device unavailable, and WebDriverAgent could not start to type the stored passcode. iOS 27 and 26.7 installs (14 September 2026) and the 72 hour inactivity reboot cause the same state.">
+<meta property="og:url" content="https://blolabel.ai/blog/reboot-ends-unattended-iphone-session/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"A reboot ends an unattended iPhone session: after a cold boot iOS withholds developer services until a person enters the passcode","description":"On 9 September 2026 a reboot cleared a wedged test session on our iPhone 17 Pro Max and ended the run: lockdown answered with PasswordProtected true, devicectl reported the device unavailable, and WebDriverAgent could not start to type the stored passcode. iOS 27 and 26.7 installs (14 September 2026) and the 72 hour inactivity reboot cause the same state.",
+ "datePublished":"2026-09-19","dateModified":"2026-09-19",
+ "url":"https://blolabel.ai/blog/reboot-ends-unattended-iphone-session/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/reboot-ends-unattended-iphone-session/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Why can't WebDriverAgent start after an iPhone reboots?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "After a cold boot a passcode-protected iPhone is in the state before first user authentication. On our iPhone 17 Pro Max on iOS 26.6, lockdown still answered over USB with PasswordProtected true, but devicectl reported the device unavailable because developer services were withheld, so the WebDriverAgent runner could not be launched until a person entered the passcode on the phone."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can an automation rig type the passcode itself after a reboot?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Not with WebDriverAgent. Typing the stored passcode is what WebDriverAgent does when it finds the phone locked, and WebDriverAgent is the thing that cannot start after a cold boot, so the loop has no exit from the Mac."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Do iOS updates and the inactivity reboot cause the same problem?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes. Installing iOS 27 or iOS 26.7, both released on 14 September 2026, reboots the phone, and since iOS 18.1 a phone left locked for 72 hours restarts itself. Both leave the phone in the same state before first user authentication."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-19">19 September 2026</time>
+    <span>8 min read</span>
+  </div>
+  <h1>A reboot ends an unattended iPhone session: after a cold boot iOS withholds developer services until a person enters the passcode</h1>
+  <p class="standfirst">Lockdown answered. devicectl said unavailable. WebDriverAgent could not start, so the passcode stored on the Mac could not be typed by the one process that types it. Our runner's repair routine now stops one rung short of a reboot, on purpose.</p>
+
+        <p>On 9 September 2026 a reboot cleared a wedged test session on our benchmark iPhone and ended
+the unattended run in the same move. After the cold boot the phone answered on USB, reported
+<code>"PasswordProtected": true</code>, and withheld the developer services that
+<code>devicectl</code> and WebDriverAgent need, so the passcode stored on the Mac could not be typed by
+the one process that types it. From that day our rule has been written into the runner: a reboot
+ends the session, and the automated repair path is not allowed to use one.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/reboot-ends-unattended-iphone-session-hero.png" alt="Abstract technical illustration of a closed loop of conduits around a sealed core, with one gap in the loop that only an outside hand can close" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">A wedge that only a reboot cleared, and a reboot that needed a person</h2>
+
+<p>The fault came first. A device-side test session stopped answering with
+<code>DTX capability handshake timed out</code> and zero runner processes on the phone. Nothing sent
+over the wire cleared it. A reboot did. The cause, as far as we could reconstruct it, was memory
+pressure on the Mac killing a half-open test session, which left the phone holding the device side of
+a conversation whose other end no longer existed (FINDINGS.md section 24).</p>
+
+<p>The reboot then produced the state that matters more. A freshly booted iPhone with a passcode
+keeps most user data under a key that is not available until the passcode has been entered once.
+Apple's Platform Security guide calls that class Protected Until First User Authentication and makes
+it the default for third-party app data. Forensic tools call the state BFU. On our iPhone 17 Pro Max
+on iOS 26.6 the practical reading was three lines:</p>
+
+<pre><code>lockdown:        answering, "PasswordProtected": true
+devicectl:       unavailable        &lt;- CoreDevice / developer services withheld
+WebDriverAgent:  cannot start, so it cannot type the passcode it has</code></pre>
+
+<p>That is a loop with no exit on the Mac side. Typing the passcode is what WebDriverAgent does when a
+run finds the phone locked, and WebDriverAgent is the thing that will not start. We read it as a
+security property working as designed.</p>
+
+<p>Two dates since then widen the blast radius. On 14 September 2026 Apple released iOS 27 and, for
+phones staying on 26, iOS 26.7 with more than 80 security fixes, 75 of them shared with iOS 27
+(MacRumors, 14 September 2026). Installing either one is a reboot. And since iOS 18.1 a phone that has
+sat locked for 72 hours restarts itself into the same state, a timer the Secure Enclave keeps and the
+kernel acts on, as reverse engineered by Jiska Classen and reported by heise on 20 November 2024.</p>
+
+<figure class="embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/QOe2rDKOWMk"
+          title="iOS Inactivity Reboot Timelapse" loading="lazy" allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"
+          style="width:100%;aspect-ratio:16/9;border:0;border-radius:8px"></iframe>
+  <figcaption>iOS Inactivity Reboot Timelapse, <a href="https://www.youtube.com/@jiskac">@jiskac</a>, 17 November 2024.
+  Jiska Classen's recording of an iPhone left locked restarting itself after the inactivity timer, the
+  same state a rig phone reaches if it is allowed to lock and sit for 72 hours.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 900 420" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of why a reboot ends an unattended iPhone automation session. A cold boot puts iOS into the state before first user authentication. Lockdown still answers over USB and reports PasswordProtected true. devicectl reports the device unavailable because developer services are withheld. WebDriverAgent cannot start. The passcode is stored on the Mac, but the only process that could type it is WebDriverAgent, so the loop closes only when a person enters the passcode on the phone. Three events cause the cold boot: a manual reboot to clear a wedged test session, installing iOS 27 or iOS 26.7 released 14 September 2026, and the 72 hour inactivity reboot introduced in iOS 18.1.">
+  <rect x="0" y="0" width="900" height="420" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Why the Mac cannot bring the phone back after a cold boot</text>
+  <text x="40" y="70" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">three ways to get a cold boot</text>
+  <rect x="40" y="82" width="250" height="42" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="165" y="108" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">manual reboot to clear a DTX wedge</text>
+  <rect x="40" y="132" width="250" height="42" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="165" y="158" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">iOS 27 or 26.7 install (14 Sep 2026)</text>
+  <rect x="40" y="182" width="250" height="42" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="165" y="208" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">72 h locked: inactivity reboot</text>
+  <path d="M290 103 L340 153 M290 153 L340 153 M290 203 L340 153" stroke="#64748b" stroke-width="2" fill="none"/>
+  <rect x="340" y="120" width="190" height="66" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="435" y="148" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">BFU after boot</text>
+  <text x="435" y="170" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">passcode never entered</text>
+  <rect x="580" y="70" width="280" height="44" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="720" y="97" fill="#a7f3d0" font-family="monospace" font-size="12" text-anchor="middle">lockdown: PasswordProtected true</text>
+  <rect x="580" y="130" width="280" height="44" rx="6" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="720" y="157" fill="#fecaca" font-family="monospace" font-size="12" text-anchor="middle">devicectl: unavailable</text>
+  <rect x="580" y="190" width="280" height="44" rx="6" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="720" y="217" fill="#fecaca" font-family="monospace" font-size="12" text-anchor="middle">WebDriverAgent: cannot start</text>
+  <path d="M530 153 L580 92 M530 153 L580 152 M530 153 L580 212" stroke="#64748b" stroke-width="2" fill="none"/>
+  <rect x="580" y="262" width="280" height="56" rx="6" fill="#1e293b" stroke="#f59e0b"/>
+  <text x="720" y="285" fill="#fde68a" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">passcode stored on the Mac</text>
+  <text x="720" y="304" fill="#fde68a" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">only WebDriverAgent could type it</text>
+  <path d="M720 234 L720 262" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+  <path d="M580 290 L435 290 L435 186" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+  <text x="445" y="312" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11">loop has no exit from the Mac</text>
+  <rect x="40" y="340" width="820" height="50" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="56" y="362" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="12">exit: a person enters the passcode on the phone once. Measured on an iPhone 17 Pro Max, iOS 26.6, 9 September 2026.</text>
+  <text x="56" y="380" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11">Sources: FINDINGS.md s.24; Apple Platform Security, Data Protection classes; heise, 20 Nov 2024; MacRumors, 14 Sep 2026.</text>
+</svg>
+<figcaption>Each box on the right was read from the phone after the reboot. The loop closes only on the
+phone's own screen.</figcaption>
+</figure>
+
+<h2 id="evidence">What answers after a cold boot, and what that implies</h2>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>layer or event</th><th>reading</th><th>consequence for an unattended rig</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>lockdown over usbmux</td><td>answering, <code>"PasswordProtected": true</code></td><td>the phone looks present to any check that only asks whether it is connected</td><td>FINDINGS.md s.24</td></tr>
+    <tr><td><code>xcrun devicectl</code></td><td>device unavailable</td><td>no process launch, no process list, no install</td><td>FINDINGS.md s.24</td></tr>
+    <tr><td>WebDriverAgent runner</td><td>cannot start</td><td>no <code>/status</code> on port 8100, and no way to type the stored passcode</td><td>FINDINGS.md s.24</td></tr>
+    <tr><td>Data Protection class for third-party app data</td><td>Protected Until First User Authentication by default</td><td>data stays keyed to a passcode entry that has not happened yet</td><td>Apple Platform Security guide</td></tr>
+    <tr><td>Inactivity reboot</td><td>restart after 72 hours with no passcode or biometric entry, since iOS 18.1</td><td>a rig phone left locked over a long weekend reboots itself into this state</td><td>heise, 20 Nov 2024 (Classen analysis)</td></tr>
+    <tr><td>iOS 27 and iOS 26.7</td><td>both released 14 Sep 2026; 26.7 carries more than 80 security fixes</td><td>every install is a reboot, so an automatic overnight update ends the run</td><td>MacRumors, 14 Sep 2026</td></tr>
+    <tr><td>Activation wedge (apps stop coming forward)</td><td>first recorded as reboot-only, later fixed by terminating the runner pid</td><td>the reboot was the wrong remedy for that fault; seconds, no person</td><td>FINDINGS.md s.27 and s.29, 9 Sep 2026</td></tr>
+    <tr><td><code>Runner.heal()</code></td><td>three steps: type the passcode if locked, restart the forward, recycle the runner</td><td>no reboot step, by design</td><td><code>phoneshell/bench/runner.py</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The seventh row is the one that changed our behaviour most. Section 27 of our findings concluded
+the same day that app activation degrades under sustained automation and "only a reboot restores
+it". Section 29 overturned that within hours: the WebDriverAgent process was alive and deaf,
+<code>devicectl process launch</code> against an already-running app returned success without
+replacing it, and terminating the runner by pid brought it back on the first attempt. A reboot clears
+every state at once, which makes it useless as evidence about which state was wrong, and on a phone
+with a passcode it costs the session besides.</p>
+
+<h2 id="mechanism">The recovery ladder, and where it stops</h2>
+
+<p>Every failure we have seen on the rig sits on one of five rungs. The first four are recoverable
+from the Mac. The fifth is not, and the runner's repair routine stops above it on purpose: its
+docstring says it "will NOT" reboot, citing section 24.</p>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Recovery ladder for an unattended iPhone rig, from cheapest to most expensive. Rung one, the phone locked: WebDriverAgent types the stored passcode, no person needed. Rung two, the iproxy port forward dropped: restart the forward, no person needed. Rung three, the runner is wedged or deaf: find its pid with devicectl, terminate it, clear any orphaned iproxy on port 8100, relaunch, which took seconds and no reboot. Rung four, the runner was built against an older iOS build: rebuild, strip, re-sign and reinstall, with the build step allowed up to 1800 seconds, no person needed if the phone has not rebooted. Rung five, a DTX capability handshake wedge: only a reboot clears it, and the reboot needs a person to enter the passcode, so it ends the unattended run.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Five rungs of repair, and the one that needs a hand on the glass</text>
+  <text x="40" y="62" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">fault</text>
+  <text x="330" y="62" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">remedy from the Mac</text>
+  <text x="760" y="62" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">person?</text>
+  <rect x="40" y="74" width="820" height="52" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="56" y="105" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13">1. phone locked</text>
+  <text x="330" y="105" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12">WebDriverAgent types the stored passcode</text>
+  <text x="760" y="105" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">no</text>
+  <rect x="40" y="134" width="820" height="52" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="56" y="165" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13">2. port forward dropped</text>
+  <text x="330" y="165" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12">restart iproxy on 8100</text>
+  <text x="760" y="165" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">no</text>
+  <rect x="40" y="194" width="820" height="52" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="56" y="225" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13">3. runner alive but deaf</text>
+  <text x="330" y="225" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12">terminate by pid, clear orphan iproxy, relaunch (seconds)</text>
+  <text x="760" y="225" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">no</text>
+  <rect x="40" y="254" width="820" height="52" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="56" y="285" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13">4. runner stale after an OS update</text>
+  <text x="330" y="285" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12">rebuild, strip, re-sign, reinstall (build up to 1800 s)</text>
+  <text x="760" y="285" fill="#fde68a" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">after rung 5</text>
+  <rect x="40" y="314" width="820" height="52" rx="6" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="56" y="345" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="13">5. DTX handshake wedge</text>
+  <text x="330" y="345" fill="#fecaca" font-family="Montserrat,sans-serif" font-size="12">reboot, then BFU: devicectl unavailable</text>
+  <text x="760" y="345" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">yes</text>
+  <text x="40" y="396" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">Runner.heal() in phoneshell/bench/runner.py implements rungs 1 to 3 and stops. Rung 4 is device.build_wda.</text>
+  <text x="40" y="414" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">An OS update is itself a reboot, so rung 4 always arrives with rung 5's cost attached.</text>
+</svg>
+<figcaption>The ladder is ordered by cost. Rung 4 is the trap: the rebuild is scriptable, but the
+update that made it necessary already rebooted the phone.</figcaption>
+</figure>
+
+<h2 id="implications">What it means if you run phone agents overnight</h2>
+
+<p>Schedule reboots, never use them as repair. A reboot at the start of a run, with a person there
+to type the passcode, costs one boot and one passcode entry. A reboot at 03:00 costs every task after it, and those tasks do
+not fail in an interesting way: they are not scored at all, which in our reporting makes the run
+shorter and leaves its score untouched. Our runner reports never-attempted tasks as not scored rather than failed, so
+this shows up as missing rows in the results.</p>
+
+<p>Treat an OS update as a scheduled reboot. With iOS 27 and iOS 26.7 both on offer since
+14 September 2026, a rig phone with automatic updates on will take one of them overnight, reboot into
+BFU, and also come back with a runner built against the previous build. That combines rung 4 and
+rung 5 of the ladder in a single event. Our judgement: automatic updates should be off on a
+benchmark phone, and updates should be a planned step with a person present and a rebuild
+immediately after.</p>
+
+<p>Never leave the rig phone locked. The 72 hour inactivity reboot only counts time since the passcode or
+Face ID was last used, and our prep step sets Auto-Lock to Never before a run for exactly this family of
+reasons. That setting once failed to stick silently on this device, and the phone locked mid-run,
+which is why the prep step now checks for the checkmark in the chosen row rather than for the word
+Never on the page.</p>
+
+<p>Guard the cause. The wedge that forced this reboot came from the Mac rather than the
+phone: a memory-starved Mac killed a half-open test session. A long device job should not share a
+machine with anything that can exhaust memory, and two jobs should not share a phone; ours take an
+exclusive <code>flock</code> in <code>phoneshell/lock.py</code> after a second process once drove the
+phone alongside a sweep for seventy minutes and sixty-four rows had to be discarded.</p>
+
+<p>The option we have not tested: our findings file names a passcode-less test device as "the real
+answer" for anyone running this seriously, because it could be rebooted freely. We have not run that
+configuration, so treat it as a hypothesis. It also trades away the data protection that makes the
+phone a realistic user's phone.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>You need a passcode-protected iPhone with Developer Mode on, a Mac with Xcode, and a willingness to
+reboot the phone. Read the state before and after.</p>
+
+<pre><code># before the reboot: the phone is trusted, developer services are up
+xcrun devicectl list devices
+pymobiledevice3 lockdown info | grep -i -E 'PasswordProtected|ProductVersion|BuildVersion'
+curl -s -m 3 localhost:8100/status | head -c 200
+
+# reboot from the phone (or from the Mac), do not touch the screen afterwards, then:
+xcrun devicectl list devices                       # expect the device listed as unavailable
+pymobiledevice3 lockdown info | grep -i PasswordProtected   # still answers: true
+xcrun devicectl device info processes --device &lt;udid&gt;  # expect a failure, not a list
+
+# enter the passcode on the phone once, then repeat: everything comes back
+
+# our code: the repair routine and its refusal to reboot
+grep -n "def heal" -A 20 phoneshell/bench/runner.py
+sed -n '/^## 24\./,/^## 25\./p' FINDINGS.md
+sed -n '/^## 29\./,/^## 30\./p' FINDINGS.md</code></pre>
+
+<p>For the 72 hour timer you need a locked phone and three days, or Jiska Classen's write-up via the
+heise report linked below. For the update dates, Apple's release notes for iOS 26.7 and the MacRumors
+report of 14 September 2026.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>Reboot a passcode-protected iPhone on iOS 26.7 or iOS 27 and have <code>devicectl</code> list it
+  as available and launch the WebDriverAgent runner before anyone enters the passcode. That would
+  mean the gating we saw on iOS 26.6 was version-specific. We predict it holds on every iOS 27.x
+  release through 30 June 2027.</li>
+  <li>Find a supported Apple setting, profile or Xcode option that lets an XCTest runner start in
+  BFU on a phone with a passcode. If one exists, rung 5 becomes a scriptable rung and the rule in this
+  note is overcautious.</li>
+  <li>Reproduce the DTX handshake wedge and clear it without a reboot. We found no such path; section
+  29 found one for a different wedge after section 27 had declared it reboot-only, so we hold this one
+  loosely. One incident, so treat the reboot-only claim as an anecdote until it repeats.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>phoneshell, FINDINGS.md sections 24, 27 and 29 (9 September 2026), and phoneshell/bench/runner.py Runner.heal. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>Apple, Apple Platform Security: Data Protection classes (Protected Until First User Authentication). <a href="https://support.apple.com/guide/security/data-protection-classes-secb010e978a/web">https://support.apple.com/guide/security/data-protection-classes-secb010e978a/web</a></li>
+      <li>Ben Schwan, heise online, Reboot after inactivity: How Apple's new iOS security feature works, 20 November 2024 (analysis by Jiska Classen). <a href="https://www.heise.de/en/news/Reboot-after-inactivity-How-Apple-s-new-iOS-security-feature-works-10077069.html">https://www.heise.de/en/news/Reboot-after-inactivity-How-Apple-s-new-iOS-security-feature-works-10077069.html</a></li>
+      <li>Jiska Classen, Reverse engineering iOS 18 inactivity reboot, naehrdine blog, November 2024. <a href="https://naehrdine.blogspot.com/2024/11/reverse-engineering-ios-18-inactivity.html">https://naehrdine.blogspot.com/2024/11/reverse-engineering-ios-18-inactivity.html</a></li>
+      <li>MacRumors, iOS 18 security feature causes iPhone to reboot after three days of inactivity, 14 November 2024. <a href="https://www.macrumors.com/2024/11/14/ios-18-3-day-iphone-reboot/">https://www.macrumors.com/2024/11/14/ios-18-3-day-iphone-reboot/</a></li>
+      <li>Juli Clover, MacRumors, Apple releases iOS 26.7 with security fixes, 14 September 2026. <a href="https://www.macrumors.com/2026/09/14/apple-releases-ios-26-7/">https://www.macrumors.com/2026/09/14/apple-releases-ios-26-7/</a></li>
+      <li>Appium WebDriverAgent, v16.12.8 released 11 September 2026 (npm registry). <a href="https://registry.npmjs.org/appium-webdriveragent">https://registry.npmjs.org/appium-webdriveragent</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
