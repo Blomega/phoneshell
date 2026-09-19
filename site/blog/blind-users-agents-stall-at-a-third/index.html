@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Five computer-use agents on blind users' real commands: success spreads 14.6 points, partial completion stays at a third | Blolabel</title>
+<meta name="description" content="In arXiv:2609.00524 (1 September 2026), five agents ran 1,258 commands from 8 blind users across 12 Windows apps. Success ran from 37.9% (Qwen3-VL) to 52.5% (GPT-5), failure from 28.8% to 13.2%, and partial completion stayed between 33.3% and 34.9% for all five. Better models convert failures, not stalls.">
+<link rel="canonical" href="https://blolabel.ai/blog/blind-users-agents-stall-at-a-third/">
+<meta property="og:title" content="Five computer-use agents on blind users' real commands: success spreads 14.6 points, partial completion stays at a third | Blolabel">
+<meta property="og:description" content="In arXiv:2609.00524 (1 September 2026), five agents ran 1,258 commands from 8 blind users across 12 Windows apps. Success ran from 37.9% (Qwen3-VL) to 52.5% (GPT-5), failure from 28.8% to 13.2%, and partial completion stayed between 33.3% and 34.9% for all five. Better models convert failures, not stalls.">
+<meta property="og:url" content="https://blolabel.ai/blog/blind-users-agents-stall-at-a-third/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Five computer-use agents on blind users' real commands: success spreads 14.6 points, partial completion stays at a third","description":"In arXiv:2609.00524 (1 September 2026), five agents ran 1,258 commands from 8 blind users across 12 Windows apps. Success ran from 37.9% (Qwen3-VL) to 52.5% (GPT-5), failure from 28.8% to 13.2%, and partial completion stayed between 33.3% and 34.9% for all five. Better models convert failures, not stalls.",
+ "datePublished":"2026-09-19","dateModified":"2026-09-19",
+ "url":"https://blolabel.ai/blog/blind-users-agents-stall-at-a-third/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/blind-users-agents-stall-at-a-third/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How well do computer-use agents work for blind users?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "In arXiv:2609.00524, eight blind screen-reader users issued 1,258 commands across 12 Windows applications over three weeks. GPT-5 fully completed 52.5% of them, Claude Sonnet 48.5%, Gemini 2.5 Computer Use 43.9%, UI-TARS 39.8% and Qwen3-VL 37.9%. GPT-5's lead over Claude Sonnet was not statistically significant (McNemar p = .071)."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Does a better model reduce partially completed tasks?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Not in this study. Partial completion stayed between 33.3% and 34.9% for all five models while success varied by 14.6 points and failure by 15.6 points, so better models converted outright failures into successes but left the stalled third roughly unchanged."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Where do computer-use agents break on tasks they partly complete?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Late in the task. GPT-5's partial attempts completed 68.3% of reference steps before breaking down, and termination recognition failures (stopping early, looping, or never emitting done) accounted for 17.6% of GPT-5's partial attempts and 19.1% across all models."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-19">19 September 2026</time>
+    <span>6 min read</span>
+  </div>
+  <h1>Five computer-use agents on blind users' real commands: success spreads 14.6 points, partial completion stays at a third</h1>
+  <p class="standfirst">GPT-5's lead over Claude Sonnet was not significant (p = .071). The more useful number is the one that did not move: a third of commands stalled part way for every model, most often at the end, where the agent decides it is done.</p>
+
+        <p>In a three-week field study of computer-use agents with blind users (arXiv:2609.00524, 1 September
+2026), five models ran the same 1,258 real commands and their success rates spread from 37.9% to 52.5%,
+while their partial-completion rates stayed between 33.3% and 34.9%. A better model moved commands from
+outright failure to success. It did not shrink the third of commands that stalled part way. Our reading of
+the paper's own table: the model is not what decides that third.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/blind-users-agents-stall-at-a-third-hero.png" alt="Abstract technical illustration of five parallel columns of light of different heights, each crossed at the same band by an identical translucent layer" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">The study, and what it measured</h2>
+
+<p>Satwik Ram Kodandaram, Monalika Padma Reddy, Xiaojun Bi, Jiawei Zhou and I. V. Ramakrishnan (Stony
+Brook University) with Vikas Ashok (Old Dominion University) posted the paper on 1 September 2026. Eight blind screen-reader users installed a
+screen-reader-accessible agent called OLLA on their own Windows machines for three weeks and issued
+1,258 commands, normalised to 304 distinct task intents, across 12 applications: Word, Excel, PowerPoint,
+OneNote, Outlook, File Explorer, VLC, Windows Media Player, Zoom, Calculator, Notepad and Spotify.</p>
+
+<p>GPT-5 ran live during the deployment. The authors then replayed every command against four more
+models (Claude Sonnet, Gemini 2.5 Computer Use, UI-TARS and Qwen3-VL) from a fresh application state, with
+the prompt, action schema and executor held fixed. At every step the agent received both a screenshot and
+the Microsoft UI Automation tree. Four annotators labelled each trace success, partial completion or
+failure against reference steps they had performed themselves, with Krippendorff's alpha of 0.84.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>model</th><th>success</th><th>95% CI</th><th>partial</th><th>failure</th><th>steps done before breakdown (partials)</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>GPT-5 (live)</td><td>661 (52.5%)</td><td>49.8 to 55.3</td><td>431 (34.3%)</td><td>166 (13.2%)</td><td>68.3%</td><td>arXiv:2609.00524, Tables 5 and 1</td></tr>
+    <tr><td>Claude Sonnet</td><td>610 (48.5%)</td><td>45.7 to 51.3</td><td>429 (34.1%)</td><td>219 (17.4%)</td><td>65.6%</td><td>arXiv:2609.00524, Tables 5 and 1</td></tr>
+    <tr><td>Gemini 2.5 CU</td><td>552 (43.9%)</td><td>41.2 to 46.6</td><td>439 (34.9%)</td><td>267 (21.2%)</td><td>60.6%</td><td>arXiv:2609.00524, Tables 5 and 1</td></tr>
+    <tr><td>UI-TARS</td><td>501 (39.8%)</td><td>37.2 to 42.6</td><td>430 (34.2%)</td><td>327 (26.0%)</td><td>56.2%</td><td>arXiv:2609.00524, Tables 5 and 1</td></tr>
+    <tr><td>Qwen3-VL</td><td>477 (37.9%)</td><td>35.3 to 40.6</td><td>419 (33.3%)</td><td>362 (28.8%)</td><td>53.0%</td><td>arXiv:2609.00524, Tables 5 and 1</td></tr>
+    <tr><td>spread, top to bottom</td><td>14.6 points</td><td></td><td>1.6 points</td><td>15.6 points</td><td>15.3 points</td><td>our arithmetic on the rows above</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The paper reports that GPT-5's 4.0 point lead over Claude Sonnet is not significant in a paired
+McNemar test (chi-squared 3.25, p = .071), and says so plainly. It also notes that partial completion
+"ranged from 33.3% to 34.9%". The last row is ours: the spread in success (14.6 points) is almost exactly
+the spread in failure (15.6 points), and the partial band barely moves.</p>
+
+<figure>
+<svg viewBox="0 0 900 440" role="img" style="width:100%;height:auto"
+  aria-label="Stacked bar chart of outcomes for five computer-use agents on the same 1,258 commands issued by blind users, from arXiv 2609.00524. GPT-5: 52.5 percent success, 34.3 percent partial, 13.2 percent failure. Claude Sonnet: 48.5, 34.1, 17.4. Gemini 2.5 Computer Use: 43.9, 34.9, 21.2. UI-TARS: 39.8, 34.2, 26.0. Qwen3-VL: 37.9, 33.3, 28.8. Success varies by 14.6 points and failure by 15.6 points, while the partial completion band stays between 33.3 and 34.9 percent for every model.">
+  <rect x="0" y="0" width="900" height="440" fill="#0f172a"/>
+  <text x="40" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">Same 1,258 commands, five models: the middle band does not move</text>
+  <g font-family="Montserrat,sans-serif">
+  <text x="190" y="62" fill="#94a3b8" font-size="12">0%</text>
+  <text x="820" y="62" fill="#94a3b8" font-size="12" text-anchor="end">100% of commands</text>
+  <path d="M190 70 L190 360" stroke="#475569"/>
+  <text x="180" y="100" fill="#e2e8f0" font-size="13" text-anchor="end">GPT-5</text>
+  <rect x="190" y="80" width="330.8" height="32" fill="#38bdf8"/><text x="355" y="101" fill="#0f172a" font-size="12" text-anchor="middle" font-weight="700">52.5</text>
+  <rect x="520.8" y="80" width="216.1" height="32" fill="#64748b"/><text x="629" y="101" fill="#f8fafc" font-size="12" text-anchor="middle">34.3</text>
+  <rect x="736.9" y="80" width="83.1" height="32" fill="#7f1d1d"/><text x="778" y="101" fill="#fecaca" font-size="12" text-anchor="middle">13.2</text>
+  <text x="180" y="158" fill="#e2e8f0" font-size="13" text-anchor="end">Claude Sonnet</text>
+  <rect x="190" y="138" width="305.6" height="32" fill="#38bdf8"/><text x="343" y="159" fill="#0f172a" font-size="12" text-anchor="middle" font-weight="700">48.5</text>
+  <rect x="495.6" y="138" width="214.8" height="32" fill="#64748b"/><text x="603" y="159" fill="#f8fafc" font-size="12" text-anchor="middle">34.1</text>
+  <rect x="710.4" y="138" width="109.6" height="32" fill="#7f1d1d"/><text x="765" y="159" fill="#fecaca" font-size="12" text-anchor="middle">17.4</text>
+  <text x="180" y="216" fill="#e2e8f0" font-size="13" text-anchor="end">Gemini 2.5 CU</text>
+  <rect x="190" y="196" width="276.6" height="32" fill="#38bdf8"/><text x="328" y="217" fill="#0f172a" font-size="12" text-anchor="middle" font-weight="700">43.9</text>
+  <rect x="466.6" y="196" width="219.9" height="32" fill="#64748b"/><text x="576" y="217" fill="#f8fafc" font-size="12" text-anchor="middle">34.9</text>
+  <rect x="686.5" y="196" width="133.5" height="32" fill="#7f1d1d"/><text x="753" y="217" fill="#fecaca" font-size="12" text-anchor="middle">21.2</text>
+  <text x="180" y="274" fill="#e2e8f0" font-size="13" text-anchor="end">UI-TARS</text>
+  <rect x="190" y="254" width="250.7" height="32" fill="#38bdf8"/><text x="315" y="275" fill="#0f172a" font-size="12" text-anchor="middle" font-weight="700">39.8</text>
+  <rect x="440.7" y="254" width="215.5" height="32" fill="#64748b"/><text x="548" y="275" fill="#f8fafc" font-size="12" text-anchor="middle">34.2</text>
+  <rect x="656.2" y="254" width="163.8" height="32" fill="#7f1d1d"/><text x="738" y="275" fill="#fecaca" font-size="12" text-anchor="middle">26.0</text>
+  <text x="180" y="332" fill="#e2e8f0" font-size="13" text-anchor="end">Qwen3-VL</text>
+  <rect x="190" y="312" width="238.8" height="32" fill="#38bdf8"/><text x="309" y="333" fill="#0f172a" font-size="12" text-anchor="middle" font-weight="700">37.9</text>
+  <rect x="428.8" y="312" width="209.8" height="32" fill="#64748b"/><text x="534" y="333" fill="#f8fafc" font-size="12" text-anchor="middle">33.3</text>
+  <rect x="638.6" y="312" width="181.4" height="32" fill="#7f1d1d"/><text x="729" y="333" fill="#fecaca" font-size="12" text-anchor="middle">28.8</text>
+  <rect x="190" y="378" width="14" height="14" fill="#38bdf8"/><text x="210" y="390" fill="#cbd5e1" font-size="12">success (spread 14.6 pts)</text>
+  <rect x="400" y="378" width="14" height="14" fill="#64748b"/><text x="420" y="390" fill="#cbd5e1" font-size="12">partial (spread 1.6 pts)</text>
+  <rect x="600" y="378" width="14" height="14" fill="#7f1d1d"/><text x="620" y="390" fill="#cbd5e1" font-size="12">failure (spread 15.6 pts)</text>
+  <text x="40" y="424" fill="#94a3b8" font-size="11">Percent of 1,258 commands. Source: Kodandaram et al., arXiv:2609.00524, Table 5, 1 Sep 2026. Spreads are our arithmetic.</text>
+  </g>
+</svg>
+<figcaption>Better models convert red into blue. The grey band is the same width for all five, which is
+the part of the result a leaderboard does not show.</figcaption>
+</figure>
+
+<h2 id="mechanism">Where the stalled third breaks</h2>
+
+<p>The partial traces were not near-misses at the first step. GPT-5's partial attempts completed 68.3%
+of the reference steps on average before breaking down, and even Qwen3-VL's completed 53.0%. The paper's
+failure analysis locates the late breaks. Termination recognition, where the agent stopped too early,
+repeated an action without noticing nothing was changing, or never emitted <code>done</code>, accounted
+for 17.6% of GPT-5's partial attempts (76 of 431) and 19.1% across all models (410 of 2,148). One Excel
+trace created a new sheet and then kept pressing the new-sheet control. A Word trace chose PDF in the
+export path and never pressed Save.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of the OLLA agent loop and where commands break, from arXiv 2609.00524. Each step sends the screenshot and the Windows UI Automation tree to the model, which returns a JSON action with the action type, control label, control role, coordinates and text, executed through UI Automation, followed by audio feedback to the blind user. The model signals completion by emitting done. Among unsuccessful GPT-5 traces, ungrounded actions such as hallucinated control names were 24.6 percent (147 of 597) and hidden path discovery failures were 21.4 percent (128 of 597). Among partial completions, termination recognition failures were 17.6 percent for GPT-5 (76 of 431) and 19.1 percent across all models (410 of 2,148). The user hears the agent's own done signal, not an independent check.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <g font-family="Montserrat,sans-serif">
+  <text x="40" y="32" fill="#e2e8f0" font-size="18" font-weight="700">The OLLA loop, and the three places commands broke</text>
+  <rect x="40" y="60" width="170" height="70" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="125" y="88" fill="#e2e8f0" font-size="13" text-anchor="middle" font-weight="700">observe</text>
+  <text x="125" y="110" fill="#94a3b8" font-size="11" text-anchor="middle">screenshot + UIA tree</text>
+  <rect x="250" y="60" width="190" height="70" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="345" y="88" fill="#e2e8f0" font-size="13" text-anchor="middle" font-weight="700">model</text>
+  <text x="345" y="110" fill="#94a3b8" font-size="11" text-anchor="middle">JSON: type, label, role, x/y</text>
+  <rect x="480" y="60" width="170" height="70" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="565" y="88" fill="#e2e8f0" font-size="13" text-anchor="middle" font-weight="700">execute</text>
+  <text x="565" y="110" fill="#94a3b8" font-size="11" text-anchor="middle">via UI Automation</text>
+  <rect x="690" y="60" width="170" height="70" rx="8" fill="#1e293b" stroke="#f59e0b"/>
+  <text x="775" y="88" fill="#fde68a" font-size="13" text-anchor="middle" font-weight="700">audio to user</text>
+  <text x="775" y="110" fill="#fde68a" font-size="11" text-anchor="middle">incl. the model's "done"</text>
+  <path d="M210 95 L250 95 M440 95 L480 95 M650 95 L690 95" stroke="#64748b" stroke-width="2"/>
+  <path d="M565 130 L565 150 L125 150 L125 130" stroke="#64748b" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+  <text x="345" y="166" fill="#94a3b8" font-size="11" text-anchor="middle">next step</text>
+  <rect x="40" y="196" width="260" height="120" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="170" y="222" fill="#fee2e2" font-size="13" text-anchor="middle" font-weight="700">ungrounded action</text>
+  <text x="170" y="246" fill="#fecaca" font-size="12" text-anchor="middle">hallucinated control names</text>
+  <text x="170" y="272" fill="#fca5a5" font-size="12" text-anchor="middle">GPT-5: 24.6% (147/597)</text>
+  <text x="170" y="294" fill="#fca5a5" font-size="12" text-anchor="middle">all: 22.6% (789/3,489)</text>
+  <rect x="320" y="196" width="260" height="120" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="450" y="222" fill="#fee2e2" font-size="13" text-anchor="middle" font-weight="700">hidden path</text>
+  <text x="450" y="246" fill="#fecaca" font-size="12" text-anchor="middle">control behind a menu or dialog</text>
+  <text x="450" y="272" fill="#fca5a5" font-size="12" text-anchor="middle">GPT-5: 21.4% (128/597)</text>
+  <text x="450" y="294" fill="#fca5a5" font-size="12" text-anchor="middle">all: 20.7% (722/3,489)</text>
+  <rect x="600" y="196" width="260" height="120" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="730" y="222" fill="#fee2e2" font-size="13" text-anchor="middle" font-weight="700">termination</text>
+  <text x="730" y="246" fill="#fecaca" font-size="12" text-anchor="middle">early stop, loop, no "done"</text>
+  <text x="730" y="272" fill="#fca5a5" font-size="12" text-anchor="middle">GPT-5: 17.6% of partials (76/431)</text>
+  <text x="730" y="294" fill="#fca5a5" font-size="12" text-anchor="middle">all: 19.1% (410/2,148)</text>
+  <text x="40" y="350" fill="#94a3b8" font-size="12">Denominators: 597 = GPT-5's unsuccessful traces (431 partial + 166 failed); 3,489 = all models' unsuccessful traces;</text>
+  <text x="40" y="368" fill="#94a3b8" font-size="12">2,148 = all models' partial completions. Categories can overlap. Source: arXiv:2609.00524, section 5.</text>
+  </g>
+</svg>
+<figcaption>The user sits at the end of the loop and hears what the model says it did. The annotators, not
+the user, are the independent check in this study.</figcaption>
+</figure>
+
+<h2 id="implications">What it means for anyone building or ranking a phone agent</h2>
+
+<p>Do not rank on the headline. At 1,258 paired commands, the top two models are not separable
+(p = .071), which the authors report. We found the same on a phone: six models over 58 tasks on one iPhone
+and <a href="/blog/leaderboard-that-cannot-rank/">not one pair separated</a>. A paired test belongs next
+to every leaderboard number, and the per-outcome split belongs next to the pass rate.</p>
+
+<p>Budget loop engineering for the stalled third. Our judgement from the flat partial
+band: the failures that swapping models fixes are the ones at the front of a task, and the ones it leaves
+are the late ones the paper names, termination, commit steps, and constraints carried across steps.
+Those are loop design problems: a check that the screen changed after each action, a stop rule for
+repeated actions, and a final-state check before <code>done</code> is believed. That is a hypothesis from
+one table; the paper does not test it.</p>
+
+<p>Treat <code>done</code> as a claim. In OLLA, completion is the model emitting <code>done</code>, and a
+blind user hears that, often without a cheap way to verify it; the paper notes that participants wanted
+agents to confirm before hard-to-undo actions. On a phone we measured how often that signal is wrong:
+<a href="/blog/agents-report-success-device-disagrees/">16 of 27 failures were reported as successes</a>
+by the model that failed them. For an assistive agent the self-report is the user's only instrument, so
+grading from device or application state is part of what the user is buying.</p>
+
+<p>The paper is a Windows desktop study with UI Automation and screenshots together, and it does not
+separate the two inputs. It says nothing direct about iOS. What transfers is the shape of the loop and
+the failure categories; the percentages stay with Windows.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>Everything above comes from the paper's HTML version and its public artifacts. The spreads are one
+line of arithmetic.</p>
+
+<pre><code># the outcome table (Appendix C, Table 5) and the step-progress table (Table 1)
+curl -sL https://arxiv.org/html/2609.00524 -o olla.html
+python3 - &lt;&lt;'EOF'
+import re, html
+t = html.unescape(re.sub(r'&lt;[^&gt;]+&gt;', ' ', open('olla.html', encoding='utf-8').read()))
+t = re.sub(r'\s+', ' ', t)
+i = t.find('Appendix C Task Outcomes'); print(t[i:i+520])
+EOF
+
+# the spreads
+python3 -c "s=[52.5,48.5,43.9,39.8,37.9]; p=[34.3,34.1,34.9,34.2,33.3]; f=[13.2,17.4,21.2,26.0,28.8]
+print(round(max(s)-min(s),1), round(max(p)-min(p),1), round(max(f)-min(f),1))"
+# 14.6 1.6 15.6
+
+# the agent itself, and the traces
+open https://github.com/Satwikram/OLLA</code></pre>
+
+<p>The anonymised dataset of commands, model outputs and annotated traces is linked from the paper's
+section B.4. Per-application outcome counts are in its Table 6 if you want to test whether the flat
+partial band holds inside each of the 12 applications or only in aggregate.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>Re-run the released commands with a newer model and see partial completion fall well below 33%,
+  for example under 25%, while success rises. That would mean the flat band was a property of these five
+  models rather than of the loop. We predict that any model evaluated in this setup before 30 June 2027 lands
+  between 28% and 40% partial.</li>
+  <li>Break the band down by application from Table 6 and find it is flat only in aggregate, with the
+  per-application partial rates moving as much as success does. Then our reading is an averaging artifact.</li>
+  <li>Add a final-state check and a repeated-action stop rule to OLLA's loop and see no change in partial
+  completion. That would falsify the claim that the stalled third is a loop-design problem.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>Satwik Ram Kodandaram, Monalika Padma Reddy, Xiaojun Bi, Jiawei Zhou, I. V. Ramakrishnan, Vikas Ashok, Are We There Yet? Assessing Computer-Use Agents for Blind Users' Accessible Interaction with Desktop Applications, arXiv:2609.00524, 1 September 2026. <a href="https://arxiv.org/abs/2609.00524">https://arxiv.org/abs/2609.00524</a></li>
+      <li>Same paper, HTML version with Tables 1, 5, 6 and 7 and section 5 failure analysis. <a href="https://arxiv.org/html/2609.00524">https://arxiv.org/html/2609.00524</a></li>
+      <li>OLLA implementation, GitHub. <a href="https://github.com/Satwikram/OLLA">https://github.com/Satwikram/OLLA</a></li>
+      <li>Blolabel, Six models, 58 tasks on one iPhone, and not a single pair separates. <a href="https://blolabel.ai/blog/leaderboard-that-cannot-rank/">https://blolabel.ai/blog/leaderboard-that-cannot-rank/</a></li>
+      <li>Blolabel, 16 of 27 failures on a physical iPhone were reported as successes by the model that failed them. <a href="https://blolabel.ai/blog/agents-report-success-device-disagrees/">https://blolabel.ai/blog/agents-report-success-device-disagrees/</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
