@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iOS Settings exposes no selected state, so a check that finds the word Never passes whether or not Auto-Lock is Never | Blolabel</title>
+<meta name="description" content="On iOS 26.6 the Auto-Lock rows carry no selected trait, no value and no isSelected. Confirming the setting by finding the text Never passed every time while the phone kept locking, for four benchmark runs. The only evidence is a Button labelled checkmark inside the chosen row. Plus Contacts resolving to com.apple.PeopleViewService.">
+<link rel="canonical" href="https://blolabel.ai/blog/ios-settings-selection-has-no-state/">
+<meta property="og:title" content="iOS Settings exposes no selected state, so a check that finds the word Never passes whether or not Auto-Lock is Never | Blolabel">
+<meta property="og:description" content="On iOS 26.6 the Auto-Lock rows carry no selected trait, no value and no isSelected. Confirming the setting by finding the text Never passed every time while the phone kept locking, for four benchmark runs. The only evidence is a Button labelled checkmark inside the chosen row. Plus Contacts resolving to com.apple.PeopleViewService.">
+<meta property="og:url" content="https://blolabel.ai/blog/ios-settings-selection-has-no-state/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"iOS Settings exposes no selected state, so a check that finds the word Never passes whether or not Auto-Lock is Never","description":"On iOS 26.6 the Auto-Lock rows carry no selected trait, no value and no isSelected. Confirming the setting by finding the text Never passed every time while the phone kept locking, for four benchmark runs. The only evidence is a Button labelled checkmark inside the chosen row. Plus Contacts resolving to com.apple.PeopleViewService.",
+ "datePublished":"2026-09-19","dateModified":"2026-09-19",
+ "url":"https://blolabel.ai/blog/ios-settings-selection-has-no-state/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/ios-settings-selection-has-no-state/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How do you tell which option is selected in an iOS Settings list with XCUITest?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "On the iOS 26.6 Auto-Lock page there is no selected trait, value or isSelected on any row. The chosen row is the only one containing a Button labelled checkmark, so the check is whether that button's centre falls inside the option's cell frame, read from the raw accessibility tree."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why did open_app(\"Contacts\") open the wrong app on iOS?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Several iOS bundles share a display name. Looking up Contacts by name resolved to com.apple.PeopleViewService, a system service, instead of com.apple.MobileAddressBook. Resolving apps through a curated map of bundle ids removes the failure."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why is setting Auto-Lock to Never not enough for an unattended iPhone run?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "A setting applied by hand can fail to stick, and a check that looks for the word Never on the page passes whether or not it is chosen. The phone locked mid-run on four benchmark runs until the check was changed to look for the checkmark inside the Never row."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-19">19 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>iOS Settings exposes no selected state, so a check that finds the word Never passes whether or not Auto-Lock is Never</h1>
+  <p class="standfirst">Three checks reported success on a phone that was not set up: a selection check that looked for text, a Settings walk that never left its first screen, and an app launch that opened a system service. Each fix replaces a presence check with a witness.</p>
+
+        <p>On iOS 26.6 the Auto-Lock page in Settings exposes no selection state in the accessibility tree:
+no <code>selected</code> trait, no value, no <code>isSelected</code>. Our rig confirmed it had set Auto-Lock
+to Never by finding the word "Never" on the page, a check that passes whether or not Never is chosen,
+and the phone kept locking mid-run for four benchmark runs. The only evidence of the chosen row is a
+<code>Button</code> labelled <code>checkmark</code> inside it, and the tree-condensing step we feed to
+models was dropping that button as decoration.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/ios-settings-selection-has-no-state-hero.png" alt="Abstract technical illustration of a column of identical grey slabs, one of which carries a small bright notch at its edge that is the only thing distinguishing it" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">Three checks that passed on a phone that was not set up</h2>
+
+<p>All three were found on 8 September 2026 by running the benchmark unattended on a physical
+iPhone 17 Pro Max, and each is a check that reports success because it looked at the wrong thing. They
+are recorded in sections 10 and 22 of our findings file and fixed in
+<code>phoneshell/prep.py</code> and <code>phoneshell/apps.py</code>.</p>
+
+<p>The first is the selection check above. Apple documents a <code>selected</code> accessibility trait
+("the accessibility element is currently in a selected state") and an <code>isSelected</code> attribute
+on XCUITest elements. Neither is set on the Auto-Lock rows. The chosen row differs from the others in
+exactly one way: it has a child <code>Button</code> whose label is <code>checkmark</code>.</p>
+
+<p>The second is the walk to that page. A tap on a Settings row does not always take. When it did not,
+the walk carried on searching the screen it never left, then reported the child row missing:
+"could not find Auto-Lock in Settings", on a phone where Auto-Lock is one swipe below Display &amp;
+Brightness. The error names the wrong failure, and the silent version of it is the one that let the phone
+lock during a run.</p>
+
+<p>The third happens before any of that. <code>open_app("Contacts")</code> resolved to
+<code>com.apple.PeopleViewService</code>, a system service that shares the display name, instead of the
+Contacts app at <code>com.apple.MobileAddressBook</code>. The task failed with the model having done
+nothing wrong. We now pin 41 spoken names to bundle ids; the map was first checked against the phone's own
+app catalogue on 7 September 2026, and Contacts was added after this failure.</p>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of the accessibility tree on the iOS 26.6 Auto-Lock settings page. Each option, from 30 Seconds to Never, is a Cell with a StaticText label. None of the cells carries a selected trait, a value or an isSelected attribute. The chosen cell, Never, contains one extra child: a Button labelled checkmark. A check that searches the page for the text Never finds it whether or not Never is chosen, so it passed every time while the phone kept locking, across four benchmark runs. The check that works looks for the checkmark button inside the bounds of the Never row, and that button is only present in the raw tree because the condensed tree given to models dropped it as decoration.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">Auto-Lock, as the tree sees it: one extra child is the whole answer</text>
+  <text x="40" y="66" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">Cell</text>
+  <text x="290" y="66" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">selected trait</text>
+  <text x="410" y="66" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">value</text>
+  <text x="490" y="66" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">isSelected</text>
+  <text x="600" y="66" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">children</text>
+  <rect x="40" y="76" width="820" height="40" rx="5" fill="#1e293b" stroke="#475569"/>
+  <text x="56" y="101" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13">30 Seconds</text>
+  <text x="290" y="101" fill="#64748b" font-family="monospace" font-size="12">none</text>
+  <text x="410" y="101" fill="#64748b" font-family="monospace" font-size="12">none</text>
+  <text x="490" y="101" fill="#64748b" font-family="monospace" font-size="12">none</text>
+  <text x="600" y="101" fill="#cbd5e1" font-family="monospace" font-size="12">StaticText</text>
+  <rect x="40" y="122" width="820" height="40" rx="5" fill="#1e293b" stroke="#475569"/>
+  <text x="56" y="147" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="13">1 Minute ... 5 Minutes</text>
+  <text x="290" y="147" fill="#64748b" font-family="monospace" font-size="12">none</text>
+  <text x="410" y="147" fill="#64748b" font-family="monospace" font-size="12">none</text>
+  <text x="490" y="147" fill="#64748b" font-family="monospace" font-size="12">none</text>
+  <text x="600" y="147" fill="#cbd5e1" font-family="monospace" font-size="12">StaticText</text>
+  <rect x="40" y="168" width="820" height="40" rx="5" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="56" y="193" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13" font-weight="700">Never (chosen)</text>
+  <text x="290" y="193" fill="#64748b" font-family="monospace" font-size="12">none</text>
+  <text x="410" y="193" fill="#64748b" font-family="monospace" font-size="12">none</text>
+  <text x="490" y="193" fill="#64748b" font-family="monospace" font-size="12">none</text>
+  <text x="600" y="193" fill="#a7f3d0" font-family="monospace" font-size="12">StaticText + Button "checkmark"</text>
+  <rect x="40" y="236" width="400" height="118" rx="8" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="240" y="262" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">check v1: is "Never" on the page?</text>
+  <text x="240" y="288" fill="#fecaca" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">always yes, chosen or not</text>
+  <text x="240" y="310" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">passed every time; phone kept locking</text>
+  <text x="240" y="332" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">cost: 4 benchmark runs</text>
+  <rect x="460" y="236" width="400" height="118" rx="8" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="660" y="262" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">check v2: checkmark inside the row?</text>
+  <text x="660" y="288" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">Button "checkmark" whose centre y</text>
+  <text x="660" y="310" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">falls within the Never cell's frame</text>
+  <text x="660" y="332" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">read from the RAW tree, polled up to 12 s</text>
+  <text x="40" y="386" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">The condensed tree the model sees drops the checkmark button as decoration, so neither a model nor a check built on</text>
+  <text x="40" y="404" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">that tree can tell which row is chosen. iPhone 17 Pro Max, iOS 26.6, English locale. phoneshell/prep.py _row_is_ticked.</text>
+</svg>
+<figcaption>Rows between 1 Minute and 5 Minutes are collapsed into one line; each is a Cell with the same
+empty attributes. The chosen row is the only one with a second child.</figcaption>
+</figure>
+
+<h2 id="evidence">What each check looked at, and what was true</h2>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>check</th><th>what it looked at</th><th>what it reported</th><th>what was true</th><th>fix</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>Auto-Lock set to Never</td><td>the text "Never" anywhere on the page</td><td>success, every time</td><td>the text is listed whether or not it is chosen; the phone locked mid-run</td><td>require a <code>checkmark</code> button inside the Never row, from the raw tree</td><td>FINDINGS.md s.22; <code>prep.py</code></td></tr>
+    <tr><td>Row selection attributes</td><td><code>selected</code> trait, value, <code>isSelected</code></td><td>nothing on any row</td><td>iOS exposes no selection state on this page</td><td>none available; the checkmark is the evidence</td><td>FINDINGS.md s.22; Apple docs</td></tr>
+    <tr><td>Walk to Display &amp; Brightness &gt; Auto-Lock</td><td>whether the next label was on screen</td><td>"could not find Auto-Lock in Settings"</td><td>the tap on the parent row never opened it</td><td>each hop must change the screen signature, 3 attempts, 3 s timeout each</td><td><code>prep.py</code> choose_setting</td></tr>
+    <tr><td>Tap after <code>scroll_to_text</code></td><td>coordinates read while the list was moving</td><td>a tap on the target</td><td>the tap lands on whichever row slid into that spot</td><td>take a stable snapshot before tapping</td><td><code>prep.py</code></td></tr>
+    <tr><td><code>open_app("Contacts")</code></td><td>display-name lookup</td><td>launched</td><td>it launched <code>com.apple.PeopleViewService</code></td><td>41 curated aliases, Contacts pinned to <code>com.apple.MobileAddressBook</code></td><td>FINDINGS.md s.10; <code>apps.py</code></td></tr>
+    <tr><td>Input reaches the screen</td><td>a full-width swipe, both directions</td><td>0% of pixels moved</td><td>reads fine, writes silently dropped</td><td>abort the run if under 1% moves</td><td><code>prep.py</code> check_input_reaches_screen</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The common shape: each broken check asked whether something was present, and the fix asks whether
+something changed or is attached to the right parent. Presence is the cheap question, and on iOS it is
+the one that lies most often.</p>
+
+<h2 id="mechanism">Setting one system option, done so that it proves itself</h2>
+
+<p>Our prep step is written as a general routine, "walk Settings down a path and choose an option",
+because every system setting a rig depends on has the same shape. Each step carries its own witness.</p>
+
+<figure>
+<svg viewBox="0 0 900 360" role="img" style="width:100%;height:auto"
+  aria-label="Flow of the choose_setting routine that sets Auto-Lock to Never on iOS. Step one terminates Settings, because Settings reopens where it was left. Step two opens Settings by pinned bundle id com.apple.Preferences rather than by display name. Step three, for each hop on the path, scrolls to the label, takes a stable snapshot, taps, and waits up to 3 seconds for the screen signature to change, retrying up to 3 times. Step four taps the option. Step five polls the raw tree for up to 12 seconds for a Button labelled checkmark inside the chosen row. Each step has a witness that a presence check would not provide.">
+  <rect x="0" y="0" width="900" height="360" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">choose_setting(["Display &amp; Brightness", "Auto-Lock"], "Never")</text>
+  <g font-family="Montserrat,sans-serif">
+  <rect x="40" y="62" width="150" height="120" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="115" y="88" fill="#e2e8f0" font-size="13" text-anchor="middle" font-weight="700">1. terminate</text>
+  <text x="115" y="112" fill="#94a3b8" font-size="11" text-anchor="middle">Settings reopens</text>
+  <text x="115" y="128" fill="#94a3b8" font-size="11" text-anchor="middle">where it was left</text>
+  <rect x="210" y="62" width="150" height="120" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="285" y="88" fill="#e2e8f0" font-size="13" text-anchor="middle" font-weight="700">2. open</text>
+  <text x="285" y="112" fill="#94a3b8" font-size="11" text-anchor="middle">pinned bundle id</text>
+  <text x="285" y="128" fill="#94a3b8" font-family="monospace" font-size="10" text-anchor="middle">com.apple.Preferences</text>
+  <rect x="380" y="62" width="170" height="120" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="465" y="88" fill="#e2e8f0" font-size="13" text-anchor="middle" font-weight="700">3. each hop</text>
+  <text x="465" y="112" fill="#94a3b8" font-size="11" text-anchor="middle">scroll, stable snapshot, tap</text>
+  <text x="465" y="128" fill="#94a3b8" font-size="11" text-anchor="middle">screen must change in 3 s</text>
+  <text x="465" y="144" fill="#94a3b8" font-size="11" text-anchor="middle">up to 3 attempts</text>
+  <rect x="570" y="62" width="130" height="120" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="635" y="88" fill="#e2e8f0" font-size="13" text-anchor="middle" font-weight="700">4. option</text>
+  <text x="635" y="112" fill="#94a3b8" font-size="11" text-anchor="middle">tap "Never"</text>
+  <rect x="720" y="62" width="140" height="120" rx="8" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="790" y="88" fill="#d1fae5" font-size="13" text-anchor="middle" font-weight="700">5. witness</text>
+  <text x="790" y="112" fill="#a7f3d0" font-size="11" text-anchor="middle">checkmark in row,</text>
+  <text x="790" y="128" fill="#a7f3d0" font-size="11" text-anchor="middle">raw tree, up to 12 s</text>
+  <path d="M190 122 L210 122 M360 122 L380 122 M550 122 L570 122 M700 122 L720 122" stroke="#64748b" stroke-width="2"/>
+  <text x="40" y="222" fill="#cbd5e1" font-size="13" font-weight="700">what each step would have reported without its witness</text>
+  <text x="40" y="248" fill="#fca5a5" font-size="12">1: a walk that starts on a sub-page and searches the wrong list</text>
+  <text x="40" y="270" fill="#fca5a5" font-size="12">2: "Contacts" opening com.apple.PeopleViewService, the same failure class for any duplicated display name</text>
+  <text x="40" y="292" fill="#fca5a5" font-size="12">3: "could not find Auto-Lock in Settings" when the tap on Display &amp; Brightness never took</text>
+  <text x="40" y="314" fill="#fca5a5" font-size="12">5: "Never" found on the page, success reported, phone locks mid-run (4 runs lost)</text>
+  <text x="40" y="342" fill="#94a3b8" font-size="11">phoneshell/prep.py, 8 September 2026. Timeouts are the code's defaults.</text>
+  </g>
+</svg>
+<figcaption>Five steps, four witnesses. Step 4 has none of its own because step 5 is its witness.</figcaption>
+</figure>
+
+<h2 id="implications">What it means for anyone grading or driving a phone agent</h2>
+
+<p>A task checker that confirms a setting by finding the option's text is measuring whether the option
+exists. If your benchmark has any "set X to Y" task on an iOS single-select list, check how it is graded.
+The same blind spot applies to the model: in our condensed tree the model could not see which row was
+chosen either, so an agent asked "is Auto-Lock set to Never?" had no way to answer from the tree. We now
+keep the checkmark in the raw read used for verification; whether to surface it to the model is a
+separate decision we have not measured.</p>
+
+<p>Resolve apps by bundle id, never by display name. Several iOS bundles share a display name, and some
+are services rather than apps. A curated map is tedious and it is the only thing that removed this class
+of failure for us.</p>
+
+<p>Do not trust a phone-side setting the rig did not set and verify itself. Auto-Lock had been set to
+Never by hand on this phone and it still locked mid-run. A lock during an unattended run is expensive,
+because every task after it fails identically, and a reboot to recover from it ends the session (see
+<a href="/blog/reboot-ends-unattended-iphone-session/">the note on reboots</a>).</p>
+
+<p>A judgement about where this is heading: Apple's WWDC26 session on App Intents and onscreen awareness
+(8 June 2026) is a route by which an app can describe its own state to the system in structured form. If
+Settings ever exposed its options that way, the checkmark heuristic would be unnecessary. Nothing we have
+seen on iOS 26.6 does so for the Auto-Lock page.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>Open Settings &gt; Display &amp; Brightness &gt; Auto-Lock on a phone running WebDriverAgent, then read
+the tree. Every attribute the tree has for the rows will be on these lines.</p>
+
+<pre><code># the raw XML for the page: compare the chosen row to its neighbours
+curl -s localhost:8100/source | grep -i -E 'Seconds|Minute|Never|checkmark'
+
+# the same as JSON, cells and the checkmark with their frames
+curl -s 'localhost:8100/source?format=json' \
+  | jq -r '.. | objects | select(.type=="XCUIElementTypeCell" or .label=="checkmark")
+           | [.type, .label, .value, .rect.y, .rect.height] | @tsv'
+
+# change the selection by hand and read again: only the checkmark's y moves
+
+# our routine and its witness
+grep -n "def _row_is_ticked" -A 24 phoneshell/prep.py
+grep -n "def choose_setting" -A 40 phoneshell/prep.py
+grep -n "PeopleViewService" -B 4 -A 4 phoneshell/apps.py
+sed -n '/^## 10\./,/^---/p' FINDINGS.md</code></pre>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>Read the Auto-Lock page on iOS 26.7 or iOS 27 and find the chosen row carrying the
+  <code>selected</code> trait, a value, or <code>isSelected</code> true through XCUITest. That would make
+  the checkmark heuristic a workaround for one version. We predict it is still absent on every iOS 27.x
+  release through 30 June 2027.</li>
+  <li>Switch the phone to a non-English locale and find no button labelled <code>checkmark</code>. We have
+  only tested English. If the label is localised, our witness fails on those phones, and it fails as
+  "setting not applied" rather than silently passing, which is the correct direction to fail.</li>
+  <li>Find another single-select page in iOS Settings that does expose selection. That would show the gap
+  is per-page rather than systemic, and a checker could prefer the attribute where it exists.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>phoneshell, FINDINGS.md sections 10 and 22, 8 September 2026. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>phoneshell, phoneshell/prep.py: choose_setting, _row_is_ticked, check_input_reaches_screen. <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/prep.py">https://github.com/Blomega/phoneshell/blob/main/phoneshell/prep.py</a></li>
+      <li>phoneshell, phoneshell/apps.py: COMMON_ALIASES (41 entries). <a href="https://github.com/Blomega/phoneshell/blob/main/phoneshell/apps.py">https://github.com/Blomega/phoneshell/blob/main/phoneshell/apps.py</a></li>
+      <li>Apple Developer Documentation, UIAccessibilityTraits selected. <a href="https://developer.apple.com/documentation/uikit/uiaccessibilitytraits/selected">https://developer.apple.com/documentation/uikit/uiaccessibilitytraits/selected</a></li>
+      <li>Apple Developer Documentation, XCUIElementAttributes isSelected. <a href="https://developer.apple.com/documentation/xcuiautomation/xcuielementattributes/isselected">https://developer.apple.com/documentation/xcuiautomation/xcuielementattributes/isselected</a></li>
+      <li>Matthew Cassinelli, WWDC26 sessions on App Intents, Siri and AI (App Intents onscreen awareness session, 8 June 2026). <a href="https://matthewcassinelli.com/wwdc26-sessions-app-intents-siri-ai-apple-developer">https://matthewcassinelli.com/wwdc26-sessions-app-intents-siri-ai-apple-developer</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
