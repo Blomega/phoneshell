@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Batch deletes in an iOS list removed an alarm nobody verified, because the list re-anchors its scroll offset | Blolabel</title>
+<meta name="description" content="Cleaning 640 benchmark-leftover alarms off an iPhone, a batch of seven deletes from one read removed the owner&#x27;s weekday 7:00 AM alarm: iOS re-anchors the scroll offset when content shrinks, so measured positions go stale. Plus a swipe that turned 9 alarms on, and a switch frame reported at x=0.">
+<link rel="canonical" href="https://blolabel.ai/blog/one-delete-per-read-ios-list/">
+<meta property="og:title" content="Batch deletes in an iOS list removed an alarm nobody verified, because the list re-anchors its scroll offset | Blolabel">
+<meta property="og:description" content="Cleaning 640 benchmark-leftover alarms off an iPhone, a batch of seven deletes from one read removed the owner&#x27;s weekday 7:00 AM alarm: iOS re-anchors the scroll offset when content shrinks, so measured positions go stale. Plus a swipe that turned 9 alarms on, and a switch frame reported at x=0.">
+<meta property="og:url" content="https://blolabel.ai/blog/one-delete-per-read-ios-list/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Batch deletes in an iOS list removed an alarm nobody verified, because the list re-anchors its scroll offset","description":"Cleaning 640 benchmark-leftover alarms off an iPhone, a batch of seven deletes from one read removed the owner&#x27;s weekday 7:00 AM alarm: iOS re-anchors the scroll offset when content shrinks, so measured positions go stale. Plus a swipe that turned 9 alarms on, and a switch frame reported at x=0.",
+ "datePublished":"2026-09-19","dateModified":"2026-09-19",
+ "url":"https://blolabel.ai/blog/one-delete-per-read-ios-list/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/one-delete-per-read-ios-list/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Is it safe to batch swipe-to-delete actions from one iOS accessibility read?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. When a list's content shrinks iOS re-anchors its scroll offset, so rows move and every position measured before the first delete is stale. A batch of seven deletes from one read removed a labelled weekday 7:00 AM alarm that was not a target. Re-read before every delete."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why does an off-screen iOS switch report x=0 in the accessibility tree?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "iOS clamps the frame of a control in a row it has not rendered. An alarm switch reported x=0, y=116, width=63 while its row was off screen, and x=359, width=63 on a 440 point wide screen while visible, which is where it is drawn. So x greater than 0 is a usable test that the control can be acted on now."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why did a swipe-to-delete turn alarms on instead of deleting them?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "The swipe started 92% across the row, on top of the switch, which sits at about 88% across, so iOS took it as a tap. Forty such deletes removed nothing and switched nine alarms on. Starting at 65% and ending at 5% clears the switch."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-19">19 September 2026</time>
+    <span>8 min read</span>
+  </div>
+  <h1>Batch deletes in an iOS list removed an alarm nobody verified, because the list re-anchors its scroll offset</h1>
+  <p class="standfirst">Deleting bottom to top looked provably safe. It was not: the list moved under every coordinate the read had measured. One delete per read, at about 10 seconds each, is the only version that has not touched a row it did not mean to.</p>
+
+        <p>Deleting rows from an iOS list in a batch, bottom to top, removed an alarm that no read had
+verified. Our cleanup script deleted seven benchmark-leftover alarms from one read of the Clock app, and
+one of the seven was the phone owner's labelled, weekday-repeating 7:00 AM alarm. When the list's content
+shrinks, iOS re-anchors its scroll offset, so every position measured before the first delete is stale
+after it. The script now does one delete per read, at about 10 seconds a delete, and that is the only
+version that has not touched a row it did not mean to.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/one-delete-per-read-ios-list-hero.png" alt="Abstract technical illustration of a vertical stack of translucent bars sliding upward while a fixed set of measurement marks stays where it was, so the marks now fall on different bars" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">How 640 alarms got there, and why the obvious batch was wrong</h2>
+
+<p>The mess was the benchmark's own. Runs saved an alarm every time an agent opened Add Alarm and confirmed
+it, despite being told not to, and by 8 September 2026 the phone held 640 of them. At that length one accessibility
+read of the alarm list cost 2.6 seconds, and 24 seconds with the Add Alarm sheet open, against 154 ms on
+the timer screen, which is why one alarm task could never finish inside its budget. We measured that
+decay in <a href="/blog/accessibility-tree-size-latency/">an earlier note</a>; this one is about the
+cleanup.</p>
+
+<p>The cleanup rule for what may be deleted is narrow on purpose. A row is an artifact only if its label
+is exactly <code>H:MM(AM|PM), Alarm</code>, meaning no name and no repeat schedule, and its switch reads
+off. A switch whose state cannot be read counts as on, and the row is kept.</p>
+
+<p>Doing that one row at a time costs a full tree read per delete, about 10 seconds each, so 640 rows
+is on the order of 107 minutes of wall clock (our arithmetic, 640 times 10 seconds). Batching looked
+provably safe. Removing a row only shifts the rows below it, so if you delete from the bottom of the
+screen upwards, every target above keeps the position the read measured.</p>
+
+<p>On iOS that reasoning fails. When the content gets shorter, the list re-anchors its scroll offset,
+the whole visible window moves, and the remaining "verified" coordinates point at different rows. A batch
+of seven deletes took out the owner's 7:00 AM alarm. We rebuilt it from what the tree had recorded
+(time, label, repeat days), and the incident is recorded as section 20 of our findings file.</p>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of why batched deletes in an iOS list hit the wrong row. On the left, one read measures three artifact rows and the owner's weekday 7:00 AM alarm between them, each row 107 points tall. The batch plan deletes the lowest artifact first, then swipes the remaining measured positions from bottom to top. In the middle, after the first delete the content is shorter and iOS re-anchors the scroll offset, so every row in the visible window moves. On the right, the next swipe lands on the coordinate the first read measured, which now holds the owner's alarm instead of an artifact. A batch of seven deletes removed that alarm. The fix is one delete per read, about 10 seconds each.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">One read, several deletes: the coordinates outlive the rows</text>
+  <text x="130" y="68" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">read (measured)</text>
+  <text x="450" y="68" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">after delete 1</text>
+  <text x="770" y="68" fill="#cbd5e1" font-family="Montserrat,sans-serif" font-size="13" text-anchor="middle" font-weight="700">delete 2 lands here</text>
+  <rect x="40" y="84" width="180" height="56" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="130" y="117" fill="#e2e8f0" font-family="monospace" font-size="12" text-anchor="middle">6:15AM, Alarm (off)</text>
+  <rect x="40" y="148" width="180" height="56" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="130" y="173" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">7:00 AM, owner</text>
+  <text x="130" y="192" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">labelled, weekdays</text>
+  <rect x="40" y="212" width="180" height="56" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="130" y="245" fill="#e2e8f0" font-family="monospace" font-size="12" text-anchor="middle">8:40AM, Alarm (off)</text>
+  <rect x="40" y="276" width="180" height="56" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="130" y="309" fill="#e2e8f0" font-family="monospace" font-size="12" text-anchor="middle">9:05AM, Alarm (off)</text>
+  <path d="M228 245 L250 245 M228 309 L250 309" stroke="#f59e0b" stroke-width="2"/>
+  <text x="256" y="249" fill="#fde68a" font-family="Montserrat,sans-serif" font-size="11">target y2</text>
+  <text x="256" y="313" fill="#fde68a" font-family="Montserrat,sans-serif" font-size="11">target y1</text>
+  <rect x="360" y="116" width="180" height="56" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="450" y="149" fill="#e2e8f0" font-family="monospace" font-size="12" text-anchor="middle">6:15AM, Alarm (off)</text>
+  <rect x="360" y="180" width="180" height="56" rx="6" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="450" y="212" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">7:00 AM, owner</text>
+  <rect x="360" y="244" width="180" height="56" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="450" y="277" fill="#e2e8f0" font-family="monospace" font-size="12" text-anchor="middle">8:40AM, Alarm (off)</text>
+  <text x="450" y="330" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">content shrank: iOS re-anchors</text>
+  <text x="450" y="346" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">the offset, the window moves</text>
+  <rect x="680" y="148" width="180" height="56" rx="6" fill="#1e293b" stroke="#475569"/>
+  <text x="770" y="181" fill="#e2e8f0" font-family="monospace" font-size="12" text-anchor="middle">6:15AM, Alarm (off)</text>
+  <rect x="680" y="212" width="180" height="56" rx="6" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="770" y="237" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">7:00 AM, owner</text>
+  <text x="770" y="256" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">deleted</text>
+  <path d="M640 245 L680 245" stroke="#ef4444" stroke-width="2"/>
+  <text x="600" y="232" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">swipe at y2</text>
+  <text x="40" y="384" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">Schematic: the direction and size of the shift are not reported by iOS; what we observed is that a batch of 7 deletes removed</text>
+  <text x="40" y="402" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">the owner's alarm. Rows are 107 pt tall on a 440 pt wide screen. Fix: re-read before every delete, about 10 s each.</text>
+</svg>
+<figcaption>Illustrative labels except the owner's alarm, which is the real one. The rule it produced:
+a position measured before a mutation is not valid after it, even when the mutation is below it.</figcaption>
+</figure>
+
+<h2 id="evidence">Five ways a delete did the wrong thing</h2>
+
+<p>The batch was not the only failure. Every cleanup strategy we tried before the current one either
+did nothing and reported progress, or changed something it should not have.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>strategy</th><th>what happened</th><th>why</th><th>rule now</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>swipe to delete starting 92% across the row</td><td>40 "deletes" removed nothing and switched 9 alarms on, several set for the small hours</td><td>the toggle sits at about 88% across; a swipe that starts on it is taken as a tap</td><td>start the swipe at 65% and end at 5%</td><td><code>scripts/clean_alarms.py</code></td></tr>
+    <tr><td>swipe on rows at y = 80</td><td>4 "deletes" changed not one row</td><td>that band sits under the top bar of the Clock app, and a swipe there does nothing, silently</td><td>only rows with centre y between 110 and screen height minus 140</td><td><code>scripts/clean_alarms.py</code></td></tr>
+    <tr><td>7 deletes from one read, bottom to top</td><td>removed the owner's weekday 7:00 AM alarm</td><td>iOS re-anchors the scroll offset when content shrinks</td><td>exactly one delete per read</td><td>FINDINGS.md s.20</td></tr>
+    <tr><td>trust a read taken mid-animation</td><td>one read returned 631 cells and 413 switches; another returned nothing and the loop concluded it had finished</td><td>reads during a row-removal animation come back short, with no error</td><td>accept a read only if cells equal switches; wait 0.9 s after each delete</td><td><code>scripts/clean_alarms.py</code></td></tr>
+    <tr><td>tap the row centre to reach its switch</td><td>tap reported success, nothing changed</td><td>the switch is 29 pt tall and sits about 24 pt above the middle of a 107 pt row</td><td>use the switch's own frame, and only while the row is on screen</td><td>FINDINGS.md s.20</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Two of the five produced a success signal from the gesture layer while the phone did nothing, and
+one did damage. None raised an error.</p>
+
+<h2 id="mechanism">Where the switch really is, and why the tree put it at x = 0</h2>
+
+<p>The swipe that turned nine alarms on is explained by a frame that looks wrong and is not. Read while
+its row is off screen, an alarm's switch reports <code>x=0, y=116, width=63</code>. Read while the row is
+visible, the same switch reports <code>x=359, width=63</code> on a 440 point wide screen, which is where it
+is drawn. iOS clamps the frame of a control in a row it has not rendered. So the tree could not be used
+to find the toggle in the first version of the script, and a hand-picked 92% start point landed on it.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Scale drawing of one alarm row on a 440 point wide iPhone screen. The row is 107 points tall. The switch is drawn at x 359 to 422, 63 points wide and 29 points tall, and its centre sits about 24 points above the row's vertical middle, aligned with the alarm time. A swipe that starts at 92 percent across, x 405, begins on the switch and is taken as a tap, which switched 9 alarms on in 40 attempts. A swipe from 65 percent, x 286, to 5 percent, x 22, clears the switch and deletes the row. When the row is off screen the tree reports the same switch at x 0 with width 63, a clamped placeholder.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="40" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="19" font-weight="700">One alarm row, to scale (1 pt = 1.8 px)</text>
+  <rect x="42" y="90" width="792" height="193" rx="4" fill="#1e293b" stroke="#475569"/>
+  <text x="60" y="122" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="30" font-weight="600">7:00</text>
+  <text x="60" y="150" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="12">label, repeat days</text>
+  <rect x="688" y="117" width="113" height="52" rx="26" fill="#10b981" fill-opacity="0.35" stroke="#10b981" stroke-width="2"/>
+  <text x="744" y="148" fill="#d1fae5" font-family="Montserrat,sans-serif" font-size="12" text-anchor="middle">switch</text>
+  <text x="744" y="210" fill="#a7f3d0" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">x 359 to 422, 63 x 29 pt</text>
+  <path d="M42 186 L834 186" stroke="#64748b" stroke-dasharray="3 5"/>
+  <text x="360" y="202" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">row middle: a centre tap lands here, about 24 pt below the switch</text>
+  <path d="M770 60 L770 117" stroke="#ef4444" stroke-width="2"/>
+  <text x="770" y="54" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="11" text-anchor="middle">92% start, x 405: a tap</text>
+  <path d="M557 245 L82 245" stroke="#f59e0b" stroke-width="3" marker-end="url(#ah)"/>
+  <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#f59e0b"/></marker></defs>
+  <text x="560" y="266" fill="#fde68a" font-family="Montserrat,sans-serif" font-size="11" text-anchor="end">swipe 65% (x 286) to 5% (x 22): a delete</text>
+  <path d="M842 90 L842 283" stroke="#94a3b8"/>
+  <text x="850" y="190" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11">107 pt</text>
+  <text x="42" y="306" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11">0</text>
+  <text x="834" y="306" fill="#94a3b8" font-family="Montserrat,sans-serif" font-size="11" text-anchor="end">440 pt</text>
+  <rect x="42" y="326" width="792" height="50" rx="6" fill="#3b0b13" stroke="#ef4444"/>
+  <text x="58" y="348" fill="#fee2e2" font-family="Montserrat,sans-serif" font-size="12">row off screen: the tree reports this switch at x=0, y=116, width=63, a clamped placeholder</text>
+  <text x="58" y="366" fill="#fca5a5" font-family="Montserrat,sans-serif" font-size="12">so x &gt; 0 is a usable test for "this control can be tapped right now"</text>
+</svg>
+<figcaption>Pixel positions 405, 286 and 22 are our arithmetic from the percentages and the 440 point
+width. The switch frame, row height and 24 point offset are measured.</figcaption>
+</figure>
+
+<p>Two rules come out of this. <code>x &gt; 0</code> is a cheap and usable test for "this control is on
+screen and can be acted on now". And a row's centre is not a stand-in for a control inside it: the
+toggle is aligned with the alarm's time, not with the row's middle, so a row-centre tap misses a 29 point
+switch entirely and reports success anyway.</p>
+
+<h2 id="implications">What it means for an agent that acts on a list</h2>
+
+<p>The expensive rule failed and the cheap one held. The first design protected the owner's alarms by
+checking after every delete that all keepers were still present. That needed a complete tree, and at
+640 rows <code>/source</code> truncates positionally: it returns rows near the current scroll offset and
+drops the rest, so a keeper far from the viewport is absent from every read and three reads agreeing
+mean nothing. The rule that works needs only the row being acted on: exact artifact label, switch off,
+unknown means on. It stays correct when the tree comes back short.</p>
+
+<p>Any agent that emits several actions from one observation carries the same exposure. Our judgement:
+for mutations on a list, one action per observation is the correct default even though it is the slow
+one, and the agent loop should re-observe after a delete, a reorder or an insert before it trusts any
+coordinate. Taps that do not change content, such as moving focus between fields, do not carry this
+risk in the same way; we have not measured how far the batch can safely go for those.</p>
+
+<p>The cost is real and should be budgeted rather than optimised away. One read per delete at about
+10 seconds turned a 640-row cleanup into roughly an hour and three quarters. A benchmark that creates
+state should also delete it inside the task: ours now has a <code>clean_alarms</code> teardown, and the backlog script carries a hard ceiling equal to the number of artifacts it counted
+at the start, so a bug can never delete more than that.</p>
+
+<h2 id="reproduce">Check it yourself</h2>
+
+<p>Use a test phone. The destructive part of this is the whole point.</p>
+
+<pre><code># the cleanup, its artifact rule, its ceiling and its one-delete-per-read loop
+grep -n "ARTIFACT = " scripts/clean_alarms.py
+grep -n "Exactly ONE delete per read" -B 2 -A 8 scripts/clean_alarms.py
+grep -n "Start the swipe at 65%" -A 8 scripts/clean_alarms.py
+sed -n '/^## 20\./,/^## 21\./p' FINDINGS.md
+
+# read the switch frames yourself from WebDriverAgent (no session needed for /source)
+curl -s 'localhost:8100/source?format=json' \
+  | jq -r '.. | objects | select(.type=="XCUIElementTypeSwitch")
+           | [.label, .value, .rect.x, .rect.y, .rect.width, .rect.height] | @tsv'
+# rows scrolled out of view report x = 0; rows on screen report their drawn x
+
+# the re-anchor: note the y of every row ABOVE a target, delete the target, read again
+curl -s 'localhost:8100/source?format=json' \
+  | jq -r '.. | objects | select(.type=="XCUIElementTypeCell") | [.label, .rect.y] | @tsv'</code></pre>
+
+<p>The comparison that proves the mechanism is the last one: if the rows above the deleted row change
+their <code>y</code>, the offset moved and any batch plan built on the first read is stale.</p>
+
+<h2 id="falsify">What would prove this wrong</h2>
+
+<ul>
+  <li>On iOS 26.7 or iOS 27, delete one alarm from a list long enough to scroll, and find that every row
+  above it keeps its <code>y</code> to the point. That would mean the re-anchor is conditional (on scroll
+  position, list length or version) and batching is safe in some states. We predict the shift appears in
+  the Clock alarm list on every iOS 27.x release through 30 June 2027.</li>
+  <li>Reproduce the off-screen switch frame and get the drawn position rather than
+  <code>x=0</code>. That would mean the clamping we saw is specific to iOS 26.6 or to lists of this
+  length.</li>
+  <li>The incident count is one lost alarm in one batch of seven. It is enough to change the rule, and
+  it is not enough to say how often a batch goes wrong.</li>
+</ul>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>phoneshell, FINDINGS.md section 20, 8 September 2026. <a href="https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md">https://github.com/Blomega/phoneshell/blob/main/FINDINGS.md</a></li>
+      <li>phoneshell, scripts/clean_alarms.py: artifact rule, 65% swipe start, one delete per read, cell and switch count check. <a href="https://github.com/Blomega/phoneshell/blob/main/scripts/clean_alarms.py">https://github.com/Blomega/phoneshell/blob/main/scripts/clean_alarms.py</a></li>
+      <li>Blolabel, The accessibility tree grew with the benchmark's own leftovers (154 ms, 2,612 ms, 24,195 ms reads). <a href="https://blolabel.ai/blog/accessibility-tree-size-latency/">https://blolabel.ai/blog/accessibility-tree-size-latency/</a></li>
+      <li>Appium WebDriverAgent, v16.12.8 released 11 September 2026 (npm registry). <a href="https://registry.npmjs.org/appium-webdriveragent">https://registry.npmjs.org/appium-webdriveragent</a></li>
+      <li>Apple Developer Documentation, XCUIElementAttributes isSelected and frame attributes. <a href="https://developer.apple.com/documentation/xcuiautomation/xcuielementattributes/isselected">https://developer.apple.com/documentation/xcuiautomation/xcuielementattributes/isselected</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
