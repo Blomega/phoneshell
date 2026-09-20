@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iOS gives an agent one interactive surface, so the only honest background mode is yielding | Blolabel</title>
+<meta name="description" content="Apple's external display scene role is named NonInteractive, and since iOS 27 shipped on 14 September 2026 apps built against the new SDK are not offered that scene from the Info.plist manifest at all. A phone agent cannot have its own surface, so phoneshell yields within one 0.8 second poll.">
+<link rel="canonical" href="https://blolabel.ai/blog/one-interactive-surface-agent-yields/">
+<meta property="og:title" content="iOS gives an agent one interactive surface, so the only honest background mode is yielding | Blolabel">
+<meta property="og:description" content="Apple's external display scene role is named NonInteractive, and since iOS 27 shipped on 14 September 2026 apps built against the new SDK are not offered that scene from the Info.plist manifest at all. A phone agent cannot have its own surface, so phoneshell yields within one 0.8 second poll.">
+<meta property="og:url" content="https://blolabel.ai/blog/one-interactive-surface-agent-yields/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"iOS gives an agent one interactive surface, so the only honest background mode is yielding","description":"Apple's external display scene role is named NonInteractive, and since iOS 27 shipped on 14 September 2026 apps built against the new SDK are not offered that scene from the Info.plist manifest at all. A phone agent cannot have its own surface, so phoneshell yields within one 0.8 second poll.",
+ "datePublished":"2026-09-20","dateModified":"2026-09-20",
+ "url":"https://blolabel.ai/blog/one-interactive-surface-agent-yields/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/one-interactive-surface-agent-yields/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Can an AI agent use an iPhone in the background while you use it?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. iOS has one interactive display and one digitizer. External display scenes carry the role name UIWindowSceneSessionRoleExternalDisplayNonInteractive and cannot receive touch, and from iOS 27 apps built against the new SDK are not offered that scene from the Info.plist manifest at all. The workable design is an agent that yields the phone when its owner picks it up."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How fast can an automation harness notice that a person picked up the phone?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "In phoneshell, within one 0.8 second poll. The watchdog reads the foreground bundle id (about 100 ms) and a screenshot (90 to 130 ms) and compares the screenshot against the previous one on a 64 by 64 greyscale grid. The accessibility tree, at about 2.2 seconds, is too slow to poll."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind foundational">foundational</span>
+    <time datetime="2026-09-20">20 September 2026</time>
+    <span>5 min read</span>
+  </div>
+  <h1>iOS gives an agent one interactive surface, so the only honest background mode is yielding</h1>
+  <p class="standfirst">There is no second screen to put an agent on. What you build instead is a watchdog: a foreground check and a 64 by 64 greyscale diff, running faster than a person can pick up their phone.</p>
+
+  <p>An iPhone has one interactive surface and both the owner and the agent want it. Apple's external
+display scene role is literally named <code>UIWindowSceneSessionRoleExternalDisplayNonInteractive</code>,
+and since iOS 27 shipped on 14 September 2026 an app built against the new SDK is not handed even that
+scene from its Info.plist manifest. So the honest version of "run the agent in the background" on iOS
+is not a second screen. It is a watchdog that gives the phone back, and ours does it within one 0.8
+second poll of the owner touching it.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/one-interactive-surface-agent-yields-hero.png" alt="Abstract technical illustration of a single bright rectangular plane with two sets of control lines converging on it from opposite sides, one set dimmed while the other is lit" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">What changed, and when</h2>
+
+<p>External displays on iOS have never been a second place to put an interactive app. The scene role
+carries "NonInteractive" in its name, and the developer guidance is blunt about the consequence: "this
+view will not be interactive" (João Gabriel, Cindori, 1 December 2024). Mirroring is a picture of the
+phone, not a second phone.</p>
+
+<p>iOS 27 tightened it further. osy, the maintainer of UTM, filed pull request 7873 on 16 September
+2026 with a one-line description of the breakage: "Apps built with the iOS 27 SDK are no longer offered
+UIWindowSceneSessionRoleExternalDisplayNonInteractive scenes from the Info.plist scene manifest, so on
+iOS 27 the external display stayed black while the VM ran on the device." The fix registers the external
+content as a SwiftUI scene accessory on iOS 27 while iOS 26 and earlier keep the old manifest path. A
+non-interactive escape hatch got narrower two days after the OS shipped.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>date</th><th>what</th><th>effect on an agent that wants its own surface</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>1 Dec 2024</td><td>Current guidance on external display scenes: the role is <code>...ExternalDisplayNonInteractive</code></td><td>the second display can show pixels, it cannot receive a tap</td><td>cindori.com, João Gabriel</td></tr>
+    <tr><td>14 Sep 2026</td><td>iOS 27 released</td><td>ships on iPhone 18 Pro and as an update to iPhone 17 hardware</td><td>Wikipedia, iOS 27</td></tr>
+    <tr><td>16 Sep 2026</td><td>UTM PR 7873: iOS 27 SDK stops delivering the non-interactive external display scene from the Info.plist manifest</td><td>the one remaining second-surface path needs new code per OS version</td><td>github.com/utmapp/UTM/pull/7873</td></tr>
+    <tr><td>this repo</td><td><code>phoneshell/coexist.py</code>: one interactive display, one digitizer, so the agent yields</td><td>the design consequence we actually shipped</td><td>Blomega/phoneshell</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>One caveat on our own note. The <code>coexist.py</code> header records that the iOS 26.4 SDK
+headers declare only the non-interactive role and that the interactive one was deprecated in iOS 16.
+The machine this note was written on has no iOS SDK installed, so we could not re-read the header
+today. The externally checkable half, the constant's name and the iOS 27 manifest change, is cited
+above.</p>
+
+<h2 id="method">The watchdog, with its real constants</h2>
+
+<p>If the agent cannot have its own surface, the rule has to be possession in short bursts. The agent
+brackets its own work with <code>claim()</code>; anything the watchdog sees outside a claim is
+somebody else, which in practice means the person holding the phone.</p>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of the phoneshell coexistence watchdog. Every 0.8 seconds it reads the foreground bundle id, about 100 milliseconds, and a screenshot, 90 to 130 milliseconds. If the foreground app changed, or more than 3 percent of a 64 by 64 greyscale grid changed while the agent was not acting, the owner is marked present and the agent waits out a 6 second grace period. The agent's own actions are bracketed by claim, which suppresses detection for 2.5 seconds, and release, which suppresses it for a further 1.2 seconds. The accessibility tree read at about 2.2 seconds is too slow to poll and is never used by the watchdog.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">Detecting the owner in 0.8 seconds, without reading the tree</text>
+  <g font-family="Montserrat,sans-serif">
+    <rect x="30" y="60" width="250" height="150" rx="10" fill="#1e293b" stroke="#475569"/>
+    <text x="48" y="88" fill="#e2e8f0" font-size="14" font-weight="600">every 0.8 s, sample</text>
+    <text x="48" y="116" fill="#94a3b8" font-size="12">/wda/activeAppInfo ~100 ms</text>
+    <text x="48" y="138" fill="#94a3b8" font-size="12">/screenshot 90 to 130 ms</text>
+    <text x="48" y="168" fill="#f87171" font-size="12">/source?format=json ~2.2 s</text>
+    <text x="48" y="190" fill="#f87171" font-size="12">never polled: slower than the loop</text>
+
+    <rect x="330" y="60" width="250" height="150" rx="10" fill="#1e293b" stroke="#475569"/>
+    <text x="348" y="88" fill="#e2e8f0" font-size="14" font-weight="600">is this us?</text>
+    <text x="348" y="116" fill="#94a3b8" font-size="12">claim() suppresses 2.5 s</text>
+    <text x="348" y="138" fill="#94a3b8" font-size="12">release() suppresses 1.2 s more</text>
+    <text x="348" y="168" fill="#94a3b8" font-size="12">inside a claim the baseline is</text>
+    <text x="348" y="190" fill="#94a3b8" font-size="12">refreshed, never judged</text>
+
+    <rect x="630" y="60" width="240" height="150" rx="10" fill="#16304a" stroke="#38bdf8"/>
+    <text x="648" y="88" fill="#e2e8f0" font-size="14" font-weight="600">somebody else</text>
+    <text x="648" y="116" fill="#7dd3fc" font-size="12">foreground bundle changed</text>
+    <text x="648" y="138" fill="#7dd3fc" font-size="12">OR diff &gt; 0.03 of a 64x64 grid</text>
+    <text x="648" y="168" fill="#7dd3fc" font-size="12">= 123 of 4,096 cells moving</text>
+    <text x="648" y="190" fill="#7dd3fc" font-size="12">more than 12 grey levels</text>
+
+    <path d="M282 135 L326 135" stroke="#64748b" stroke-width="2" marker-end="url(#a2)"/>
+    <path d="M582 135 L626 135" stroke="#64748b" stroke-width="2" marker-end="url(#a2)"/>
+    <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#64748b"/></marker></defs>
+
+    <rect x="330" y="250" width="540" height="110" rx="10" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="348" y="278" fill="#fbbf24" font-size="14" font-weight="600">the agent stands down</text>
+    <text x="348" y="306" fill="#e2e8f0" font-size="12">human_active stays true for a 6 s grace period after the last change</text>
+    <text x="348" y="328" fill="#e2e8f0" font-size="12">wait_for_turn() blocks, re-checking every 0.4 s, up to 120 s</text>
+    <text x="348" y="350" fill="#94a3b8" font-size="12">then it reports what it was waiting for, rather than failing the task silently</text>
+
+    <text x="30" y="290" fill="#94a3b8" font-size="12">Not a policy choice:</text>
+    <text x="30" y="312" fill="#94a3b8" font-size="12">one display,</text>
+    <text x="30" y="334" fill="#94a3b8" font-size="12">one digitizer.</text>
+
+    <text x="30" y="400" fill="#64748b" font-size="11">Constants read from phoneshell/coexist.py and phoneshell/perception/screen.py, 20 September 2026</text>
+  </g>
+</svg>
+<figcaption>The whole detector is a foreground check and a 64 by 64 greyscale diff, because the only
+read that would be authoritative takes about 2.2 seconds and the loop runs in 0.8.</figcaption>
+</figure>
+
+<p>The threshold is worth stating exactly, because "3% of the screen" sounds vague and is not.
+<code>visual_difference</code> converts both screenshots to greyscale, resizes each to 64 by 64, and
+counts cells that differ by more than 12 of 255. Above 0.03, that is 123 of 4,096 cells, the watchdog
+calls it a change. A blinking cursor does not reach it. Opening the notification shade does.</p>
+
+<figure>
+<svg viewBox="0 0 900 300" role="img" style="width:100%;height:auto"
+  aria-label="Timeline of one minute of shared phone use. The agent acts in short bursts bracketed by claim and release. At 18 seconds the owner picks up the phone, the watchdog detects it on the next 0.8 second sample, the agent stops and a 6 second grace timer restarts on every further change. The agent resumes only after 6 seconds of quiet, and each yield is counted in the Presence record.">
+  <rect x="0" y="0" width="900" height="300" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">One minute of a shared phone</text>
+  <g font-family="Montserrat,sans-serif">
+    <line x1="60" y1="120" x2="860" y2="120" stroke="#334155" stroke-width="2"/>
+    <rect x="60" y="100" width="90" height="40" rx="5" fill="#0ea5e9"/>
+    <rect x="170" y="100" width="70" height="40" rx="5" fill="#0ea5e9"/>
+    <rect x="260" y="100" width="60" height="40" rx="5" fill="#0ea5e9"/>
+    <rect x="620" y="100" width="110" height="40" rx="5" fill="#0ea5e9"/>
+    <rect x="750" y="100" width="110" height="40" rx="5" fill="#0ea5e9"/>
+    <rect x="340" y="100" width="200" height="40" rx="5" fill="#f59e0b"/>
+    <rect x="540" y="100" width="80" height="40" rx="5" fill="#475569"/>
+
+    <text x="70" y="126" fill="#0b1220" font-size="12" font-weight="700">agent</text>
+    <text x="352" y="126" fill="#0b1220" font-size="12" font-weight="700">the owner has the phone</text>
+    <text x="548" y="126" fill="#e2e8f0" font-size="12">grace 6 s</text>
+    <text x="632" y="126" fill="#0b1220" font-size="12" font-weight="700">agent resumes</text>
+
+    <line x1="340" y1="80" x2="340" y2="160" stroke="#f87171" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="300" y="72" fill="#f87171" font-size="12">first touch</text>
+    <line x1="352" y1="160" x2="352" y2="185" stroke="#f87171" stroke-width="1"/>
+    <text x="300" y="200" fill="#94a3b8" font-size="12">detected on the next sample, at most 0.8 s later</text>
+    <text x="300" y="222" fill="#94a3b8" font-size="12">every further change restarts the 6 s grace timer</text>
+
+    <text x="60" y="180" fill="#64748b" font-size="11">0 s</text>
+    <text x="330" y="180" fill="#64748b" font-size="11">18 s</text>
+    <text x="610" y="180" fill="#64748b" font-size="11">38 s</text>
+    <text x="845" y="180" fill="#64748b" font-size="11">60 s</text>
+    <text x="60" y="262" fill="#94a3b8" font-size="12">Presence counts samples and yields, so a run can report how often it stood down rather than how long it took.</text>
+    <text x="60" y="288" fill="#64748b" font-size="11">Shape and constants from phoneshell/coexist.py; the timeline is illustrative, not a recorded trace.</text>
+  </g>
+</svg>
+<figcaption>Bursts, not background. The agent never holds the phone for longer than it can give it
+back.</figcaption>
+</figure>
+
+<h2 id="finding">What this means if you are building one</h2>
+
+<p>Three consequences follow, and none of them are about model quality.</p>
+
+<p>Any unattended iPhone task is interruptible by definition, so it needs a resume point, not a
+retry. A task that assumes uninterrupted possession of someone's personal phone will fail on the
+first incoming call, and it will fail in a way that looks like an agent error in your logs.</p>
+
+<p>The agent cannot be invisible even for one call. Creating a WebDriverAgent session switches the
+foreground app, which we measured and wrote up separately, so the first act of any automation run is
+visible to whoever is holding the phone. Politeness has to be designed in, because stealth is not
+available.</p>
+
+<p>Screen-change detection has to be cheap enough to run faster than a human reaction. That rules out
+the accessibility tree, which is the authoritative read and takes about 2.2 seconds on this rig. The
+cheap pair, a bundle id and a thumbnail diff, is what fits inside the loop. It is less accurate, and
+that is the correct trade for a watchdog whose only job is to notice that the phone is no longer
+yours.</p>
+
+<h2 id="run">Check it yourself</h2>
+
+<pre><code># what the two cheap reads actually cost on your rig
+for i in 1 2 3 4 5; do
+  curl -s -o /dev/null -w "activeAppInfo %{time_total}s\n" http://127.0.0.1:8100/wda/activeAppInfo
+  curl -s -o /dev/null -w "screenshot    %{time_total}s\n" http://127.0.0.1:8100/screenshot
+done
+curl -s -o /dev/null -w "source        %{time_total}s\n" "http://127.0.0.1:8100/source?format=json"
+
+# the constants quoted above
+grep -n "poll\|grace\|settle_after_action\|0.03" phoneshell/coexist.py
+grep -n "def visual_difference" -A 8 phoneshell/perception/screen.py</code></pre>
+
+<p>For the iOS 27 half, the primary document is the pull request:
+<a href="https://github.com/utmapp/UTM/pull/7873">github.com/utmapp/UTM/pull/7873</a>. Build any app
+that declares an external display scene in its Info.plist against the iOS 27 SDK, connect a display,
+and watch it stay black.</p>
+
+<h2>What would prove this wrong</h2>
+
+<p>The claim is that iOS offers no second interactive surface an agent could occupy while its owner
+uses the phone. One counterexample retires it: a shipping iOS 27 or iOS 28 API that delivers touch
+events to a scene the built-in display is not showing, or a WebDriverAgent tap that lands while a
+finger is on the screen without either input being dropped. If Apple ships an interactive secondary
+scene role in the iOS 28 betas by June 2027, this note is obsolete and the yielding watchdog becomes
+a fallback rather than the design.</p>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>osy, <a href="https://github.com/utmapp/UTM/pull/7873">UTM pull request 7873</a>, 16 September 2026: apps built with the iOS 27 SDK are no longer offered <code>UIWindowSceneSessionRoleExternalDisplayNonInteractive</code> scenes from the Info.plist scene manifest.</li>
+      <li>Joao Gabriel, <a href="https://cindori.com/developer/swiftui-external-display-ios">Displaying SwiftUI content on an external screen in iOS</a>, Cindori, 1 December 2024: the external display scene role is non-interactive, "this view will not be interactive".</li>
+      <li><a href="https://en.wikipedia.org/wiki/IOS_27">iOS 27</a>, released 14 September 2026.</li>
+      <li>Apple, <a href="https://developer.apple.com/documentation/uikit/uiwindowscene">UIWindowScene</a>, UIKit documentation.</li>
+      <li>Blomega/phoneshell, <code>phoneshell/coexist.py</code>: the 0.8 s poll, the 6 s grace period, the 2.5 s claim and the measured cost of each read.</li>
+      <li>Blomega/phoneshell, <code>phoneshell/perception/screen.py</code>: <code>visual_difference</code>, greyscale 64 by 64, cells differing by more than 12 of 255.</li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
