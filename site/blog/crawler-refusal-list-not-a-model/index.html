@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Screenshotting every screen of an iPhone needs no model, it needs 80 labels it will not tap | Blolabel</title>
+<meta name="description" content="Walking an app is a graph traversal, the job an LLM is worst at. phoneshell's crawler does it in code at about 1.2 seconds a step, and what makes it safe on a personal phone is an 80-label refusal list, five type rules and a cap of three screens per layout.">
+<link rel="canonical" href="https://blolabel.ai/blog/crawler-refusal-list-not-a-model/">
+<meta property="og:title" content="Screenshotting every screen of an iPhone needs no model, it needs 80 labels it will not tap | Blolabel">
+<meta property="og:description" content="Walking an app is a graph traversal, the job an LLM is worst at. phoneshell's crawler does it in code at about 1.2 seconds a step, and what makes it safe on a personal phone is an 80-label refusal list, five type rules and a cap of three screens per layout.">
+<meta property="og:url" content="https://blolabel.ai/blog/crawler-refusal-list-not-a-model/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Screenshotting every screen of an iPhone needs no model, it needs 80 labels it will not tap","description":"Walking an app is a graph traversal, the job an LLM is worst at. phoneshell's crawler does it in code at about 1.2 seconds a step, and what makes it safe on a personal phone is an 80-label refusal list, five type rules and a cap of three screens per layout.",
+ "datePublished":"2026-09-20","dateModified":"2026-09-20",
+ "url":"https://blolabel.ai/blog/crawler-refusal-list-not-a-model/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/crawler-refusal-list-not-a-model/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Should an LLM agent or a script crawl an app's screens?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "A script. Screen collection is a graph traversal, and a language model has no memory of which rows it already opened, so it pays latency and tokens to rediscover that at every step. phoneshell's deterministic crawler runs at about 1.2 seconds a step because there is no model in the loop; the measured model decision alone is 1 to 3 seconds."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do you stop an automated crawler from doing something irreversible on a real phone?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "With refusals before traversal. phoneshell refuses 80 never-tap labels matched as whole words, 15 create-something labels by default, 7 mutating element types such as Switch and Slider, 5 input types, and 6 app bundles including Passwords and Wallet. Every skipped control is logged with its reason."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind foundational">foundational</span>
+    <time datetime="2026-09-20">20 September 2026</time>
+    <span>6 min read</span>
+  </div>
+  <h1>Screenshotting every screen of an iPhone needs no model, it needs 80 labels it will not tap</h1>
+  <p class="standfirst">The expensive part of an agent step is the decision, not the read: 1 to 3 seconds for the model against 159 ms for the tree. Delete the decision and a screen collection becomes a budget of time.</p>
+
+  <p>Collecting a screenshot of every screen in an iPhone app is a graph traversal, and a language model
+is the worst available tool for it: it forgets which of eleven rows it already opened and pays a second
+of latency and a fraction of a cent to rediscover that each time. Our crawler does the same walk in
+code at about 1.2 seconds a step. The part that makes it safe to point at someone's personal phone is
+not the traversal. It is an 80-label refusal list and five type rules that decide what may be tapped
+at all.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/crawler-refusal-list-not-a-model-hero.png" alt="Abstract technical illustration of a branching node graph where most branches are drawn in bright lines and a minority terminate at small blocked markers" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="method">The refusal list is the product</h2>
+
+<p>A crawler tapping its way through Settings, Mail and a banking app will eventually reach a control
+that spends money, deletes data, places a call or grants a permission, and it cannot undo any of them.
+So the tap decision is a series of refusals before it is a traversal. Counted from
+<code>phoneshell/crawl.py</code> on 20 September 2026:</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>set</th><th>size</th><th>examples</th><th>rule</th></tr></thead>
+  <tbody>
+    <tr><td><code>NEVER_TAP</code></td><td>80 labels</td><td>delete, erase, buy, place order, call, allow, turn off, factory reset, dictate</td><td>refused whatever the settings say</td></tr>
+    <tr><td><code>CAREFUL_TAP</code></td><td>15 labels</td><td>add, new, compose, schedule, sign in, pair</td><td>refused by default, allowed with <code>Plan.cautious = False</code></td></tr>
+    <tr><td><code>BACK_CONTROLS</code></td><td>13 labels</td><td>back, cancel, close, done, and the chevron and cross glyphs</td><td>removed from the forward set: they are how the crawl gets out</td></tr>
+    <tr><td><code>MUTATING_TYPES</code></td><td>7 element types</td><td>Switch, Slider, Stepper, PickerWheel, Picker, DatePicker, CheckBox</td><td>tapping one changes the phone rather than navigating it</td></tr>
+    <tr><td><code>INPUT_TYPES</code></td><td>5 element types</td><td>TextField, SecureTextField, SearchField, TextView, Key</td><td>typing is out of scope, so a keyboard is only something to escape</td></tr>
+    <tr><td><code>DENY_BUNDLES</code></td><td>6 apps</td><td>Passwords, Keychain, Wallet, Phone</td><td>never entered, even when asked for "everything"</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Two details in that list took a real run to learn. Matching is by whole label as a word, not as a
+substring, so "Delete" is refused and "Deleted Items" stays a screen worth having. And "dictate" is on
+the never-tap list because the Settings search bar's dictation button sent a crawl straight to the home
+screen on its very first tap: a microphone control starts capturing and can background the app.</p>
+
+<figure>
+<svg viewBox="0 0 900 470" role="img" style="width:100%;height:auto"
+  aria-label="Decision diagram for one control in the phoneshell crawler. A control is skipped if it is a back control of 13 labels, a mutating type of 7, an input type of 5, one of 80 never-tap labels, or one of 15 careful labels while cautious mode is on. Otherwise the control is re-resolved by identity immediately before the tap because cached coordinates go stale, then tapped. The result is one of four outcomes: the app changed, which is recorded as a crossing edge and returned from by replaying the path; the screen signature is unchanged and the screenshot moved less than 1 percent, which is a no-op and 14 consecutive no-ops trigger a swipe liveness test; the same screen with live content, which is not recorded as new; or a new screen, which is recorded and descended into only if fewer than 3 screens of that layout have been explored.">
+  <rect x="0" y="0" width="900" height="470" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">What happens to one control</text>
+  <g font-family="Montserrat,sans-serif">
+    <rect x="30" y="60" width="240" height="180" rx="10" fill="#1e293b" stroke="#f87171"/>
+    <text x="48" y="88" fill="#fca5a5" font-size="14" font-weight="600">refuse first</text>
+    <text x="48" y="116" fill="#e2e8f0" font-size="12">13 back labels: exit, not a place</text>
+    <text x="48" y="140" fill="#e2e8f0" font-size="12">7 mutating types: changes state</text>
+    <text x="48" y="164" fill="#e2e8f0" font-size="12">5 input types: typing is out</text>
+    <text x="48" y="188" fill="#e2e8f0" font-size="12">80 never-tap labels</text>
+    <text x="48" y="212" fill="#e2e8f0" font-size="12">15 careful labels, if cautious</text>
+
+    <rect x="330" y="60" width="240" height="180" rx="10" fill="#1e293b" stroke="#475569"/>
+    <text x="348" y="88" fill="#e2e8f0" font-size="14" font-weight="600">then resolve, then tap</text>
+    <text x="348" y="116" fill="#94a3b8" font-size="12">coordinates read before the</text>
+    <text x="348" y="140" fill="#94a3b8" font-size="12">last excursion point at nothing,</text>
+    <text x="348" y="164" fill="#94a3b8" font-size="12">so the control is found again by</text>
+    <text x="348" y="188" fill="#94a3b8" font-size="12">identity immediately before the tap</text>
+    <text x="348" y="212" fill="#94a3b8" font-size="12">screenshot taken before and after</text>
+
+    <rect x="630" y="60" width="240" height="180" rx="10" fill="#16304a" stroke="#38bdf8"/>
+    <text x="648" y="88" fill="#e2e8f0" font-size="14" font-weight="600">four outcomes</text>
+    <text x="648" y="116" fill="#7dd3fc" font-size="12">crossing: left the app, shot + edge,</text>
+    <text x="648" y="138" fill="#7dd3fc" font-size="12">return by replaying the path</text>
+    <text x="648" y="162" fill="#7dd3fc" font-size="12">no-op: same signature, moved &lt; 0.01</text>
+    <text x="648" y="186" fill="#7dd3fc" font-size="12">same screen, live content</text>
+    <text x="648" y="210" fill="#7dd3fc" font-size="12">new screen: record, maybe descend</text>
+
+    <path d="M272 150 L326 150" stroke="#64748b" stroke-width="2" marker-end="url(#a3)"/>
+    <path d="M572 150 L626 150" stroke="#64748b" stroke-width="2" marker-end="url(#a3)"/>
+    <defs><marker id="a3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#64748b"/></marker></defs>
+
+    <rect x="30" y="290" width="840" height="120" rx="10" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="48" y="318" fill="#fbbf24" font-size="14" font-weight="600">14 dead taps in a row, not 8</text>
+    <text x="48" y="346" fill="#e2e8f0" font-size="12">A screen of informational rows answers no tap at all and is perfectly healthy: Settings &gt; About is twelve of them.</text>
+    <text x="48" y="370" fill="#e2e8f0" font-size="12">So the threshold sits above the longest honest dead stretch. At 14 the crawler runs a swipe liveness test, and a</text>
+    <text x="48" y="394" fill="#e2e8f0" font-size="12">failed swipe ends the run with a reason, because a wedged input layer reports success while nothing moves.</text>
+
+    <text x="30" y="448" fill="#64748b" font-size="11">Read from phoneshell/crawl.py (1,876 lines) in Blomega/phoneshell, 20 September 2026</text>
+  </g>
+</svg>
+<figcaption>Refusals, then a fresh resolve, then one tap. Everything after that is classification.</figcaption>
+</figure>
+
+<h2 id="finding">Two keys, because a list of 50 contacts is one screen</h2>
+
+<p>The question that decides whether a crawl finishes is "have I seen this screen before", and it has
+two different answers. <code>memory.fingerprint</code> hashes the layout and ignores the contents.
+<code>tree.screen_signature</code> hashes the contents: every element as
+<code>type:text[:30]:round(y/20)</code>, sorted, SHA-1, first 16 hex characters.</p>
+
+<p>A new signature is worth a screenshot, because collecting is cheap. Only the first three screens
+per layout are worth descending into, because exploring is not. That single rule,
+<code>variant_cap = 3</code>, is the difference between a crawl that finishes and a crawl that walks
+into 50 contact detail screens and reads out someone's address book.</p>
+
+<p>Fingerprints have to be defended. iOS bakes instance data into accessibility identifiers, including
+UUIDs, MAC addresses and raw pointers, which survive one launch and change on the next. Unstripped,
+every revisit looks like a screen the crawler has never seen, and the crawl never terminates. The
+volatile-text rule does the same job for prices, timestamps and distances.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Bar chart of the measured cost of one agent step on a real iPhone, from phoneshell memory.py. The model deciding takes 1,000 to 3,000 milliseconds, the fixed settle sleep 600 to 800 milliseconds, the stability gate 504 milliseconds, the accessibility tree read 159 milliseconds and the screenshot 72 milliseconds. The crawler removes the largest bar entirely by putting no model in the loop, which is why it can run for hours at about 1.2 seconds a step.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">Where a step goes, and which part the crawler deletes</text>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <text x="30" y="82" fill="#cbd5e1">model deciding</text>
+    <rect x="250" y="66" width="200" height="22" rx="4" fill="#f87171"/>
+    <rect x="450" y="66" width="400" height="22" rx="4" fill="#7f1d1d"/>
+    <text x="466" y="83" fill="#fecaca" font-size="12" font-weight="700">1,000 to 3,000 ms</text>
+
+    <text x="30" y="122" fill="#cbd5e1">fixed settle sleep</text>
+    <rect x="250" y="106" width="120" height="22" rx="4" fill="#0ea5e9"/>
+    <rect x="370" y="106" width="40" height="22" rx="4" fill="#075985"/>
+    <text x="424" y="123" fill="#e2e8f0" font-size="12" font-weight="700">600 to 800 ms</text>
+
+    <text x="30" y="162" fill="#cbd5e1">stability gate</text>
+    <rect x="250" y="146" width="101" height="22" rx="4" fill="#0ea5e9"/>
+    <text x="364" y="163" fill="#e2e8f0" font-size="12" font-weight="700">504 ms</text>
+
+    <text x="30" y="202" fill="#cbd5e1">tree read</text>
+    <rect x="250" y="186" width="32" height="22" rx="4" fill="#38bdf8"/>
+    <text x="294" y="203" fill="#e2e8f0" font-size="12" font-weight="700">159 ms</text>
+
+    <text x="30" y="242" fill="#cbd5e1">screenshot</text>
+    <rect x="250" y="226" width="14" height="22" rx="4" fill="#38bdf8"/>
+    <text x="276" y="243" fill="#e2e8f0" font-size="12" font-weight="700">72 ms</text>
+
+    <line x1="250" y1="262" x2="850" y2="262" stroke="#334155"/>
+    <text x="250" y="284" fill="#64748b" font-size="11">0</text>
+    <text x="450" y="284" fill="#64748b" font-size="11">1,000 ms</text>
+    <text x="650" y="284" fill="#64748b" font-size="11">2,000 ms</text>
+    <text x="838" y="284" fill="#64748b" font-size="11">3,000</text>
+
+    <text x="30" y="322" fill="#94a3b8" font-size="12">Deterministic traversal removes the top bar completely. The crawler's own figure for a step, with the model gone,</text>
+    <text x="30" y="344" fill="#94a3b8" font-size="12">is about 1.2 seconds, which is why it can run for hours on a budget of time rather than a budget of tokens.</text>
+    <text x="30" y="378" fill="#64748b" font-size="11">Per-step costs measured on a real iPhone, recorded in phoneshell/memory.py; step figure from phoneshell/crawl.py</text>
+  </g>
+</svg>
+<figcaption>The expensive part of a step is the decision, not the read. A traversal does not need a
+decision.</figcaption>
+</figure>
+
+<h2>Breadth, budgets, and the sign-in sheet</h2>
+
+<p>The crawl is breadth-first, and the reason is what the collection is for. A depth-first crawl of
+Settings measured here spent its entire budget inside the Apple Account sign-in sheet: ten screens,
+nine of them the same modal, and it never reached General, Display or Privacy. Someone asking for
+"every screen in this app" wants the app's shape first and the third level of one branch last, which
+is the order a queue gives you and a stack does not. The price is navigation, because a queue
+sometimes has to replay a path from the root.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>budget</th><th>default</th><th>what it stops</th></tr></thead>
+  <tbody>
+    <tr><td><code>max_screens</code></td><td>150</td><td>a run that collects forever</td></tr>
+    <tr><td><code>max_depth</code></td><td>4</td><td>a branch that descends past anything a person would call a screen</td></tr>
+    <tr><td><code>max_taps</code> / <code>max_minutes</code></td><td>900 / 30</td><td>wall clock and wear on the device</td></tr>
+    <tr><td><code>variant_cap</code></td><td>3</td><td>a 200-row list becoming 200 subtrees</td></tr>
+    <tr><td><code>scroll_cap</code></td><td>4</td><td>endless viewport passes on an infinite feed</td></tr>
+    <tr><td><code>per_app_screens</code> / <code>per_app_minutes</code></td><td>14 / 4</td><td>one deep app eating a whole-phone scan</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Live content gets its own branch, and it was expensive to learn. A screen whose contents tick on
+their own, a progress ring counting up every second, produces a new content signature on every read.
+Recording that as a new screen and then relaunching the app to get "back" to the screen the crawl
+never left cost 12 relaunches in two minutes of one scan. The fix is to compare against the screen's
+own keys before concluding anything moved.</p>
+
+<h2 id="run">Check it yourself</h2>
+
+<pre><code>git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+
+# the refusal sets, counted rather than described
+python3 - &lt;&lt;'PY'
+import re
+src = open('phoneshell/crawl.py').read()
+for name in ("NEVER_TAP","CAREFUL_TAP","BACK_CONTROLS","MUTATING_TYPES",
+             "INPUT_TYPES","DENY_BUNDLES","APPLE_USER_APPS"):
+    body = re.search(name + r"\s*=\s*[\(\{]((?:.|\n)*?)[\)\}]\n", src).group(1)
+    print(name, len(re.findall(r'"[^"]*"', body)))
+PY
+
+# the two identity keys
+grep -n "def screen_signature" -A 4 phoneshell/perception/tree.py
+grep -n "_ID_NOISE\|_VOLATILE" -A 6 phoneshell/memory.py
+
+# the liveness threshold and why it is 14
+grep -n "_dead_taps >= 14" -B 4 phoneshell/crawl.py</code></pre>
+
+<p>Asking a real iPhone what is installed returns 428 bundles, and roughly 300 of them are invisible
+UI services such as <code>AXUIViewService</code> and <code>BusinessActionSheet</code> that exist to
+draw one sheet inside another app. They cannot be launched to a screen. The crawler carries 44 Apple
+bundle ids it treats as real apps and 13 name shapes it treats as never-an-app, which is a maintenance
+cost we accept rather than a rule we derived.</p>
+
+<h2>What would prove this wrong</h2>
+
+<p>The claim with the most to lose is that a label list is a sufficient safety rail. It is falsifiable
+by a single counterexample: one control on a first-party iOS app whose label is outside all 80 entries
+and whose tap is irreversible. We expect to find one, which is why every skipped control is logged
+with its reason. If a full-phone crawl of the 44 recognised Apple apps completes by 31 December 2026
+with no irreversible action and no manual repair, the rail held for first-party apps. Third-party apps
+are a separate claim and this note does not make it.</p>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>Blomega/phoneshell, <code>phoneshell/crawl.py</code> (1,876 lines): the refusal sets, the breadth-first traversal, the 14 dead-tap liveness test and the crawl budgets. Counted 20 September 2026.</li>
+      <li>Blomega/phoneshell, <code>phoneshell/memory.py</code>: per-step costs measured on a real iPhone, and the identifier-noise rules that keep a layout fingerprint stable across launches.</li>
+      <li>Blomega/phoneshell, <code>phoneshell/perception/tree.py</code>: <code>screen_signature</code>, a SHA-1 over element type, first 30 characters of text and the row band.</li>
+      <li>Blomega/phoneshell, <code>phoneshell/safety.py</code>: the confirmation rails for anything irreversible, and the audit log every action is written to.</li>
+      <li>Blolabel, <a href="https://blolabel.ai/blog/ios-identifiers-carry-instance-data/">iOS bakes instance data into accessibility identifiers</a>, 17 September 2026.</li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
