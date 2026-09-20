@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The best mobile-agent judge is 90.9% accurate, and the gaps it is used to report are smaller than that | Blolabel</title>
+<meta name="description" content="A head-to-head of mobile-agent evaluators (arXiv:2608.11434) puts the best judge at 90.9% against human labels, with two humans agreeing 88.4%. On a 133-task benchmark that error is about 12 tasks, while a reported 4.0 point model gap is about 5.">
+<link rel="canonical" href="https://blolabel.ai/blog/judge-accuracy-smaller-than-the-gap/">
+<meta property="og:title" content="The best mobile-agent judge is 90.9% accurate, and the gaps it is used to report are smaller than that | Blolabel">
+<meta property="og:description" content="A head-to-head of mobile-agent evaluators (arXiv:2608.11434) puts the best judge at 90.9% against human labels, with two humans agreeing 88.4%. On a 133-task benchmark that error is about 12 tasks, while a reported 4.0 point model gap is about 5.">
+<meta property="og:url" content="https://blolabel.ai/blog/judge-accuracy-smaller-than-the-gap/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"The best mobile-agent judge is 90.9% accurate, and the gaps it is used to report are smaller than that","description":"A head-to-head of mobile-agent evaluators (arXiv:2608.11434) puts the best judge at 90.9% against human labels, with two humans agreeing 88.4%. On a 133-task benchmark that error is about 12 tasks, while a reported 4.0 point model gap is about 5.",
+ "datePublished":"2026-09-20","dateModified":"2026-09-20",
+ "url":"https://blolabel.ai/blog/judge-accuracy-smaller-than-the-gap/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/judge-accuracy-smaller-than-the-gap/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How accurate is an LLM judge at grading mobile agent tasks?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "The best judge configuration in arXiv:2608.11434 reached 90.9% accuracy against human labels over 931 annotated trajectories, with GPT-5-mini at 90.8% and Qwen2.5-VL-72B at 85.7%. Two human annotators agree with each other 88.4% of the time on the same success label."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Is an LLM judge good enough to rank two agent models?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Only for differences larger than its error. On a 133-task benchmark, a 9.1% judge error is roughly 12 mislabelled tasks while a 4.0 point gap between two models is roughly 5 tasks. Judge errors partly cancel when both models are graded by the same judge, but the same paper reports that failure profiles flip direction with the backend, so symmetry should not be assumed."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why do most mobile agent benchmarks use a model judge instead of checking device state?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Because closed-source apps do not expose internal state. AndroidDaily covers 94 real Android apps precisely because GRADE needs nothing from the app; a deterministic state checker like phoneshell's is limited to the 16 first-party iOS apps where the accessibility tree and the foreground bundle id answer the question."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind comparison">comparison</span>
+    <time datetime="2026-09-20">20 September 2026</time>
+    <span>6 min read</span>
+  </div>
+  <h1>The best mobile-agent judge is 90.9% accurate, and the gaps it is used to report are smaller than that</h1>
+  <p class="standfirst">Three of the four mobile-agent benchmarks published in 2026 hand the pass decision to a model, and each reports agreement with humans rather than with the device. Here is what that buys, and what it costs.</p>
+
+  <p>The best-performing judge in a head-to-head benchmark of mobile-agent evaluators scored 90.9%
+accuracy against human labels (Wang et al., arXiv:2608.11434, 11 August 2026, 931 annotated
+trajectories). Two human annotators agree with each other 88.4% of the time on the same success label.
+Both numbers are lower than they sound, because the differences these judges are used to report are
+four points and smaller. A 133-task benchmark graded by a 90.9% judge carries roughly 12 mislabelled
+tasks; a 4.0 point gap between two models is about 5.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/judge-accuracy-smaller-than-the-gap-hero.png" alt="Abstract technical illustration of two measuring bars of nearly equal length overlaid by a wider band of uncertainty that covers the difference between them" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">Four benchmarks, four different deciders</h2>
+
+<p>Mobile and computer-use benchmarks published in 2026 do not disagree about the tasks nearly as much
+as they disagree about who decides a task was done.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>benchmark</th><th>dated</th><th>scale</th><th>environment</th><th>who decides pass</th><th>reported agreement</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>iOSWorld</td><td>8 Jun 2026</td><td>133 tasks, 26 apps</td><td>iOS simulator, seeded data</td><td>GPT-5.4-Mini reviews the whole trajectory against rubric criteria, returns pass or fail</td><td>kappa 0.77 and 89% accuracy at task level on 128 trajectories; kappa 0.69 per criterion</td><td>arXiv:2606.09764</td></tr>
+    <tr><td>AndroidDaily</td><td>26 May 2026</td><td>350 tasks, 94 apps</td><td>real closed-source Android apps</td><td>GRADE, a vision-language evaluator with an evidence layer and a verdict layer over three guideline tiers</td><td>87.37% agreement with human evaluators on 879 reviewed sessions</td><td>arXiv:2605.27761</td></tr>
+    <tr><td>Judge benchmark (Wang et al.)</td><td>11 Aug 2026</td><td>289 tasks, 68 apps, 931 trajectories</td><td>replayed traces from 6 existing benchmarks</td><td>6 judge methods across 5 backends, measured against human labels</td><td>best 90.9% accuracy; human pairwise agreement 88.4%</td><td>arXiv:2608.11434</td></tr>
+    <tr><td>Blind-user field study</td><td>1 Sep 2026</td><td>1,258 commands, 12 apps</td><td>participants' own Windows machines</td><td>four human annotators against reference steps they performed themselves</td><td>Krippendorff alpha 0.84</td><td>arXiv:2609.00524</td></tr>
+    <tr><td>phoneshell (this repo)</td><td>20 Sep 2026</td><td>80 tasks, 16 apps</td><td>a physical iPhone 17 Pro Max on iOS 26.6</td><td>deterministic checks that read device state after the agent stops; no model in the loop</td><td>no judge, so no agreement figure exists</td><td>Blomega/phoneshell</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Three of those five hand the decision to a model. The reason is not laziness. AndroidDaily states
+the constraint plainly: closed-source applications do not expose internal states, so there is nothing
+for a programmatic checker to read, and the choice is a model judge or no benchmark at all on the 94
+apps people actually use.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Diagram comparing three ways to decide that a phone agent passed. A trajectory judge reads every screenshot, action and the final answer, and returns a binary verdict, as in iOSWorld with GPT-5.4-Mini. A guideline evaluator extracts structured evidence from the visual trajectory then applies operational obligations, output quality and negative constraints, as in AndroidDaily's GRADE. A state checker ignores the trajectory entirely and reads the device after the agent stops, which is what phoneshell does with five check kinds across 80 tasks. The judge scales to closed-source apps but inherits a 9 to 13 percent error rate; the checker cannot be wrong about what it read but only works where state is readable.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">Three deciders, three different things being trusted</text>
+  <g font-family="Montserrat,sans-serif">
+    <rect x="30" y="60" width="270" height="230" rx="10" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="48" y="88" fill="#fbbf24" font-size="14" font-weight="600">trajectory judge</text>
+    <text x="48" y="116" fill="#e2e8f0" font-size="12">reads: every screenshot, every</text>
+    <text x="48" y="138" fill="#e2e8f0" font-size="12">action, the final answer</text>
+    <text x="48" y="166" fill="#94a3b8" font-size="12">iOSWorld, GPT-5.4-Mini</text>
+    <text x="48" y="188" fill="#94a3b8" font-size="12">89% accuracy, kappa 0.77</text>
+    <text x="48" y="220" fill="#fca5a5" font-size="12">trusts: the model's reading</text>
+    <text x="48" y="242" fill="#fca5a5" font-size="12">of pictures of the phone</text>
+    <text x="48" y="270" fill="#7dd3fc" font-size="12">scales to any app</text>
+
+    <rect x="320" y="60" width="270" height="230" rx="10" fill="#1e293b" stroke="#f59e0b"/>
+    <text x="338" y="88" fill="#fbbf24" font-size="14" font-weight="600">guideline evaluator</text>
+    <text x="338" y="116" fill="#e2e8f0" font-size="12">evidence layer: signals out of</text>
+    <text x="338" y="138" fill="#e2e8f0" font-size="12">the visual trajectory</text>
+    <text x="338" y="160" fill="#e2e8f0" font-size="12">verdict layer: obligations,</text>
+    <text x="338" y="182" fill="#e2e8f0" font-size="12">output quality, negative constraints</text>
+    <text x="338" y="210" fill="#94a3b8" font-size="12">AndroidDaily GRADE, 87.37%</text>
+    <text x="338" y="240" fill="#fca5a5" font-size="12">trusts: a written rubric plus</text>
+    <text x="338" y="262" fill="#fca5a5" font-size="12">the same model reading</text>
+
+    <rect x="610" y="60" width="260" height="230" rx="10" fill="#16304a" stroke="#38bdf8"/>
+    <text x="628" y="88" fill="#7dd3fc" font-size="14" font-weight="600">state checker</text>
+    <text x="628" y="116" fill="#e2e8f0" font-size="12">ignores the trajectory</text>
+    <text x="628" y="138" fill="#e2e8f0" font-size="12">reads the phone once, after</text>
+    <text x="628" y="166" fill="#94a3b8" font-size="12">phoneshell: 80 tasks,</text>
+    <text x="628" y="188" fill="#94a3b8" font-size="12">153 checks, 5 kinds</text>
+    <text x="628" y="220" fill="#7dd3fc" font-size="12">trusts: the accessibility tree</text>
+    <text x="628" y="242" fill="#7dd3fc" font-size="12">and the foreground bundle id</text>
+    <text x="628" y="270" fill="#fca5a5" font-size="12">16 first-party apps only</text>
+
+    <text x="30" y="340" fill="#94a3b8" font-size="12">The judge is measured against humans. The checker is not measured against anything, because there is nothing between</text>
+    <text x="30" y="362" fill="#94a3b8" font-size="12">it and the device: its failure mode is a badly written assertion, not a misread screenshot.</text>
+    <text x="30" y="388" fill="#64748b" font-size="11">Sources: arXiv:2606.09764, arXiv:2605.27761, arXiv:2608.11434, Blomega/phoneshell, read 20 September 2026</text>
+  </g>
+</svg>
+<figcaption>Each column trusts something different. Only the third one never looks at a picture.</figcaption>
+</figure>
+
+<h2 id="finding">The error is bigger than the result</h2>
+
+<p>Wang and colleagues replayed 931 human-annotated trajectories from SPA-Bench, AndroidWorld, A3,
+AndroidArena, B-MoCA and AndroidLab, covering 289 tasks across 68 apps, and ran six judge methods over
+five backends. The simple baseline judge won: 90.9% with Gemini 3 Flash, 90.8% with GPT-5-mini, 85.7%
+with Qwen2.5-VL-72B. Human annotators agree with each other 88.4% of the time on the success label.</p>
+
+<figure>
+<svg viewBox="0 0 900 420" role="img" style="width:100%;height:auto"
+  aria-label="Chart comparing evaluator agreement rates with the size of the differences those evaluators are used to report. Best judge accuracy is 90.9 percent with Gemini, 90.8 with GPT-5-mini, 85.7 with Qwen. iOSWorld's judge reaches 89 percent task-level accuracy. AndroidDaily's GRADE reaches 87.37 percent. Human annotators agree with each other 88.4 percent of the time. On a 133-task benchmark a 9.1 percent error rate is about 12 tasks, while a reported 4.0 point gap between two models is about 5 tasks.">
+  <rect x="0" y="0" width="900" height="420" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">Agreement rates, and the gaps they are asked to resolve</text>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <line x1="300" y1="55" x2="300" y2="300" stroke="#334155"/>
+    <line x1="830" y1="55" x2="830" y2="300" stroke="#334155"/>
+    <text x="292" y="322" fill="#64748b" font-size="11">80%</text>
+    <text x="818" y="322" fill="#64748b" font-size="11">95%</text>
+
+    <text x="30" y="82" fill="#cbd5e1">best judge (Gemini 3 Flash)</text>
+    <rect x="300" y="66" width="385" height="20" rx="4" fill="#38bdf8"/>
+    <text x="695" y="82" fill="#e2e8f0" font-weight="700">90.9%</text>
+
+    <text x="30" y="118" fill="#cbd5e1">best judge (GPT-5-mini)</text>
+    <rect x="300" y="102" width="382" height="20" rx="4" fill="#0ea5e9"/>
+    <text x="692" y="118" fill="#e2e8f0" font-weight="700">90.8%</text>
+
+    <text x="30" y="154" fill="#cbd5e1">iOSWorld judge, task level</text>
+    <rect x="300" y="138" width="318" height="20" rx="4" fill="#0ea5e9"/>
+    <text x="628" y="154" fill="#e2e8f0" font-weight="700">89%</text>
+
+    <text x="30" y="190" fill="#cbd5e1">two humans, same label</text>
+    <rect x="300" y="174" width="297" height="20" rx="4" fill="#f59e0b"/>
+    <text x="607" y="190" fill="#e2e8f0" font-weight="700">88.4%</text>
+
+    <text x="30" y="226" fill="#cbd5e1">AndroidDaily GRADE</text>
+    <rect x="300" y="210" width="261" height="20" rx="4" fill="#0ea5e9"/>
+    <text x="571" y="226" fill="#e2e8f0" font-weight="700">87.37%</text>
+
+    <text x="30" y="262" fill="#cbd5e1">judge on Qwen2.5-VL-72B</text>
+    <rect x="300" y="246" width="201" height="20" rx="4" fill="#475569"/>
+    <text x="511" y="262" fill="#e2e8f0" font-weight="700">85.7%</text>
+
+    <rect x="30" y="336" width="840" height="60" rx="8" fill="#1e293b" stroke="#f87171"/>
+    <text x="48" y="360" fill="#fca5a5" font-size="13" font-weight="600">On 133 tasks: a 9.1% judge error is about 12 tasks. A 4.0 point difference between two models is about 5.</text>
+    <text x="48" y="382" fill="#94a3b8" font-size="12">Our arithmetic on the published rates. Sources: arXiv:2608.11434, arXiv:2606.09764, arXiv:2605.27761.</text>
+  </g>
+</svg>
+<figcaption>Every automatic evaluator in the field sits within a few points of how well two humans
+agree with each other, and the model rankings being published sit inside that band.</figcaption>
+</figure>
+
+<p>Judge error partly cancels between two models graded by the same judge, but only if the errors
+are symmetric across the arms. The judge benchmark's most useful result says not to assume it:
+the failure profiles are "qualitatively opposite" depending on the backend. GPT-based judges skew
+false-negative, with last-frame anchoring (12 cases), unfamiliar success states (9) and invisible
+state changes (7). Qwen-based judges skew false-positive, with constraint violations and partial
+completions (27 cases each) and surface UI matches (17). A judge that concludes success from a screen
+that merely looks right will not make that error evenly when one arm sees screenshots and the other
+does not.</p>
+
+<p>That is a judgement, marked as one: we have not run an ablation that measures asymmetry directly,
+and neither has any paper cited here.</p>
+
+<h2>What a checker buys, and what it costs</h2>
+
+<p>Our own suite takes the other option and pays for it in coverage. Eighty tasks, 16 bundle ids, all
+first-party Apple apps, because a deterministic check only works where the phone will tell you the
+answer. There is no food-delivery task in it. AndroidDaily has 94 apps and 350 tasks precisely because
+GRADE does not need the app to expose anything.</p>
+
+<p>The checker has failure modes too, and they are ours rather than the model's. Seven of our 80 tasks
+assert nothing but the foreground bundle id, and three of those ask for a sequence whose first leg
+already satisfies the assertion. Twenty tasks grade the model's sentence rather than the phone, which
+is the right call for "what word is in that picture" and would be indefensible for anything with a
+state change in it. A checker cannot misread a screenshot. It can absolutely assert the wrong thing,
+and when it does, it does so identically ten thousand times.</p>
+
+<p>The practical rule we now use: report the evaluator with the result, the same way a paper reports
+its test. "GPT-5.4 scored 39.8%" is not a fact about GPT-5.4. It is a fact about GPT-5.4 under a
+GPT-5.4-Mini judge, on a simulator, with seeded data, and the difference between it and the next model
+needs to clear the judge's error before it means anything.</p>
+
+<h2 id="run">Check it yourself</h2>
+
+<pre><code># the judge benchmark's own numbers
+open https://arxiv.org/abs/2608.11434     # 931 trajectories, 6 judges x 5 backends
+open https://arxiv.org/abs/2605.27761     # GRADE, 87.37% agreement, 879 sessions
+open https://arxiv.org/abs/2606.09764     # iOSWorld, GPT-5.4-Mini judge, kappa 0.77
+
+# the checker side, counted from the task files
+git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+python3 -c "import yaml,glob,collections; c=collections.Counter(
+  k['kind'] for f in glob.glob('environments/*.yaml') for k in yaml.safe_load(open(f))['checks']);
+  print(c.most_common())"
+sed -n '1,12p' phoneshell/bench/runner.py</code></pre>
+
+<h2>What would prove this wrong</h2>
+
+<p>The claim is that published model gaps on judge-graded mobile benchmarks are inside the judge's
+error. It is testable without new tasks: take one benchmark, grade the same trajectories with two
+different judge backends, and compare the rankings. If the ordering of the top three models is stable
+across a GPT-based and a Qwen-based judge on iOSWorld or AndroidDaily, then judge error is cancelling
+and the rankings survive. If the ordering moves, they do not. We will run that comparison on our own
+80 tasks against a judge by 30 November 2026 and publish both orderings, whichever way it falls.</p>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>Ziqiang Wang, Li Gu, Zhixiang Chi, Zhi Liu, Seyed Mehdi Ayyoubzadeh, Yuanhao Yu, Yang Wang, <a href="https://arxiv.org/abs/2608.11434">Benchmarking LLM Judges for Mobile Agent Evaluation</a>, arXiv:2608.11434, 11 August 2026. 931 human-annotated trajectories, 289 tasks, 68 apps, 6 judge methods over 5 backends.</li>
+      <li>Yifan Sui et al., <a href="https://arxiv.org/abs/2605.27761">AndroidDaily: A Verifiable Benchmark for Mobile GUI Agents on Real-World Closed-Source Applications</a>, arXiv:2605.27761, 26 May 2026. 350 tasks, 94 apps, GRADE at 87.37% agreement over 879 reviewed sessions, best model 62.0%.</li>
+      <li>Lawrence Keunho Jang et al., <a href="https://arxiv.org/abs/2606.09764">iOSWorld: A Benchmark for Personally Intelligent Phone Agents</a>, arXiv:2606.09764, 8 June 2026. 133 tasks, 26 purpose-built apps, GPT-5.4-Mini judge, kappa 0.77 and 89% accuracy on 128 trajectories.</li>
+      <li>Satwik Ram Kodandaram et al., <a href="https://arxiv.org/abs/2609.00524">computer-use agents with blind screen-reader users</a>, arXiv:2609.00524, 1 September 2026. 1,258 commands, four human annotators, Krippendorff alpha 0.84.</li>
+      <li>Blomega/phoneshell, <code>phoneshell/bench/verify.py</code> and <code>environments/*.yaml</code>: 80 tasks, 153 deterministic checks, no model in the grading path. Counted 20 September 2026.</li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
