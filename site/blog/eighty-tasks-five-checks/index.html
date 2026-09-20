@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eighty iPhone tasks assert five things, and seven of them only check which app is in front | Blolabel</title>
+<meta name="description" content="The phoneshell benchmark declares twelve check kinds and uses five. 76 of 80 tasks assert the foreground bundle id, seven assert nothing else, and three of those seven ask for a three-app sequence that their single assertion satisfies at the first step.">
+<link rel="canonical" href="https://blolabel.ai/blog/eighty-tasks-five-checks/">
+<meta property="og:title" content="Eighty iPhone tasks assert five things, and seven of them only check which app is in front | Blolabel">
+<meta property="og:description" content="The phoneshell benchmark declares twelve check kinds and uses five. 76 of 80 tasks assert the foreground bundle id, seven assert nothing else, and three of those seven ask for a three-app sequence that their single assertion satisfies at the first step.">
+<meta property="og:url" content="https://blolabel.ai/blog/eighty-tasks-five-checks/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Eighty iPhone tasks assert five things, and seven of them only check which app is in front","description":"The phoneshell benchmark declares twelve check kinds and uses five. 76 of 80 tasks assert the foreground bundle id, seven assert nothing else, and three of those seven ask for a three-app sequence that their single assertion satisfies at the first step.",
+ "datePublished":"2026-09-20","dateModified":"2026-09-20",
+ "url":"https://blolabel.ai/blog/eighty-tasks-five-checks/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/eighty-tasks-five-checks/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How many check kinds does the phoneshell benchmark actually use?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Five. The suite implements and validates twelve check kinds but the 80 tasks use only foreground_app (76 uses), element_exists (31), regex_on_screen (23), answer_contains (20) and element_exists_anywhere (3), for 153 assertions in total."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can a phone agent pass a task without doing it?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "In this suite, yes, for seven tasks. Those seven assert only which app is in the foreground. Three of them ask for a sequence of app switches whose final assertion names the app the sequence starts from, so stopping after the first switch passes."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why does one check grade the model's answer instead of the phone?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Because 20 of the 80 tasks are perception probes whose deliverable is information rather than a state change. The word is on screen either way, so any state check would pass without the model having read anything. Ground truth is fixed in advance on pages Blolabel hosts."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind registry">registry</span>
+    <time datetime="2026-09-20">20 September 2026</time>
+    <span>6 min read</span>
+  </div>
+  <h1>Eighty iPhone tasks assert five things, and seven of them only check which app is in front</h1>
+  <p class="standfirst">Counted from the task files, not the docs: 153 assertions over 80 tasks, five kinds doing all the work, and four tasks whose checker grades the wrong leg of the instruction.</p>
+
+  <p>Our 80-task iPhone suite declares a checking vocabulary of twelve assertions and uses five of
+them. Seventy-six of the 80 tasks assert which app is in the foreground, and for seven tasks that is
+the only thing asserted at all. Three of those seven ask for a sequence of three app switches and
+then check one bundle id, which the first switch already satisfies.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/eighty-tasks-five-checks-hero.png" alt="Abstract technical illustration of eighty small rectangular cards arranged in a grid, each carrying one or two bright horizontal marks, with a few cards showing only a single mark" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="method">What a task is, in this suite</h2>
+
+<p>A task is a YAML file in <code>environments/</code>. It has three parts and the third is the one
+that costs money to build: <strong>setup</strong>, deterministic steps that put the phone in a known
+state with no model involved; <strong>instruction</strong>, the single sentence handed to the agent;
+and <strong>checks</strong>, assertions run afterwards that decide pass or fail. The runner's own
+docstring states the contract: "The agent never sees the checks, never sees the setup script, and its
+own account of what it did counts for nothing."</p>
+
+<p>Across the 80 files there are 269 setup and teardown steps and 153 checks. Every task caps the
+agent at 25 steps, every one of the 80. Instructions run from 21 to 116 characters, median 76.
+Difficulty is self-declared: 15 easy, 58 medium, 7 hard.</p>
+
+<figure>
+<svg viewBox="0 0 900 300" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of the phoneshell task loop. Setup runs 269 deterministic steps across 80 tasks with no model involved, then the instruction is handed to the agent which gets at most 25 steps, then 153 checks read the phone once after the agent stops. The agent never sees the setup script or the checks, and its own report is used by only one check kind.">
+  <rect x="0" y="0" width="900" height="300" fill="#0f172a"/>
+  <text x="30" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">One task, three parts, and only the third one grades</text>
+  <g font-family="Montserrat,sans-serif">
+    <rect x="30" y="70" width="230" height="110" rx="10" fill="#1e293b" stroke="#475569"/>
+    <text x="48" y="100" fill="#e2e8f0" font-size="15" font-weight="600">setup</text>
+    <text x="48" y="126" fill="#94a3b8" font-size="12">no model in the loop</text>
+    <text x="48" y="148" fill="#94a3b8" font-size="12">269 steps over 80 tasks</text>
+    <text x="48" y="168" fill="#94a3b8" font-size="12">terminate 165, home 92</text>
+
+    <rect x="300" y="70" width="230" height="110" rx="10" fill="#1e293b" stroke="#475569"/>
+    <text x="318" y="100" fill="#e2e8f0" font-size="15" font-weight="600">instruction</text>
+    <text x="318" y="126" fill="#94a3b8" font-size="12">one sentence, 21 to 116 chars</text>
+    <text x="318" y="148" fill="#94a3b8" font-size="12">agent capped at 25 steps</text>
+    <text x="318" y="168" fill="#94a3b8" font-size="12">checks are hidden from it</text>
+
+    <rect x="570" y="70" width="300" height="110" rx="10" fill="#16304a" stroke="#38bdf8"/>
+    <text x="588" y="100" fill="#e2e8f0" font-size="15" font-weight="600">checks</text>
+    <text x="588" y="126" fill="#7dd3fc" font-size="12">153 assertions, run once, after</text>
+    <text x="588" y="148" fill="#7dd3fc" font-size="12">5 kinds used of 12 implemented</text>
+    <text x="588" y="168" fill="#7dd3fc" font-size="12">4 of 5 read the phone, not the model</text>
+
+    <path d="M262 125 L296 125" stroke="#64748b" stroke-width="2" marker-end="url(#a1)"/>
+    <path d="M532 125 L566 125" stroke="#64748b" stroke-width="2" marker-end="url(#a1)"/>
+    <defs><marker id="a1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#64748b"/></marker></defs>
+
+    <text x="30" y="225" fill="#94a3b8" font-size="12">A timed-out run is never a pass: clock.alarm.set_time once satisfied both its checks</text>
+    <text x="30" y="245" fill="#94a3b8" font-size="12">with zero completed turns and $0.00 spent, so runner.py scores passed AND not timed_out.</text>
+    <text x="30" y="275" fill="#64748b" font-size="11">Source: phoneshell/bench/runner.py, phoneshell/bench/schema.py, environments/*.yaml, 20 September 2026</text>
+  </g>
+</svg>
+<figcaption>The grading contract. Setup and checks are code, the agent only ever sees the sentence
+in the middle.</figcaption>
+</figure>
+
+<h2 id="tasks">Five kinds do all the work</h2>
+
+<p><code>scripts/validate_tasks.py</code> will accept twelve check kinds and
+<code>phoneshell/bench/verify.py</code> implements all twelve. The suite uses five. The other seven,
+including every one that reads a control's value rather than its presence, appear in zero tasks.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>check kind</th><th>uses</th><th>what it reads</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td><code>foreground_app</code></td><td>76</td><td>WDA <code>/wda/activeAppInfo</code>, bundle id string equality</td><td>bench/verify.py</td></tr>
+    <tr><td><code>element_exists</code></td><td>31</td><td>accessibility tree of the current screen, text match</td><td>bench/verify.py</td></tr>
+    <tr><td><code>regex_on_screen</code></td><td>23</td><td>all element text joined, then <code>re.search</code></td><td>bench/verify.py</td></tr>
+    <tr><td><code>answer_contains</code></td><td>20</td><td>the model's own sentence, not the phone</td><td>bench/verify.py</td></tr>
+    <tr><td><code>element_exists_anywhere</code></td><td>3</td><td>tree, then up to 6 scroll passes</td><td>bench/verify.py</td></tr>
+    <tr><td><code>text_on_screen</code>, <code>element_value</code>, <code>switch_on</code>, <code>switch_off</code>, <code>screen_matches</code>, <code>ocr_contains</code>, <code>app_state</code></td><td>0</td><td>implemented, never asserted by a task</td><td>scripts/validate_tasks.py</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The same thinning shows in setup. Nine verbs are allowed, seven are used, and two of the seven
+appear once or twice: <code>terminate</code> 165 times, <code>home</code> 92, then
+<code>clean_alarms</code> 3, <code>open_app</code> 3, <code>swipe</code> 3, <code>wait</code> 2,
+<code>tap</code> 1. <code>open_url</code> and <code>type</code> are never used in setup, because the
+20 probe tasks put the URL in the instruction and make reaching it part of the job.</p>
+
+<figure>
+<svg viewBox="0 0 900 420" role="img" style="width:100%;height:auto"
+  aria-label="Bar chart of how often each check kind is used across the 80 tasks in the phoneshell suite. foreground_app 76 uses, element_exists 31, regex_on_screen 23, answer_contains 20, element_exists_anywhere 3, and seven further implemented kinds with zero uses: text_on_screen, element_value, switch_on, switch_off, screen_matches, ocr_contains and app_state. Total 153 checks over 80 tasks.">
+  <rect x="0" y="0" width="900" height="420" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">153 checks over 80 tasks, and half the vocabulary is idle</text>
+  <g font-family="Montserrat,sans-serif" font-size="13">
+    <text x="30" y="78" fill="#cbd5e1">foreground_app</text>
+    <rect x="230" y="62" width="608" height="22" rx="4" fill="#38bdf8"/>
+    <text x="848" y="79" fill="#e2e8f0" font-size="13" font-weight="700">76</text>
+
+    <text x="30" y="118" fill="#cbd5e1">element_exists</text>
+    <rect x="230" y="102" width="248" height="22" rx="4" fill="#0ea5e9"/>
+    <text x="488" y="119" fill="#e2e8f0" font-size="13" font-weight="700">31</text>
+
+    <text x="30" y="158" fill="#cbd5e1">regex_on_screen</text>
+    <rect x="230" y="142" width="184" height="22" rx="4" fill="#0ea5e9"/>
+    <text x="424" y="159" fill="#e2e8f0" font-size="13" font-weight="700">23</text>
+
+    <text x="30" y="198" fill="#cbd5e1">answer_contains</text>
+    <rect x="230" y="182" width="160" height="22" rx="4" fill="#f59e0b"/>
+    <text x="400" y="199" fill="#e2e8f0" font-size="13" font-weight="700">20</text>
+
+    <text x="30" y="238" fill="#cbd5e1">element_exists_anywhere</text>
+    <rect x="230" y="222" width="24" height="22" rx="4" fill="#0ea5e9"/>
+    <text x="264" y="239" fill="#e2e8f0" font-size="13" font-weight="700">3</text>
+
+    <text x="30" y="278" fill="#64748b">seven other kinds</text>
+    <rect x="230" y="262" width="3" height="22" rx="1" fill="#475569"/>
+    <text x="244" y="279" fill="#64748b" font-size="13">0</text>
+
+    <text x="230" y="320" fill="#f59e0b" font-size="12">amber = the one kind that grades what the model SAID rather than what the phone shows</text>
+    <text x="230" y="342" fill="#94a3b8" font-size="12">all 20 amber uses are the render and tree probes, where the deliverable is a word, not a state change</text>
+    <text x="230" y="364" fill="#94a3b8" font-size="12">idle kinds: text_on_screen, element_value, switch_on, switch_off, screen_matches, ocr_contains, app_state</text>
+    <text x="230" y="398" fill="#64748b" font-size="11">Counted 20 September 2026 from environments/*.yaml in Blomega/phoneshell</text>
+  </g>
+</svg>
+<figcaption>Counted from the task files, not from the docs. One check kind carries 76 of the
+153 assertions.</figcaption>
+</figure>
+
+<h2 id="finding">Seven tasks a launch passes</h2>
+
+<p>Seven tasks have exactly one check, and in every case it is <code>foreground_app</code>. For
+<code>weather.open</code> ("Open the Weather app") that is the whole job and the check is exact. For
+three others it is not.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>task id</th><th>instruction</th><th>the only assertion</th><th>what a lazy pass looks like</th></tr></thead>
+  <tbody>
+    <tr><td><code>multi.app_switch</code></td><td>Open the Calculator, then open Safari, then go back to the Calculator.</td><td>foreground is <code>com.apple.calculator</code></td><td>open the Calculator, stop</td></tr>
+    <tr><td><code>multi.return_after_detour</code></td><td>Open the Calculator, then open Notes, then come back to the Calculator.</td><td>foreground is <code>com.apple.calculator</code></td><td>open the Calculator, stop</td></tr>
+    <tr><td><code>multi.three_apps</code></td><td>Open the Calculator, then the Clock, then Settings. End on Settings.</td><td>foreground is <code>com.apple.Preferences</code></td><td>open Settings, stop</td></tr>
+    <tr><td><code>system.spotlight.find_app</code></td><td>Using the iPhone's own search (Spotlight), find the Calculator app and open it.</td><td>foreground is <code>com.apple.calculator</code></td><td>tap the home screen icon instead</td></tr>
+    <tr><td><code>measure.open</code>, <code>weather.open</code>, <code>system.appstore.open</code></td><td>Open the app.</td><td>foreground is that app</td><td>none, the check is the task</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Checks run once, after the agent stops. There is no step-level assertion anywhere in the runner,
+so an intermediate state the instruction demands cannot be graded by construction. A task whose
+instruction has three legs and whose checker has one assertion is measuring the last leg and hoping
+for the first two. Two of the three sequencing tasks are worse than that, because the assertion names
+the app the sequence starts from.</p>
+
+<p>Our judgement, not a measurement: these four tasks should carry a second assertion the shortcut
+cannot satisfy. Spotlight leaves a search field in the tree, and a detour through Notes leaves Notes
+in the app switcher. Both are readable. Neither is currently read.</p>
+
+<h2 id="run">What this costs in coverage</h2>
+
+<p>Deterministic checks only work where the phone will tell you the answer, and that is why the
+suite lives in first-party apps: 16 bundle ids, all Apple, with Settings (20 tasks), Safari (26,
+including the 20 probes), Clock (9) and Notes (5) carrying most of it. There is no Uber task, not
+because it is uninteresting but because nothing in a closed third-party app exposes the state a
+checker would have to read. That is the trade a benchmark makes when it refuses a model judge, and
+it is worth stating in public rather than in a footnote.</p>
+
+<p>Twenty tasks do grade the model's words. <code>answer_contains</code> exists for the narrow case
+where the deliverable is information rather than a state change, and the code says so: for "what word
+is in that picture", the word is on screen either way, so every state check would pass without the
+model having read anything. Ground truth has to be fixed in advance, which is why those 20 probes run
+against pages we host rather than against content that can change.</p>
+
+<h2>Check it yourself</h2>
+
+<pre><code>git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+
+# every check kind, counted from the task files
+python3 - &lt;&lt;'PY'
+import yaml, glob, collections
+c = collections.Counter()
+for f in glob.glob('environments/*.yaml'):
+    for chk in yaml.safe_load(open(f))['checks']:
+        c[chk['kind']] += 1
+print(len(glob.glob('environments/*.yaml')), 'tasks', sum(c.values()), 'checks', c.most_common())
+PY
+
+# the tasks whose only assertion is which app is in front
+grep -L -e 'element_exists' -e 'regex_on_screen' -e 'answer_contains' environments/*.yaml
+
+# the declared vocabulary, and the validator that enforces it
+sed -n '20,30p' scripts/validate_tasks.py
+python3 scripts/validate_tasks.py</code></pre>
+
+<p>One probe page is public if you want to see what a render-stratum task actually asks:
+<a href="https://blolabel.ai/probe/seven/">blolabel.ai/probe/seven/</a>. The word in that picture is
+absent from every accessibility node on the page.</p>
+
+<h2>What would prove this wrong</h2>
+
+<p>The claim is that the three sequencing tasks are satisfiable by their first leg. It is falsifiable
+in one run: add a second assertion to <code>multi.app_switch</code> and
+<code>multi.return_after_detour</code> that requires the detour app to be present, then re-run the
+same models. If pass rates on those two tasks do not fall for at least one model by 31 October 2026,
+the shortcut was never being taken and the tasks were fine as written. We will publish the paired
+numbers either way.</p>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>Blomega/phoneshell, <code>environments/*.yaml</code>, 80 task files counted 20 September 2026. <a href="https://github.com/Blomega/phoneshell">github.com/Blomega/phoneshell</a></li>
+      <li>Blomega/phoneshell, <code>phoneshell/bench/schema.py</code>: what a task is, and why the checker is the product.</li>
+      <li>Blomega/phoneshell, <code>phoneshell/bench/verify.py</code>: the twelve implemented check kinds and the rationale for <code>answer_contains</code>.</li>
+      <li>Blomega/phoneshell, <code>phoneshell/bench/runner.py</code>: setup, instruction, checks, and the rule that a timed-out task is never a pass.</li>
+      <li>Blomega/phoneshell, <code>scripts/validate_tasks.py</code>: the declared vocabulary of nine setup verbs and twelve check kinds.</li>
+      <li>Blolabel, render-stratum probe page, <a href="https://blolabel.ai/probe/seven/">blolabel.ai/probe/seven/</a>, one word that exists only as pixels.</li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
