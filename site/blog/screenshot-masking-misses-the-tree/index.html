@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Masking screenshots cut PriMobiBench's profiling by a third, not 58%, and a tree-reading agent sends the text anyway | Blolabel</title>
+<meta name="description" content="PriMobiBench (arXiv:2609.13873, 12 September 2026) says its mask cuts user profiling by up to 58% at about 8% task loss. Those come from different rows: the 8% configuration cuts GPT-5-mini's profiling by 32.1%. Every model saw screenshots only, so the accessibility-tree text an iPhone agent sends was never masked.">
+<link rel="canonical" href="https://blolabel.ai/blog/screenshot-masking-misses-the-tree/">
+<meta property="og:title" content="Masking screenshots cut PriMobiBench's profiling by a third, not 58%, and a tree-reading agent sends the text anyway | Blolabel">
+<meta property="og:description" content="PriMobiBench (arXiv:2609.13873, 12 September 2026) says its mask cuts user profiling by up to 58% at about 8% task loss. Those come from different rows: the 8% configuration cuts GPT-5-mini's profiling by 32.1%. Every model saw screenshots only, so the accessibility-tree text an iPhone agent sends was never masked.">
+<meta property="og:url" content="https://blolabel.ai/blog/screenshot-masking-misses-the-tree/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Masking screenshots cut PriMobiBench's profiling by a third, not 58%, and a tree-reading agent sends the text anyway","description":"PriMobiBench (arXiv:2609.13873, 12 September 2026) says its mask cuts user profiling by up to 58% at about 8% task loss. Those come from different rows: the 8% configuration cuts GPT-5-mini's profiling by 32.1%. Every model saw screenshots only, so the accessibility-tree text an iPhone agent sends was never masked.",
+ "datePublished":"2026-09-21","dateModified":"2026-09-21",
+ "url":"https://blolabel.ai/blog/screenshot-masking-misses-the-tree/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/screenshot-masking-misses-the-tree/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Does masking screenshots stop a phone agent from leaking private data?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Partly. In PriMobiBench (arXiv:2609.13873), segmenting the screenshot and pixelating private elements the task does not need reduced GPT-5-mini's user-profiling success from 0.695 to 0.472, a 32.1% cut, at a 6.3% to 10.0% cost in agent action consistency. The abstract's 58% figure is a different model under a mask that costs agents 15% to 20%."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Did PriMobiBench test accessibility-tree agents?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. The paper states that all models received only raw screenshots without metadata. Agents that read the accessibility tree, which is common on iOS, send on-screen text as text, and a screenshot mask does not touch it."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How should a tree-reading phone agent redact private data?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Redact on the element list before it is serialised, and apply the same decision to the element's text and to the pixels inside its rectangle, so the text channel and the image channel agree. Per-element rules do not address profiling from many harmless facts across a trajectory."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-21">21 September 2026</time>
+    <span>6 min read</span>
+  </div>
+  <h1>Masking screenshots cut PriMobiBench's profiling by a third, not 58%, and a tree-reading agent sends the text anyway</h1>
+  <p class="standfirst">The paper's own Table 5 and Table 6, reproduced row by row, and a read of what one tree-first iPhone harness sends to a cloud model on every step.</p>
+
+  <p>PriMobiBench (arXiv:2609.13873, 12 September 2026) reports that masking private regions of a
+phone screenshot cuts a model's ability to profile the user "by up to 58% with only ~8% performance
+loss". The two numbers come from different rows. The 57.9% cut is Qwen2.5VL-7B under a mask that costs
+agents 15.1% to 20.4% of their action consistency; the mask that costs about 8% cuts GPT-5-mini's
+profiling by 32.1%. And every model in the study saw "only raw screenshots without metadata", so the
+channel a tree-reading iPhone agent actually leans on, text from the accessibility tree, was never
+masked or measured.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/screenshot-masking-misses-the-tree-hero.png" alt="Abstract technical illustration of a phone-shaped grid of tiles where several tiles are pixelated, while a parallel column of plain text lines passes beside the grid untouched" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">What PriMobiBench measured</h2>
+
+<p>Qihang Cen, Tianshuo Cong, Da Song, Xinlei He and colleagues (Tsinghua University, Shandong
+University, Wuhan University) built MobiLeak: 50 synthetic user profiles, 25 privacy attributes in 5
+categories, inserted into trajectories from 16 Android apps collected by Mobile-Agent-v3. That gives
+320 samples carrying 2,960 privacy elements in 30 visual forms. Five vision-language models were asked
+to pull private facts off the screenshots (recognition) and to assemble a profile of the user across
+a trajectory (profiling). A separate set of manually collected iOS 26 trajectories, count not
+reported, gave GPT-5-mini 0.786 recognition and 0.652 profiling.</p>
+
+<p>The mitigation runs on the client before anything reaches a cloud model. Qwen3-VL-8B segments the
+screenshot into UI elements, classifies which ones hold private data, and pixelates them. The
+"task-relevance filtering" variant leaves private elements alone when the task needs them. The paper's
+Table 5 and Table 6 carry the results; we reproduce the rows the abstract draws on.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>model or agent</th><th>metric</th><th>no defence</th><th>coarse mask</th><th>UI segmentation</th><th>segmentation + task filter</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>GPT-5-mini</td><td>privacy recognition</td><td>0.825</td><td>0.691 (-16.2%)</td><td>0.538 (-34.8%)</td><td>0.571 (-30.8%)</td><td>Table 5</td></tr>
+    <tr><td>GPT-5-mini</td><td>profile construction</td><td>0.695</td><td>0.579 (-16.7%)</td><td>0.451 (-35.0%)</td><td>0.472 (-32.1%)</td><td>Table 5</td></tr>
+    <tr><td>GLM-4.5V</td><td>profile construction</td><td>0.603</td><td>0.486 (-19.4%)</td><td>0.331 (-45.1%)</td><td>0.402 (-33.3%)</td><td>Table 5</td></tr>
+    <tr><td>Qwen2.5VL-72B</td><td>profile construction</td><td>0.562</td><td>0.441 (-21.5%)</td><td>0.356 (-36.7%)</td><td>0.389 (-30.8%)</td><td>Table 5</td></tr>
+    <tr><td>Gemma3-27B</td><td>profile construction</td><td>0.476</td><td>0.361 (-24.2%)</td><td>0.294 (-38.2%)</td><td>0.327 (-31.3%)</td><td>Table 5</td></tr>
+    <tr><td>Qwen2.5VL-7B</td><td>profile construction</td><td>0.401</td><td>0.297 (-25.9%)</td><td>0.169 (-57.9%)</td><td>0.214 (-46.6%)</td><td>Table 5</td></tr>
+    <tr><td>UI-TARS-1.5-7B</td><td>action consistency</td><td>0.862</td><td>0.627 (-27.3%)</td><td>0.718 (-16.7%)</td><td>0.791 (-8.2%)</td><td>Table 6</td></tr>
+    <tr><td>GUI-Owl-7B</td><td>action consistency</td><td>0.807</td><td>0.533 (-34.0%)</td><td>0.642 (-20.4%)</td><td>0.726 (-10.0%)</td><td>Table 6</td></tr>
+    <tr><td>AutoGLM-Phone-9B</td><td>action consistency</td><td>0.943</td><td>0.684 (-27.5%)</td><td>0.801 (-15.1%)</td><td>0.884 (-6.3%)</td><td>Table 6</td></tr>
+    <tr><td>Mobile-Agent-v3</td><td>action consistency</td><td>0.915</td><td>0.671 (-26.7%)</td><td>0.739 (-19.2%)</td><td>0.834 (-8.9%)</td><td>Table 6</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Read across a row and the trade is clear. The configuration a deployer would actually choose,
+segmentation plus task filtering, costs agents 6.3% to 10.0% and removes 30.8% to 46.6% of profiling
+success. The strongest model keeps about two thirds of its profiling ability: 0.472 against 0.695.
+That is a real reduction and worth having. It is not 58%. A second wrinkle: GPT-5-mini's unmasked
+recognition is 0.825 in the mitigation table and 0.747 in the paper's main recognition result, so the
+abstract's "up to 82.5%" is the higher of two baselines for the same model.</p>
+
+<figure>
+<svg viewBox="0 0 900 420" role="img" style="width:100%;height:auto"
+  aria-label="Bar chart of user-profile construction success before and after PriMobiBench's segmentation plus task-relevance mask, for five models. GPT-5-mini falls from 0.695 to 0.472, GLM-4.5V from 0.603 to 0.402, Qwen2.5VL-72B from 0.562 to 0.389, Gemma3-27B from 0.476 to 0.327, and Qwen2.5VL-7B from 0.401 to 0.214. The masked strongest model still profiles better than the unmasked weakest one. The cost to agents of this mask is 6.3 to 10.0 percent of action consistency.">
+  <rect x="0" y="0" width="900" height="420" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">Profiling success, unmasked vs segmentation + task filter (PriMobiBench Table 5)</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <line x1="90" y1="340" x2="870" y2="340" stroke="#64748b"/>
+    <line x1="90" y1="60" x2="90" y2="340" stroke="#64748b"/>
+    <text x="80" y="344" fill="#94a3b8" text-anchor="end">0</text>
+    <text x="80" y="204" fill="#94a3b8" text-anchor="end">0.4</text>
+    <line x1="90" y1="200" x2="870" y2="200" stroke="#1e293b"/>
+    <text x="80" y="64" fill="#94a3b8" text-anchor="end">0.8</text>
+    <line x1="90" y1="60" x2="870" y2="60" stroke="#1e293b"/>
+    <text x="24" y="210" fill="#94a3b8" transform="rotate(-90 24 210)">success rate</text>
+
+    <rect x="120" y="96.75" width="50" height="243.25" fill="#64748b"/>
+    <rect x="175" y="174.8" width="50" height="165.2" fill="#38bdf8"/>
+    <text x="145" y="90" fill="#e2e8f0" text-anchor="middle">0.695</text>
+    <text x="200" y="168" fill="#7dd3fc" text-anchor="middle">0.472</text>
+    <text x="172" y="360" fill="#e2e8f0" text-anchor="middle">GPT-5-mini</text>
+
+    <rect x="275" y="128.95" width="50" height="211.05" fill="#64748b"/>
+    <rect x="330" y="199.3" width="50" height="140.7" fill="#38bdf8"/>
+    <text x="300" y="122" fill="#e2e8f0" text-anchor="middle">0.603</text>
+    <text x="355" y="193" fill="#7dd3fc" text-anchor="middle">0.402</text>
+    <text x="327" y="360" fill="#e2e8f0" text-anchor="middle">GLM-4.5V</text>
+
+    <rect x="430" y="143.3" width="50" height="196.7" fill="#64748b"/>
+    <rect x="485" y="203.85" width="50" height="136.15" fill="#38bdf8"/>
+    <text x="455" y="137" fill="#e2e8f0" text-anchor="middle">0.562</text>
+    <text x="510" y="197" fill="#7dd3fc" text-anchor="middle">0.389</text>
+    <text x="482" y="360" fill="#e2e8f0" text-anchor="middle">Qwen2.5VL-72B</text>
+
+    <rect x="585" y="173.4" width="50" height="166.6" fill="#64748b"/>
+    <rect x="640" y="225.55" width="50" height="114.45" fill="#38bdf8"/>
+    <text x="610" y="167" fill="#e2e8f0" text-anchor="middle">0.476</text>
+    <text x="665" y="219" fill="#7dd3fc" text-anchor="middle">0.327</text>
+    <text x="637" y="360" fill="#e2e8f0" text-anchor="middle">Gemma3-27B</text>
+
+    <rect x="740" y="199.65" width="50" height="140.35" fill="#64748b"/>
+    <rect x="795" y="265.1" width="50" height="74.9" fill="#38bdf8"/>
+    <text x="765" y="193" fill="#e2e8f0" text-anchor="middle">0.401</text>
+    <text x="820" y="259" fill="#7dd3fc" text-anchor="middle">0.214</text>
+    <text x="792" y="360" fill="#e2e8f0" text-anchor="middle">Qwen2.5VL-7B</text>
+
+    <rect x="120" y="386" width="14" height="14" fill="#64748b"/>
+    <text x="140" y="398" fill="#e2e8f0">no defence</text>
+    <rect x="240" y="386" width="14" height="14" fill="#38bdf8"/>
+    <text x="260" y="398" fill="#e2e8f0">segmentation + task filter (agent cost 6.3% to 10.0%)</text>
+  </g>
+</svg>
+<figcaption>Values from PriMobiBench Table 5, arXiv:2609.13873v1. The 57.9% reduction in the abstract is Qwen2.5VL-7B under segmentation alone, a column not shown here.</figcaption>
+</figure>
+
+<h2 id="mechanism">Where a pixel mask sits in a tree-first iPhone agent</h2>
+
+<p>PriMobiBench's threat model is a screenshot agent, and its related-work section notes that some
+agents also read accessibility trees without testing one. On iOS that is the common case, because
+most first-party and many third-party apps expose a rich tree. Our own harness is built that way,
+and reading its observation code shows what a screenshot mask would and would not cover.</p>
+
+<figure>
+<svg viewBox="0 0 900 440" role="img" style="width:100%;height:auto"
+  aria-label="Data-flow diagram of one phoneshell step. The accessibility tree from WebDriverAgent becomes a TSV with one row per element and up to 90 characters of text each, sent to the model on every step. The screenshot is downscaled to 512 pixels on its long edge and sent as a quality 70 JPEG, which the MCP server sends only once per distinct screen in a session. On thin-tree screens, blind mode runs macOS Vision text recognition locally and adds the recovered words to the same TSV. A PriMobiBench-style pixel mask applied to the JPEG would not touch the TSV rows, and would run after blind mode had already turned pixel text into tree text. Only iOS itself hides secure text field contents.">
+  <rect x="0" y="0" width="900" height="440" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">One phoneshell observation: two channels leave the Mac, a pixel mask touches one</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <rect x="30" y="60" width="200" height="64" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="44" y="86" fill="#e2e8f0">WebDriverAgent /source</text>
+    <text x="44" y="106" fill="#94a3b8">accessibility tree</text>
+
+    <rect x="30" y="250" width="200" height="64" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="44" y="276" fill="#e2e8f0">WebDriverAgent screenshot</text>
+    <text x="44" y="296" fill="#94a3b8">full-resolution PNG</text>
+
+    <rect x="290" y="150" width="210" height="72" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="304" y="174" fill="#e2e8f0">blind mode (thin tree only)</text>
+    <text x="304" y="194" fill="#94a3b8">macOS Vision OCR, local,</text>
+    <text x="304" y="212" fill="#94a3b8">adds recovered words as rows</text>
+
+    <rect x="560" y="60" width="200" height="64" rx="8" fill="#3a2f12" stroke="#f59e0b"/>
+    <text x="574" y="86" fill="#fde68a">TSV, every step</text>
+    <text x="574" y="106" fill="#fde68a">1 row per element, 90 chars</text>
+
+    <rect x="560" y="250" width="200" height="64" rx="8" fill="#16304a" stroke="#38bdf8"/>
+    <text x="574" y="276" fill="#e0f2fe">JPEG q70, 512 px edge</text>
+    <text x="574" y="296" fill="#e0f2fe">MCP: once per new screen</text>
+
+    <rect x="790" y="150" width="90" height="72" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="802" y="180" fill="#e2e8f0">cloud</text>
+    <text x="802" y="200" fill="#e2e8f0">model</text>
+
+    <line x1="230" y1="92" x2="558" y2="92" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="230" y1="282" x2="558" y2="282" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="160" y1="250" x2="300" y2="222" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="500" y1="170" x2="600" y2="124" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="760" y1="92" x2="820" y2="150" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="760" y1="282" x2="820" y2="222" stroke="#94a3b8" stroke-width="2"/>
+
+    <rect x="430" y="262" width="110" height="40" rx="6" fill="none" stroke="#f87171" stroke-dasharray="5 4"/>
+    <text x="440" y="287" fill="#fca5a5">pixel mask here</text>
+
+    <text x="30" y="360" fill="#fbbf24">The mask sees the JPEG only. The TSV already holds the same words, and blind mode has read the pixels before the mask runs.</text>
+    <text x="30" y="384" fill="#94a3b8">Only iOS hides anything by itself: a SecureTextField does not expose what it holds.</text>
+    <text x="30" y="408" fill="#94a3b8">phoneshell sends the benchmark's model calls to openrouter.ai; nothing in the step path redacts either channel.</text>
+  </g>
+</svg>
+<figcaption>Read from <code>phoneshell/agent/observation.py</code>, <code>perception/blind.py</code>, <code>perception/ocr.py</code>, <code>mcp_server.py</code> and <code>bench/openrouter.py</code> at commit cac38a6.</figcaption>
+</figure>
+
+<p>Concretely: <code>to_tsv</code> writes one row per element with its type, up to 90 characters of
+its text, its centre, its size and its flags, and that text goes out on every step. The picture is
+downscaled to 512 pixels on its long edge and encoded as a quality-70 JPEG, and the MCP server sends
+it once per distinct screen per session. When the tree is too thin to trust, blind mode runs macOS
+Vision on the Mac, which is local, and appends what it reads to the same TSV. So on the screens where
+pixels matter most, the words in the pixels have already become text before any image-side mask could
+act. The only protection in the step path belongs to iOS: a secure text field does not expose its
+contents. <code>safety.py</code> adds a deny list of three bundles (Passwords, the Settings passwords
+pane, Keychain) that the agent may not open, which prevents some screens rather than redacting any.</p>
+
+<h2 id="decisions">What this means if you ship a phone agent</h2>
+
+<p>Masking screenshots is the right control for a screenshot-only agent, and PriMobiBench's element
+segmentation beats a coarse mask on both axes: less leakage and less task damage in every row of Table
+6. For an agent that also reads the tree, it is half a control. The redaction has to happen on the
+element list, before it is serialised, and the same classifier decision has to drive both the TSV row
+and the pixel region, or the two channels disagree about what is private.</p>
+
+<p>That makes the tree the easier place to redact, not the harder one. A row already carries its
+type, its text and its rectangle, so there is no segmentation step to get wrong. Masking a row's text
+and the pixels inside its rectangle together is one decision per element. What it does not solve is
+inference: PriMobiBench's profiling scores are about assembling a person from many harmless-looking
+facts over a trajectory, and no per-element rule sees that.</p>
+
+<p>Our own position, stated as a judgement: phoneshell today sends everything the tree exposes, and
+runs on a personal phone. We have not measured how many private facts a typical task's TSV carries.
+That is the number to get before arguing about masks.</p>
+
+<h2 id="run">Check it yourself</h2>
+
+<pre><code># the paper's tables (Table 5: masking vs recognition and profiling; Table 6: agent cost)
+curl -sL https://arxiv.org/html/2609.13873v1 -o pmb.html
+python3 -c "import re,html;t=html.unescape(re.sub(r'&lt;[^&gt;]+&gt;',' ',open('pmb.html').read()));
+i=t.find('Table 5. Privacy');print(re.sub(r'\s+',' ',t[i:i+1600]))"
+grep -o 'only raw screenshots without metadata' pmb.html
+
+# what phoneshell sends per step
+git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+grep -n "def to_tsv" -A10 phoneshell/agent/observation.py     # 90-char text per element
+grep -n "max_edge\|quality=70" phoneshell/agent/observation.py
+grep -n "seen_screens" phoneshell/mcp_server.py                 # one picture per screen
+grep -n "denied_bundle_ids" -A6 phoneshell/config.py            # three bundles
+grep -rn "redact\|mask" phoneshell/agent phoneshell/perception/tree.py   # nothing</code></pre>
+
+<h2>What would prove this wrong</h2>
+
+<p>The claim is that screenshot masking leaves a tree-reading agent's leakage mostly intact, because
+the same private text travels in the accessibility tree. It is wrong if, on iOS, the tree carries
+little of what the pixels show: if most private facts in real apps live in images, web views or
+custom-drawn text that the tree does not expose. We will run PriMobiBench's 25-attribute taxonomy
+against phoneshell's own TSV and JPEG logs for the 80 public tasks and publish, by 15 December 2026,
+the share of private facts that appear in the TSV, in the JPEG only, and in both. If the TSV share is
+below a third, pixel masking covers most of the exposure on iOS and this note is wrong.</p>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>Qihang Cen, Tianshuo Cong, Da Song, Xinlei He, Jiaxing Song, Ke Xu et al., <a href="https://arxiv.org/abs/2609.13873">PriMobiBench: Characterizing Visual Privacy Leakage in VLM-Driven Mobile GUI Agents</a>, arXiv:2609.13873v1, 12 September 2026. Tables 3, 5 and 6; Section 7 for the iOS 26 trajectories.</li>
+      <li>Blomega/phoneshell at commit cac38a6: <code>phoneshell/agent/observation.py</code> (to_tsv, 512 px JPEG at quality 70), <code>phoneshell/perception/blind.py</code> and <code>ocr.py</code> (local macOS Vision), <code>phoneshell/mcp_server.py</code> (one picture per screen), <code>phoneshell/config.py</code> and <code>safety.py</code> (three denied bundles), <code>phoneshell/bench/openrouter.py</code>. <a href="https://github.com/Blomega/phoneshell">github.com/Blomega/phoneshell</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
