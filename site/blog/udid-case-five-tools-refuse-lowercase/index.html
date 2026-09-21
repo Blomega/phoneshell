@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Five tools on one Mac refuse an iPhone's UDID in lower case, which is why Appium stopped rewriting it | Blolabel</title>
+<meta name="description" content="appium-xcuitest-driver 12.12.5 and 12.12.6 (18 and 19 September 2026) made UDID matching case-insensitive without changing the string. We tested why: xcodebuild, devicectl, pymobiledevice3, ideviceinfo and our own phoneshell all reject the lower-case form of an iPhone 17 Pro Max's UDID.">
+<link rel="canonical" href="https://blolabel.ai/blog/udid-case-five-tools-refuse-lowercase/">
+<meta property="og:title" content="Five tools on one Mac refuse an iPhone's UDID in lower case, which is why Appium stopped rewriting it | Blolabel">
+<meta property="og:description" content="appium-xcuitest-driver 12.12.5 and 12.12.6 (18 and 19 September 2026) made UDID matching case-insensitive without changing the string. We tested why: xcodebuild, devicectl, pymobiledevice3, ideviceinfo and our own phoneshell all reject the lower-case form of an iPhone 17 Pro Max's UDID.">
+<meta property="og:url" content="https://blolabel.ai/blog/udid-case-five-tools-refuse-lowercase/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Five tools on one Mac refuse an iPhone's UDID in lower case, which is why Appium stopped rewriting it","description":"appium-xcuitest-driver 12.12.5 and 12.12.6 (18 and 19 September 2026) made UDID matching case-insensitive without changing the string. We tested why: xcodebuild, devicectl, pymobiledevice3, ideviceinfo and our own phoneshell all reject the lower-case form of an iPhone 17 Pro Max's UDID.",
+ "datePublished":"2026-09-21","dateModified":"2026-09-21",
+ "url":"https://blolabel.ai/blog/udid-case-five-tools-refuse-lowercase/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/udid-case-five-tools-refuse-lowercase/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Is an iPhone UDID case-sensitive in xcodebuild and devicectl?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes, in our test on 21 September 2026. With Xcode 26.6, xcodebuild -destination id=<lower-case UDID> exited 64 with 'Unable to find a device matching the provided destination specifier' and listed the same phone in upper case. devicectl, pymobiledevice3 and ideviceinfo also rejected the lower-case form of the same UDID."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why did Appium make UDID matching case-insensitive in September 2026?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Different Apple tools report some devices in different cases. An Apple TV paired through pair-appletv sits in the tunnel registry in upper case while Xcode lists it in lower case, so an exact match rejected a valid device. Appium 12.12.5 and 12.12.6 compare case-insensitively but keep the caller's string, and WebDriverAgent 16.12.9 looks up xcodebuild's own spelling before building the destination."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Should I normalise UDIDs to upper case in my test harness?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. Compare them case-insensitively, keep the record the tool returned, and pass each tool the string it reported. Rewriting the UDID moves the failure to the next tool that insists on its own spelling."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind tutorial">tutorial</span>
+    <time datetime="2026-09-21">21 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>Five tools on one Mac refuse an iPhone's UDID in lower case, which is why Appium stopped rewriting it</h1>
+  <p class="standfirst">Match loosely, pass through exactly. A measured table of which tools accept which spelling, and the twelve exact comparisons in our own harness that would misreport a phone sitting on the cable.</p>
+
+  <p>On 21 September 2026 we passed the lower-case form of our iPhone's UDID to five tools on one Mac,
+with the phone on the cable. All five refused it: xcodebuild, devicectl, pymobiledevice3, ideviceinfo,
+and our own phoneshell, which reported the phone as absent and then named that same phone as the one
+"present instead". Appium's XCUITest driver spent 18 and 19 September making its UDID matching
+case-insensitive, and the detail worth copying is what it did not do: it never rewrites the UDID.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/udid-case-five-tools-refuse-lowercase-hero.png" alt="Abstract technical illustration of one long hexadecimal identifier rendered twice in two weights, with five gates of which each admits only one form" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">Three releases in two days, all about letter case</h2>
+
+<p>appium-xcuitest-driver 12.12.5 shipped on 18 September with PR #2977 by Yash121l, fixing issue
+#2941. The driver decided whether <code>appium:udid</code> named a real device with an exact
+<code>devices.includes(udid)</code>. An Apple TV paired through <code>pair-appletv</code> sits in the
+tunnel registry in upper case while Xcode lists the same device in lower case, so the Xcode form
+failed the match, fell through to the simulator lookup, and died with "Unknown device or simulator
+UDID". 12.12.6 followed on 19 September with PR #2981 by mykola-mokhnach, applying the same fix to the
+comparisons #2977 had left: the usbmux SerialNumber lookup, the simulator lookups, and IPC
+session-claim contention detection. The same day, appium-webdriveragent 16.12.9 (PR #1260) began
+resolving a real device's UDID to the case <code>xcodebuild -showdestinations</code> reports before
+building <code>-destination id=</code>, because xcodebuild's own match is case-sensitive.</p>
+
+<p>The PR #2977 description gives the reason for the design: "I left the UDID value itself untouched
+on purpose: canonicalizing it to the registry's upper-case form would move the failure into the WDA
+xcodebuild destination." Match loosely, pass through exactly. The WDA change does the other half: when
+a string has to go to xcodebuild, look up xcodebuild's own spelling and use that one, falling back to
+the caller's string after a 15000 ms timeout.</p>
+
+<h2 id="measured">What the tools on our Mac accept</h2>
+
+<p>Device: iPhone 17 Pro Max (iPhone18,2), iOS 26.6.2 (23G90), on USB. Its UDID starts
+<code>00008150-</code> and ends <code>401C</code>; we print only those ends here because the rest
+identifies a personal phone. Every tool reported it in upper case, digits and letters A to F. Each command was run
+twice, once with that string and once with the same string lower-cased.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>tool (version)</th><th>how it reports the UDID</th><th>command</th><th>upper case</th><th>lower case</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>xcodebuild (Xcode 26.6, 17F113)</td><td><code>id:00008150-…401C</code> in -showdestinations, upper</td><td><code>-destination id=... -showBuildSettings</code></td><td>exit 0</td><td>exit 64, "Unable to find a device matching the provided destination specifier", then lists the phone in upper case</td><td>our run, 21 Sep 2026</td></tr>
+    <tr><td>devicectl (518.33)</td><td><code>hardwareProperties.udid</code>, upper</td><td><code>device info details --device ...</code></td><td>osVersionNumber 26.6.2</td><td>CoreDeviceError 1000, "The specified device was not found"</td><td>our run, 21 Sep 2026</td></tr>
+    <tr><td>pymobiledevice3 (11.8.0)</td><td>usbmux <code>Identifier</code>, upper</td><td><code>lockdown info --udid ...</code></td><td>ProductVersion 26.6.2</td><td>"usbmux has no device matching udid"</td><td>our run, 21 Sep 2026</td></tr>
+    <tr><td>libimobiledevice ideviceinfo (1.4.0)</td><td><code>idevice_id -l</code>, upper</td><td><code>ideviceinfo -u ... -k ProductVersion</code></td><td>26.6.2</td><td>"Device ... not found!"</td><td>our run, 21 Sep 2026</td></tr>
+    <tr><td>phoneshell <code>device_check</code> (commit cac38a6)</td><td>whatever usbmux or devicectl says</td><td><code>device_check(prefer=...)</code></td><td>ok, "iOS 26.6.2 over USB"</td><td>"the configured phone is not connected. Present instead: [device name] (iPhone18,2)"</td><td>our run, 21 Sep 2026</td></tr>
+    <tr><td>appium-xcuitest-driver 12.12.6</td><td>varies by tool</td><td>device discovery, usbmux, simulator, session claim</td><td>match</td><td>match, value kept as given</td><td>PR #2977, PR #2981</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>For an iPhone on this Mac the tools agree with each other: upper case everywhere, and nothing
+accepts anything else. The disagreement Appium fixed is between tools that report different cases for
+the same device, which in the reports is an Apple TV paired through <code>pair-appletv</code>. We have no Apple TV and
+did not test one. What the table does show is that a case-insensitive compare is safe and a
+case-normalising rewrite is not, since every consumer downstream insists on its own spelling.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of the two ways to fix a UDID case mismatch. Normalising rewrites the UDID to one case, which makes the comparison pass and then fails later when the rewritten string reaches xcodebuild, devicectl, pymobiledevice3 or ideviceinfo, all of which rejected the lower-case form of our iPhone's UDID on 21 September 2026. Matching case-insensitively and passing each tool the string it reported, as appium-xcuitest-driver 12.12.5 and 12.12.6 and appium-webdriveragent 16.12.9 do, makes the comparison pass and keeps every downstream call valid.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="30" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">Fix the comparison, not the string</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <rect x="30" y="60" width="250" height="70" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="44" y="86" fill="#e2e8f0">input from config, a person,</text>
+    <text x="44" y="106" fill="#e2e8f0">or another tool</text>
+    <text x="44" y="124" fill="#94a3b8" font-size="11">00008150-…401c (lower case)</text>
+
+    <text x="320" y="78" fill="#fca5a5" font-size="14" font-weight="600">A. normalise</text>
+    <rect x="320" y="90" width="250" height="56" rx="8" fill="#3b1d24" stroke="#f87171"/>
+    <text x="334" y="113" fill="#fecaca">rewrite to one case, then ==</text>
+    <text x="334" y="133" fill="#fecaca">comparison passes</text>
+    <rect x="610" y="90" width="260" height="56" rx="8" fill="#3b1d24" stroke="#f87171"/>
+    <text x="624" y="113" fill="#fecaca">rewritten string reaches a tool</text>
+    <text x="624" y="133" fill="#fecaca">with the other spelling: not found</text>
+    <line x1="280" y1="95" x2="318" y2="115" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="570" y1="118" x2="608" y2="118" stroke="#94a3b8" stroke-width="2"/>
+
+    <text x="320" y="200" fill="#7dd3fc" font-size="14" font-weight="600">B. match loosely, pass through exactly</text>
+    <rect x="320" y="212" width="250" height="56" rx="8" fill="#16304a" stroke="#38bdf8"/>
+    <text x="334" y="235" fill="#e0f2fe">compare lower(a) == lower(b)</text>
+    <text x="334" y="255" fill="#e0f2fe">keep the matched record</text>
+    <rect x="610" y="212" width="260" height="56" rx="8" fill="#16304a" stroke="#38bdf8"/>
+    <text x="624" y="235" fill="#e0f2fe">hand each tool the string it</text>
+    <text x="624" y="255" fill="#e0f2fe">reported itself: always found</text>
+    <line x1="280" y1="115" x2="318" y2="235" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="570" y1="240" x2="608" y2="240" stroke="#94a3b8" stroke-width="2"/>
+
+    <text x="30" y="316" fill="#fbbf24">Appium: 12.12.5 (18 Sep) and 12.12.6 (19 Sep) match loosely; WDA 16.12.9 (19 Sep) looks up xcodebuild's own spelling</text>
+    <text x="30" y="340" fill="#fbbf24">On our Mac, 4 of 4 Apple and open-source tools rejected the lower-case form; phoneshell made 5 of 5</text>
+    <text x="30" y="364" fill="#94a3b8">phoneshell today: 12 exact comparisons, 0 case-insensitive, so it fails at the first one instead of later</text>
+  </g>
+</svg>
+<figcaption>Approach B is what the three Appium releases converge on. Tool results are from our runs on 21 September 2026; release dates from the npm registry.</figcaption>
+</figure>
+
+<h2 id="ours">Twelve places our code compares a UDID exactly</h2>
+
+<p>We grepped phoneshell for UDID comparisons at commit cac38a6. There are twelve, none of them
+case-insensitive:</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>file</th><th>lines</th><th>what the comparison decides</th><th>what a case mismatch would do</th></tr></thead>
+  <tbody>
+    <tr><td><code>phoneshell/device.py</code></td><td>255, 258</td><td>is the configured phone on usbmux, or live in devicectl</td><td>"not connected", then lists the same phone as present (measured)</td></tr>
+    <tr><td><code>phoneshell/bringup.py</code></td><td>82, 91</td><td>which scanned phone is the configured one</td><td>no phone marked configured, sort order changes</td></tr>
+    <tr><td><code>phoneshell/bringup.py</code></td><td>86</td><td>dedupe the usbmux list against the devicectl list</td><td>one phone listed twice, once per tool</td></tr>
+    <tr><td><code>phoneshell/bringup.py</code></td><td>212</td><td>is the configured phone among the live ones</td><td>"A different iPhone is plugged in", about the same iPhone</td></tr>
+    <tr><td><code>phoneshell/bringup.py</code></td><td>474</td><td>is the resolved phone on the cable</td><td>takes the wifi path with the phone on USB</td></tr>
+    <tr><td><code>phoneshell/bringup.py</code></td><td>482</td><td>does the config need re-pinning</td><td>rewrites the config to the tool's spelling, which is the harmless one</td></tr>
+    <tr><td><code>phoneshell/farm.py</code></td><td>125, 132, 189</td><td>primary phone, slot lookup, configured flag</td><td>allocates and saves a second slot, with its own port pair, for the phone it already holds; the connect then fails at <code>device_check</code></td></tr>
+    <tr><td><code>phoneshell/server.py</code></td><td>612</td><td>which farm member a connect request meant</td><td>the request reports failure and returns no member record</td></tr>
+  </tbody>
+</table>
+</div>
+
+<figure>
+<svg viewBox="0 0 900 380" role="img" style="width:100%;height:auto"
+  aria-label="Flow of a lower-case UDID through phoneshell's farm connect endpoint, read from the code at commit cac38a6. server.py accepts any string from the JSON body. farm.py slot_for compares it exactly with the configured upper-case UDID, finds no match, allocates a new slot with its own WebDriverAgent port pair and saves it. config_for then builds a config for the lower-case string. Bridge.connect calls device_check, which compares exactly against usbmux and devicectl, finds no match, and reports that the configured phone is not connected while naming the same iPhone18,2 as present instead. The final member lookup in server.py compares exactly again and returns no member.">
+  <rect x="0" y="0" width="900" height="380" fill="#0f172a"/>
+  <text x="30" y="32" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="17" font-weight="700">A lower-case UDID through phoneshell's farm connect: four exact comparisons, four misses</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <rect x="30" y="60" width="190" height="84" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="44" y="84" fill="#e2e8f0">server.py</text>
+    <text x="44" y="104" fill="#94a3b8">POST /api/farm/connect</text>
+    <text x="44" y="124" fill="#94a3b8">any string accepted</text>
+
+    <rect x="245" y="60" width="190" height="84" rx="8" fill="#3a2f12" stroke="#f59e0b"/>
+    <text x="259" y="84" fill="#fde68a">farm.py slot_for</text>
+    <text x="259" y="104" fill="#fde68a">!= configured (line 125)</text>
+    <text x="259" y="124" fill="#fde68a">new slot, saved to disk</text>
+
+    <rect x="460" y="60" width="190" height="84" rx="8" fill="#3a2f12" stroke="#f59e0b"/>
+    <text x="474" y="84" fill="#fde68a">farm.py config_for</text>
+    <text x="474" y="104" fill="#fde68a">port 8100 + slot</text>
+    <text x="474" y="124" fill="#fde68a">for the lower-case id</text>
+
+    <rect x="675" y="60" width="195" height="84" rx="8" fill="#3b1d24" stroke="#f87171"/>
+    <text x="689" y="84" fill="#fecaca">device.py device_check</text>
+    <text x="689" y="104" fill="#fecaca">no exact match on usbmux</text>
+    <text x="689" y="124" fill="#fecaca">or devicectl (255, 258)</text>
+
+    <line x1="220" y1="102" x2="243" y2="102" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="435" y1="102" x2="458" y2="102" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="650" y1="102" x2="673" y2="102" stroke="#94a3b8" stroke-width="2"/>
+
+    <rect x="245" y="190" width="625" height="60" rx="8" fill="#3b1d24" stroke="#f87171"/>
+    <text x="259" y="214" fill="#fecaca">"the configured phone is not connected.</text>
+    <text x="259" y="236" fill="#fecaca">Present instead: [device name] (iPhone18,2)"  (the same phone, measured 21 Sep 2026)</text>
+    <line x1="772" y1="144" x2="772" y2="188" stroke="#94a3b8" stroke-width="2"/>
+
+    <rect x="30" y="190" width="190" height="60" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="44" y="214" fill="#e2e8f0">server.py line 612</text>
+    <text x="44" y="236" fill="#94a3b8">member lookup: none</text>
+    <line x1="245" y1="220" x2="222" y2="220" stroke="#94a3b8" stroke-width="2"/>
+
+    <text x="30" y="296" fill="#fbbf24">12 exact UDID comparisons in phoneshell, 0 case-insensitive. None fires while UDIDs come from usbmux or devicectl;</text>
+    <text x="30" y="320" fill="#fbbf24">most of them fire for a UDID a person typed. The fix is at the comparisons, never at the string.</text>
+    <text x="30" y="350" fill="#94a3b8">Only the device_check step was executed; the farm steps are read from the code, not reproduced.</text>
+  </g>
+</svg>
+<figcaption>Read from <code>phoneshell/server.py</code>, <code>farm.py</code> and <code>device.py</code> at commit cac38a6. The device_check message is from our run on 21 September 2026.</figcaption>
+</figure>
+
+<p>In normal use none of this fires, and we should say so plainly. Every UDID phoneshell stores comes
+from usbmux or devicectl, and line 482 pins the tool's own spelling into the config on first connect.
+The exposure is a UDID a person types into <code>runtime/config.yaml</code> or passes to the farm's
+connect endpoint, which takes any string in its JSON body. The measured symptom is a diagnosis that
+is wrong in an especially confusing way: it tells you the phone is missing while naming it. The rows
+after the first are read from the code, not reproduced.</p>
+
+<h2 id="decisions">What to change, and what to leave alone</h2>
+
+<p>Compare UDIDs with a case-folded key, keep the record the tool returned, and use that record's
+string for every call that follows. Do not lower-case on input and do not upper-case on input. The
+one place a rewrite is correct is the one WDA 16.12.9 chose: immediately before a call to a tool,
+replace the string with the spelling that tool itself listed, and fall back to the original if the
+lookup fails.</p>
+
+<p>For a harness with one phone and one Mac, the cost of leaving it is a confusing error message.
+For a farm, where UDIDs arrive from scripts, CI variables, and people, the cost is phantom duplicates:
+our <code>farm.py</code> would allocate a second slot, with its own port pair off 8100, for a phone it
+already holds. That is the case worth fixing first.</p>
+
+<h2 id="run">Check it yourself</h2>
+
+<pre><code># your phone's UDID as each tool reports it
+idevice_id -l
+xcrun devicectl list devices --json-output /tmp/dc.json &amp;&amp; grep -o '"udid" : "[^"]*"' /tmp/dc.json
+pymobiledevice3 usbmux list | grep Identifier
+
+# the same string, lower-cased, against each tool
+U=$(idevice_id -l | head -1); L=$(echo $U | tr A-F a-f)
+ideviceinfo -u $L -k ProductVersion
+pymobiledevice3 lockdown info --udid $L
+xcrun devicectl device info details --device $L
+xcodebuild -project WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner \
+  -destination "id=$L" -showBuildSettings; echo "exit $?"
+
+# Appium's changes
+gh pr view 2977 -R appium/appium-xcuitest-driver
+gh pr view 2981 -R appium/appium-xcuitest-driver --json files
+gh pr view 1260 -R appium/WebDriverAgent
+
+# phoneshell's exact comparisons
+grep -nE "udid *(==|!=|in )|== *(want|prefer|resolved)|prefer in" phoneshell/*.py</code></pre>
+
+<h2>What would prove this wrong</h2>
+
+<p>The claim is that Apple's device tools accept only the spelling they report, so a UDID must be
+matched case-insensitively and passed through unchanged. It breaks if any of the four tools starts
+accepting the other case: that would make normalising safe and the pass-through rule unnecessary.
+The cheapest place to see it first is xcodebuild. We will rerun the table above against Xcode 27.1
+when it leaves beta, and against the iPhone 14 Pro on the same Mac, and publish the rows by
+30 November 2026. If a single tool accepts the lower-case form, this note gets a
+correction at the top.</p>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>Yash121l, <a href="https://github.com/appium/appium-xcuitest-driver/pull/2977">fix: match explicit udid capability against connected devices case-insensitively</a>, appium-xcuitest-driver PR #2977, fixes #2941, released as 12.12.5 on 18 September 2026.</li>
+      <li>mykola-mokhnach, <a href="https://github.com/appium/appium-xcuitest-driver/pull/2981">fix: match udid capabilities case-insensitively across remaining device/simulator lookups</a>, PR #2981, released as 12.12.6 on 19 September 2026.</li>
+      <li>mykola-mokhnach, <a href="https://github.com/appium/WebDriverAgent/pull/1260">fix: resolve real device udid to xcodebuild's own case before building '-destination id='</a>, appium/WebDriverAgent PR #1260, released as <a href="https://github.com/appium/WebDriverAgent/releases/tag/v16.12.9">v16.12.9</a> on 19 September 2026.</li>
+      <li>npm registry, <a href="https://registry.npmjs.org/appium-xcuitest-driver">appium-xcuitest-driver</a> and <a href="https://registry.npmjs.org/appium-webdriveragent">appium-webdriveragent</a> publish times, read 21 September 2026.</li>
+      <li>Blolabel measurement, 21 September 2026: xcodebuild (Xcode 26.6, 17F113), devicectl 518.33, pymobiledevice3 11.8.0, libimobiledevice ideviceinfo 1.4.0, against an iPhone 17 Pro Max (iPhone18,2) on iOS 26.6.2 (23G90) over USB.</li>
+      <li>Blomega/phoneshell at commit cac38a6: <code>phoneshell/device.py</code>, <code>bringup.py</code>, <code>farm.py</code>, <code>server.py</code>. <a href="https://github.com/Blomega/phoneshell">github.com/Blomega/phoneshell</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
