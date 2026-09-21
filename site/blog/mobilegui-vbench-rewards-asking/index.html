@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>52 of MobileGUI-VBench's 150 tasks require the agent to stop and ask, and models that never ask top out near 65 | Blolabel</title>
+<meta name="description" content="vivo's BlueLM-GUI scores 87.4 on its own MobileGUI-VBench and 84.9 on AndroidWorld. Counting the benchmark file shows 52 of 150 tasks graded on clarification or handover, capping an agent that never asks near 65.3. The report also shows a stricter judge added 4.9 points of RL success.">
+<link rel="canonical" href="https://blolabel.ai/blog/mobilegui-vbench-rewards-asking/">
+<meta property="og:title" content="52 of MobileGUI-VBench's 150 tasks require the agent to stop and ask, and models that never ask top out near 65 | Blolabel">
+<meta property="og:description" content="vivo's BlueLM-GUI scores 87.4 on its own MobileGUI-VBench and 84.9 on AndroidWorld. Counting the benchmark file shows 52 of 150 tasks graded on clarification or handover, capping an agent that never asks near 65.3. The report also shows a stricter judge added 4.9 points of RL success.">
+<meta property="og:url" content="https://blolabel.ai/blog/mobilegui-vbench-rewards-asking/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"52 of MobileGUI-VBench's 150 tasks require the agent to stop and ask, and models that never ask top out near 65","description":"vivo's BlueLM-GUI scores 87.4 on its own MobileGUI-VBench and 84.9 on AndroidWorld. Counting the benchmark file shows 52 of 150 tasks graded on clarification or handover, capping an agent that never asks near 65.3. The report also shows a stricter judge added 4.9 points of RL success.",
+ "datePublished":"2026-09-21","dateModified":"2026-09-21",
+ "url":"https://blolabel.ai/blog/mobilegui-vbench-rewards-asking/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/mobilegui-vbench-rewards-asking/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "What is MobileGUI-VBench?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "A 150-task mobile GUI agent benchmark from vivo AI Lab, released on 11 September 2026 with the BlueLM-GUI report. It covers 40 Chinese mobile apps in 8 scenario categories, runs on real devices, gives no partial credit, and fails an agent that passes a money or privacy decision point without asking the user."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why do strong AndroidWorld models score low on MobileGUI-VBench?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "52 of its 150 tasks carry a clarification or handover requirement, such as asking before sending a message or handing over before placing an order. A model tuned only to finish tasks can pass at most the other 98, about 65.3. Qwen3.8-Max scores 85.3 on AndroidWorld and 64.2 on MobileGUI-VBench; PhoneBuddy scores 83.2 and 39.0."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How much did the judge matter in BlueLM-GUI's training?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Replacing a holistic judge with disjunctive pass rules by atomic, frame-bound conditions judged five times raised RL success on MobileGUI-VBench from 72.52 to 77.42 with the reward definition unchanged, according to Table 9 of arXiv:2609.12394."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-21">21 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>52 of MobileGUI-VBench's 150 tasks require the agent to stop and ask, and models that never ask top out near 65</h1>
+  <p class="standfirst">An original count over vivo's released benchmark file, the report's own score table, and the judge ablation that moved RL success from 72.52 to 77.42 with the reward unchanged.</p>
+
+  <p>52 of the 150 tasks in vivo's MobileGUI-VBench, released with the BlueLM-GUI report on
+11 September 2026, are graded on whether the agent stops to ask or hands control back before it
+sends, orders or deletes. An agent that never asks can pass at most the other 98, a ceiling of about
+65.3. Nine of the 13 outside models vivo reports score 66.4 or less, including the three best at
+plain execution on AndroidWorld. BlueLM-GUI, trained to call the user, scores 87.4 while trailing
+Qwen3.8-Max on AndroidWorld, 84.9 to 85.3.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/mobilegui-vbench-rewards-asking-hero.png" alt="Abstract technical illustration of a row of task tiles, two thirds of them open channels and one third ending in a pause gate, with a horizontal ceiling line drawn across the open channels" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">What vivo released, and what it did not</h2>
+
+<p>vivo AI Lab posted <em>BlueLM-GUI Technical Report: A Real-Device-Centric Flywheel for
+Self-Improving Mobile GUI Agents</em> as arXiv:2609.12394 on 11 September 2026 (revised 14 and 15
+September, 43 authors). The model is a 35B-A3B mixture of experts built on Qwen3.5-35B-A3B through
+continual pre-training (15B tokens, 64 GPUs), supervised fine-tuning (5B tokens, 32 GPUs) and GRPO
+reinforcement learning (32 GPUs, 8 rollouts for each of 8 instructions per iteration, at most 20
+steps). The GitHub repository vivo-ai-lab/BlueLM-GUI carries the report, the benchmark and an
+AndroidWorld harness. It does not carry weights: the README lists the model's access as "In-house".
+The benchmark is public, as a 150-line JSONL on GitHub and as vivo-ai/MobileGUI-VBench on Hugging Face
+(last modified 15 September).</p>
+
+<p>We counted the <code>clarification_requirement</code> field in that JSONL on 21 September. 98 tasks
+leave it empty. 52 set it: 16 "clarify before sending", 6 "hand over before placing the order", 2
+"clarify before deleting", 2 "request handover at the login page", 2 "stopping at the login page is
+enough", and 24 more specific variants, several of which combine a clarification with a handover
+before an order. 65 tasks carry a precondition the device farm must set up first. The queries are in
+Chinese, across 40 apps such as QQ, NetEase Cloud Music, Xiaohongshu, Bilibili, DiDi and Amap.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>model</th><th>MobileGUI-VBench</th><th>AndroidWorld</th><th>VBench minus AndroidWorld</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>BlueLM-GUI (35B-A3B)</td><td>87.4</td><td>84.9</td><td>+2.5</td><td>arXiv:2609.12394 Table 5</td></tr>
+    <tr><td>Seed2.1-Pro</td><td>82.3</td><td>72.4</td><td>+9.9</td><td>Table 5</td></tr>
+    <tr><td>Seed2.0-Pro</td><td>80.8</td><td>71.5</td><td>+9.3</td><td>Table 5</td></tr>
+    <tr><td>Gemini3.7-Flash</td><td>78.3</td><td>80.1</td><td>-1.8</td><td>Table 5</td></tr>
+    <tr><td>Seed2.0-Lite</td><td>77.5</td><td>71.6</td><td>+5.9</td><td>Table 5</td></tr>
+    <tr><td>GLM5.3-Flash</td><td>66.4</td><td>78.4</td><td>-12.0</td><td>Table 5</td></tr>
+    <tr><td>Qwen3.6-27B</td><td>64.4</td><td>70.3</td><td>-5.9</td><td>Table 5</td></tr>
+    <tr><td>Qwen3.8-Max</td><td>64.2</td><td>85.3</td><td>-21.1</td><td>Table 5</td></tr>
+    <tr><td>Qwen3.8-Flash</td><td>59.1</td><td>84.5</td><td>-25.4</td><td>Table 5</td></tr>
+    <tr><td>Qwen3.8-27B</td><td>58.0</td><td>81.9</td><td>-23.9</td><td>Table 5</td></tr>
+    <tr><td>Claude Opus 4.8</td><td>56.9</td><td>63.8</td><td>-6.9</td><td>Table 5</td></tr>
+    <tr><td>Qwen3.7-Plus</td><td>49.6</td><td>81.0</td><td>-31.4</td><td>Table 5</td></tr>
+    <tr><td>UI-Venus-2.0-9B</td><td>49.6</td><td>80.2</td><td>-30.6</td><td>Table 5</td></tr>
+    <tr><td>PhoneBuddy (4B)</td><td>39.0</td><td>83.2</td><td>-44.2</td><td>Table 5</td></tr>
+    <tr><td>tasks with a clarification or handover requirement</td><td>52 of 150</td><td>not applicable</td><td>ceiling without asking: 98 of 150, about 65.3</td><td>MobileGUI-VBench.jsonl, counted 21 Sep 2026</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The shape is two clusters, not one ranking. Models from the Seed family, Gemini3.7-Flash and
+BlueLM-GUI sit above 77 on VBench. Every other model sits at or below 66.4, and the ones that are
+strongest at plain execution on AndroidWorld (Qwen3.8-Max, Qwen3.8-Flash, PhoneBuddy) fall furthest.
+The report reads the same table the same way: "Strong execution therefore does not carry over to the
+interaction and refusal behavior that MobileGUI-VBench asks for." Our count adds the size of that
+effect. Some requirements are lenient, "stopping at the login page is enough" and "may clarify before
+liking" among them, so 65.3 is an approximate ceiling rather than an exact one, and GLM5.3-Flash at
+66.4 is just over it.</p>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Scatter chart of 14 models, AndroidWorld success on the horizontal axis and MobileGUI-VBench success on the vertical axis. A horizontal line at 65.3 marks the most an agent can score on MobileGUI-VBench without ever asking the user, since 52 of its 150 tasks require clarification or handover. BlueLM-GUI is at 84.9 and 87.4, Seed2.1-Pro at 72.4 and 82.3, Gemini3.7-Flash at 80.1 and 78.3, all above the line. Qwen3.8-Max at 85.3 and 64.2, Qwen3.8-Flash at 84.5 and 59.1, PhoneBuddy at 83.2 and 39.0, GLM5.3-Flash at 78.4 and 66.4, and Claude Opus 4.8 at 63.8 and 56.9 sit at or below it.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="30" y="30" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="17" font-weight="700">Execution skill (AndroidWorld) does not predict VBench, because a third of VBench is asking</text>
+  <g font-family="Montserrat,sans-serif" font-size="11">
+    <line x1="110" y1="360" x2="860" y2="360" stroke="#64748b"/>
+    <line x1="110" y1="60" x2="110" y2="360" stroke="#64748b"/>
+    <text x="110" y="378" fill="#94a3b8" text-anchor="middle">60</text>
+    <text x="360" y="378" fill="#94a3b8" text-anchor="middle">70</text>
+    <text x="610" y="378" fill="#94a3b8" text-anchor="middle">80</text>
+    <text x="860" y="378" fill="#94a3b8" text-anchor="middle">90</text>
+    <text x="485" y="400" fill="#94a3b8" text-anchor="middle">AndroidWorld success (%)</text>
+    <text x="100" y="364" fill="#94a3b8" text-anchor="end">30</text>
+    <text x="100" y="264" fill="#94a3b8" text-anchor="end">50</text>
+    <text x="100" y="164" fill="#94a3b8" text-anchor="end">70</text>
+    <text x="100" y="64" fill="#94a3b8" text-anchor="end">90</text>
+    <text x="40" y="210" fill="#94a3b8" transform="rotate(-90 40 210)">MobileGUI-VBench success (%)</text>
+
+    <line x1="110" y1="183.5" x2="860" y2="183.5" stroke="#f59e0b" stroke-dasharray="6 4"/>
+    <text x="118" y="176" fill="#fbbf24">65.3: most an agent that never asks can score (98 of 150)</text>
+
+    <circle cx="732.5" cy="73" r="7" fill="#38bdf8"/>
+    <text x="745" y="70" fill="#7dd3fc">BlueLM-GUI 84.9 / 87.4</text>
+    <circle cx="420" cy="98.5" r="5" fill="#94a3b8"/>
+    <text x="300" y="92" fill="#e2e8f0">Seed2.1-Pro 72.4 / 82.3</text>
+    <circle cx="397.5" cy="106" r="5" fill="#94a3b8"/>
+    <circle cx="400" cy="122.5" r="5" fill="#94a3b8"/>
+    <circle cx="612.5" cy="118.5" r="5" fill="#94a3b8"/>
+    <text x="625" y="122" fill="#e2e8f0">Gemini3.7-Flash 80.1 / 78.3</text>
+    <circle cx="570" cy="178" r="5" fill="#94a3b8"/>
+    <text x="470" y="205" fill="#e2e8f0">GLM5.3-Flash 78.4 / 66.4</text>
+    <circle cx="742.5" cy="189" r="5" fill="#f87171"/>
+    <text x="755" y="200" fill="#fca5a5">Qwen3.8-Max 85.3 / 64.2</text>
+    <circle cx="722.5" cy="214.5" r="5" fill="#f87171"/>
+    <text x="735" y="226" fill="#fca5a5">Qwen3.8-Flash 84.5 / 59.1</text>
+    <circle cx="657.5" cy="220" r="5" fill="#94a3b8"/>
+    <circle cx="367.5" cy="188" r="5" fill="#94a3b8"/>
+    <circle cx="635" cy="262" r="5" fill="#94a3b8"/>
+    <circle cx="615" cy="262" r="5" fill="#94a3b8"/>
+    <circle cx="690" cy="315" r="5" fill="#f87171"/>
+    <text x="702" y="319" fill="#fca5a5">PhoneBuddy 83.2 / 39.0</text>
+    <circle cx="205" cy="225.5" r="5" fill="#94a3b8"/>
+    <text x="217" y="229" fill="#e2e8f0">Claude Opus 4.8 63.8 / 56.9</text>
+  </g>
+</svg>
+<figcaption>Scores from arXiv:2609.12394 Table 5, all run by vivo. The ceiling line is our count from <code>MobileGUI-VBench.jsonl</code>. Unlabelled points are Seed2.0-Pro, Seed2.0-Lite, Qwen3.6-27B, Qwen3.8-27B, Qwen3.7-Plus and UI-Venus-2.0-9B, with values in the table above.</figcaption>
+</figure>
+
+<h2 id="mechanism">How the grading works, and the 4.9 points it moved</h2>
+
+<p>The benchmark gives no partial credit. On an interactive query, an agent that passes a decision
+point involving money or private data without calling <code>call_user</code> fails "even if the task
+appears to have been completed". Several fine-tuned VLM judges with different rule sets rule
+independently, a trajectory passes only if all of them agree, and split verdicts go to human experts.
+Failures are attributed first, and a trajectory broken by the environment (an expired login, a
+redesigned screen, a network error) is not scored: the device is reset and the task run again.</p>
+
+<p>Training data goes through a second grader, the Heterogeneous Triple-System Consensus, and the
+RL reward through a third, a judge queried several times with a majority vote. Section 5.3.5 is the
+part worth reading twice. Replacing one holistic judgement with "disjunctive bypass rules, under which
+hitting any one condition was enough to pass" by a set of atomic conditions, each bound to a
+designated frame and all required, judged five times, raised RL success on MobileGUI-VBench from
+72.52 to 77.42. The paper's own reading: "those 4.9 points do not come from a better objective. They
+come from measuring the same objective more accurately."</p>
+
+<figure>
+<svg viewBox="0 0 900 440" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of BlueLM-GUI's trajectory grading. A shared safety checklist covering payment, sensitive permissions, privacy data and irreversible actions can veto any trajectory to False. System A reads terminal state from OS APIs, database logs, network traffic and the filesystem, and dominates when it can read the state. System B checks ordered milestones. System C judges whether the whole path is plausible. The consensus maps to True, False, Env_ERROR or Undetermined; Env_ERROR is re-collected rather than counted, and Undetermined goes to a human. Below, the RL reward change: a holistic, disjunctive judge with one pass gave 72.52 on MobileGUI-VBench, atomic frame-bound conditions with five passes gave 77.42, a 4.9 point gain from the judge alone.">
+  <rect x="0" y="0" width="900" height="440" fill="#0f172a"/>
+  <text x="30" y="30" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="17" font-weight="700">Three graders and a veto, and what tightening the judge was worth</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <rect x="30" y="50" width="840" height="36" rx="8" fill="#3b1d24" stroke="#f87171"/>
+    <text x="44" y="73" fill="#fecaca">safety veto, any system: payment, sensitive permission, privacy data, irreversible action  =&gt;  False, no vote</text>
+
+    <rect x="30" y="102" width="265" height="92" rx="8" fill="#16304a" stroke="#38bdf8"/>
+    <text x="44" y="126" fill="#7dd3fc" font-weight="600">System A: terminal state</text>
+    <text x="44" y="148" fill="#e0f2fe">OS APIs, DB logs, network,</text>
+    <text x="44" y="166" fill="#e0f2fe">filesystem. Dominates when it</text>
+    <text x="44" y="184" fill="#e0f2fe">can read; abstains when not</text>
+
+    <rect x="317" y="102" width="265" height="92" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="331" y="126" fill="#e2e8f0" font-weight="600">System B: milestones</text>
+    <text x="331" y="148" fill="#cbd5e1">ordered subgoal checklist,</text>
+    <text x="331" y="166" fill="#cbd5e1">then a global judgement</text>
+
+    <rect x="604" y="102" width="266" height="92" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="618" y="126" fill="#e2e8f0" font-weight="600">System C: path plausibility</text>
+    <text x="618" y="148" fill="#cbd5e1">long-horizon history; detours,</text>
+    <text x="618" y="166" fill="#cbd5e1">pseudo-completion</text>
+
+    <text x="30" y="224" fill="#e2e8f0">outcome:</text>
+    <text x="110" y="224" fill="#7dd3fc">True =&gt; SFT pool</text>
+    <text x="270" y="224" fill="#fca5a5">False =&gt; repair module</text>
+    <text x="460" y="224" fill="#fbbf24">Env_ERROR =&gt; reset, re-collect, not a model failure</text>
+    <text x="110" y="246" fill="#cbd5e1">Undetermined (no consensus) =&gt; human adjudication, verdict feeds back into judge rules</text>
+
+    <line x1="30" y1="270" x2="870" y2="270" stroke="#334155"/>
+    <text x="30" y="296" fill="#e2e8f0" font-weight="600">RL reward judge, arXiv:2609.12394 Table 9 (MobileGUI-VBench success)</text>
+    <text x="30" y="330" fill="#cbd5e1">holistic, disjunctive, 1 pass</text>
+    <rect x="260" y="316" width="507.6" height="20" fill="#64748b"/>
+    <text x="775" y="331" fill="#e2e8f0">72.52</text>
+    <text x="30" y="370" fill="#cbd5e1">atomic, frame-bound, 5 passes</text>
+    <rect x="260" y="356" width="541.9" height="20" fill="#38bdf8"/>
+    <text x="810" y="371" fill="#7dd3fc">77.42</text>
+    <text x="30" y="412" fill="#fbbf24">+4.9 points with the reward definition unchanged: the judge, not the objective, moved the model</text>
+  </g>
+</svg>
+<figcaption>From arXiv:2609.12394 sections 2.4.2, 4 and 5.3.5. Bars are drawn to scale from zero (7 px per point).</figcaption>
+</figure>
+
+<h2 id="decisions">What it means for anyone comparing phone agents</h2>
+
+<p>A MobileGUI-VBench score is mostly two numbers added together: how often the agent finishes, and
+how often it stops at the right moment. A model tuned to finish tasks, which is what AndroidWorld
+rewards, is capped near 65 by construction. Report the two halves separately, or the benchmark will
+rank willingness to ask as if it were competence. That is not a criticism of the design: an agent that
+orders food without confirming is worse, and the benchmark is right to fail it. It is a reason not to
+read 87.4 against 64.2 as "better at phones".</p>
+
+<p>The judge result generalises further than the model. A disjunctive rule, pass if any one condition
+holds, is the same defect we found in our own suite on 20 September: seven of phoneshell's 80 tasks
+assert only which app is in front, and three of those are satisfied by the first leg of a three-app
+instruction. vivo measured what a defect of that shape costs when it feeds a reward: 4.9 points of
+RL success. With 150 tasks, one task is about 0.67 points, so that is roughly seven tasks. It is also
+close to the 5.1 point margin the report claims over the best closed model, which is a reason to want
+that margin reproduced with a second judge before treating it as settled.</p>
+
+<p>Two things in the report do not match each other, and a reader reproducing it should know both.
+The abstract says every rollout runs "on hundreds of real phones rather than sandboxes or emulators";
+section 5.1 describes the RL environment as "hundreds of real devices and Android emulators", with no
+split given. And none of 72.52, 77.42 or 87.4 is a whole number of tasks out of 150, so those figures
+are averages over repeated runs or over a different query set. The report does not say which.</p>
+
+<p>One design choice is worth flagging for its own sake. To keep commercial apps from blocking the
+farm, the devices are "bound to dedicated physical SIM cards on independent cellular networks", and
+touches are injected "with realistic physical acceleration, evading commercial apps' device
+risk-control engines". That is a training rig engineered to look like people to fraud detection. We
+note it without a verdict; it is the part of the method that a lab outside China, or outside a phone
+maker, is least likely to be able to copy.</p>
+
+<h2 id="run">Check it yourself</h2>
+
+<pre><code># the benchmark and the clarification count
+curl -sL https://raw.githubusercontent.com/vivo-ai-lab/BlueLM-GUI/main/MobileGUI-VBench/MobileGUI-VBench.jsonl -o vbench.jsonl
+python3 -c "import json,collections; r=[json.loads(l) for l in open('vbench.jsonl')];
+print(len(r), sum(1 for x in r if x['clarification_requirement']));
+print(collections.Counter(x['clarification_requirement'] for x in r).most_common(6))"
+
+# the scores, the judge ablation and the emulator sentence
+curl -sL https://arxiv.org/html/2609.12394v3 -o bluelm.html
+grep -o '72.52\|77.42\|real devices and Android emulators\|rather than sandboxes or emulators' bluelm.html | sort | uniq -c
+
+# weights: the README lists access as In-house
+gh api repos/vivo-ai-lab/BlueLM-GUI/contents --jq '.[].name'</code></pre>
+
+<h2>What would prove this wrong</h2>
+
+<p>The claim is that MobileGUI-VBench's spread between models comes mainly from the 52 tasks that
+require asking, not from execution skill. It is testable from vivo's own trajectories: split each
+model's score into the 98 plain tasks and the 52 ask-or-hand-over tasks. If Qwen3.8-Max and
+BlueLM-GUI are within 5 points of each other on the 98 plain tasks, the claim holds. If BlueLM-GUI
+leads there by more than 10 points, its lead is execution and our reading is wrong. We will request the
+per-task results through the repository's issue tracker and publish the split, or the lack of an
+answer, by 30 November 2026.</p>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>vivo AI Lab (Tong Ye, Kunyang Han, Guozhi Wang et al., 43 authors), <a href="https://arxiv.org/abs/2609.12394">BlueLM-GUI Technical Report: A Real-Device-Centric Flywheel for Self-Improving Mobile GUI Agents</a>, arXiv:2609.12394, v1 11 September 2026, v3 15 September 2026. Table 5 (scores), Table 9 (judge ablation), sections 2.3, 2.4.2, 4 and 5.1.</li>
+      <li>vivo AI Lab, <a href="https://github.com/vivo-ai-lab/BlueLM-GUI">vivo-ai-lab/BlueLM-GUI</a>: README (150 tasks, 40 apps, model access 'In-house') and <code>MobileGUI-VBench/MobileGUI-VBench.jsonl</code>, counted 21 September 2026.</li>
+      <li>vivo AI, <a href="https://huggingface.co/datasets/vivo-ai/MobileGUI-VBench">vivo-ai/MobileGUI-VBench</a> on Hugging Face, last modified 15 September 2026.</li>
+      <li>Blolabel, <a href="https://blolabel.ai/blog/eighty-tasks-five-checks/">Eighty iPhone tasks assert five things, and seven of them only check which app is in front</a>, 20 September 2026: the disjunctive-check defect in our own suite.</li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
