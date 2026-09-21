@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Xcode 27 broke the detached WebDriverAgent launch on older iPhones, and the fix is one launch option | Blolabel</title>
+<meta name="description" content="Since Xcode 27 shipped on 14 September 2026, a WebDriverAgent runner launched through devicectl can die with XCTest error 10300 on iOS 26 and iOS 18 phones. Appium fixed it on 20 September by launching through DVT with ActivateSuspended. The host's Xcode, not the phone's iOS, is the variable.">
+<link rel="canonical" href="https://blolabel.ai/blog/xcode-27-runner-cannot-background/">
+<meta property="og:title" content="Xcode 27 broke the detached WebDriverAgent launch on older iPhones, and the fix is one launch option | Blolabel">
+<meta property="og:description" content="Since Xcode 27 shipped on 14 September 2026, a WebDriverAgent runner launched through devicectl can die with XCTest error 10300 on iOS 26 and iOS 18 phones. Appium fixed it on 20 September by launching through DVT with ActivateSuspended. The host's Xcode, not the phone's iOS, is the variable.">
+<meta property="og:url" content="https://blolabel.ai/blog/xcode-27-runner-cannot-background/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Xcode 27 broke the detached WebDriverAgent launch on older iPhones, and the fix is one launch option","description":"Since Xcode 27 shipped on 14 September 2026, a WebDriverAgent runner launched through devicectl can die with XCTest error 10300 on iOS 26 and iOS 18 phones. Appium fixed it on 20 September by launching through DVT with ActivateSuspended. The host's Xcode, not the phone's iOS, is the variable.",
+ "datePublished":"2026-09-21","dateModified":"2026-09-21",
+ "url":"https://blolabel.ai/blog/xcode-27-runner-cannot-background/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/xcode-27-runner-cannot-background/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Why does WebDriverAgent exit with error 10300 'Failed to background test runner' after upgrading to Xcode 27?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "When the runner is launched in the foreground, for example with xcrun devicectl device process launch, it presses Home on itself to move to the background. Under the Xcode 27 developer disk image on older iOS versions that synthesized press is ignored, XCTest waits 30 seconds, and the runner exits before WebDriverAgent opens its port. Appium's code comment in PR #2980 describes this; reports cover iOS 26 and iOS 18 devices."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I fix preinstalled WebDriverAgent on Xcode 27?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Upgrade appium-xcuitest-driver to 12.13.1 or later (released 20 September 2026), which launches the runner through DVT process control with ActivateSuspended set to true, and make sure a RemoteXPC tunnel is available. If you launch the runner yourself, use a DVT launch with ActivateSuspended instead of devicectl; pymobiledevice3 already sets that option for iOS 12 and later."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Is the Xcode 27 WebDriverAgent failure caused by iOS 27?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. Appium's first fix on 20 August keyed on iOS 27 devices, but issue #2978 reproduced it on iOS 26 and iOS 18 phones driven from an Xcode 27 host. The host's Xcode developer disk image is the variable. One report also saw the same error on Xcode 26.6 with an iPad on iPadOS 26.6."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind event">event</span>
+    <time datetime="2026-09-21">21 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>Xcode 27 broke the detached WebDriverAgent launch on older iPhones, and the fix is one launch option</h1>
+  <p class="standfirst">A five-week trail from a beta bug report to appium-xcuitest-driver 12.13.1, the first patch that keyed on the wrong variable, and the one place in our own harness that would stop an overnight run on an upgraded Mac.</p>
+
+  <p>Since Xcode 27 shipped on 14 September 2026, a WebDriverAgent runner started with
+<code>xcrun devicectl device process launch</code> can come up on an older iPhone, sit on screen for
+about 20 seconds, and exit with XCTest error 10300: "Failed to background test runner within 30.0s."
+Appium's fix, released in appium-xcuitest-driver 12.13.1 on 20 September, is one launch option,
+<code>ActivateSuspended: true</code>, sent through the DVT process-control service instead of devicectl.
+The pymobiledevice3 11.8.0 build on our rig already sends that option for every device on iOS 12 or later.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/xcode-27-runner-cannot-background-hero.png" alt="Abstract technical illustration of a process stuck at a doorway between a bright foreground layer and a darker background layer, with a second path that starts directly in the background" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-changed">Five weeks from beta report to a one-line fix</h2>
+
+<p>The failure was reported against a beta, patched against the wrong variable, reported again two
+days after the final release, and fixed properly on 20 September. Every entry below names its
+primary record.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>date</th><th>event</th><th>host and device</th><th>what it established</th><th>source</th></tr></thead>
+  <tbody>
+    <tr><td>16 Aug 2026</td><td>appium/appium#22636 opened by StevenWong12</td><td>Xcode 27 beta 5, active DDI 27A5237l, iPhone 14 on iOS 26.5.2, Appium 3.6.0, driver 12.3.4</td><td>devicectl-launched runner fails with code 10300 before its test case starts; a probe without Appium or WDA reproduces it</td><td>github.com/appium/appium/issues/22636</td></tr>
+    <tr><td>16 Aug 2026</td><td>same reporter, RemoteXPC path</td><td>same</td><td>ProcessControl launched the runner, port 8100 still refused, same 10300. That launch did not yet pass ActivateSuspended</td><td>issue #22636 comments</td></tr>
+    <tr><td>20 Aug 2026</td><td>appium-xcuitest-driver PR #2949 merged (mykola-mokhnach)</td><td>n/a</td><td>disables the devicectl fallback on iOS and tvOS 27+, keyed on the device's OS version</td><td>github.com/appium/appium-xcuitest-driver/pull/2949</td></tr>
+    <tr><td>25 Aug 2026</td><td>SunflowersLwtech data point</td><td>Xcode 26.6 (17F113), iPad Pro 11-inch on iPadOS 26.6</td><td>same 10300 with no Xcode 27 involved; the same host, WDA build and steps work on an iPhone on iOS 26.6</td><td>issue #22636 comments</td></tr>
+    <tr><td>14 Sep 2026</td><td>Xcode 27 (27A266a) and iOS 27.0 (24A437) released</td><td>n/a</td><td>the beta stack becomes the default toolchain on upgraded Macs</td><td>developer.apple.com/news/releases</td></tr>
+    <tr><td>16 Sep 2026</td><td>appium-xcuitest-driver#2978 opened by SMasekoSTS</td><td>Xcode 27, one device on iOS 26 and one on iOS 18</td><td>preinstalled WDA stays up about 20 s then closes; session fails at the 60000 ms launch timeout. Neither device runs iOS 27, so the #2949 gate never fires</td><td>github.com/appium/appium-xcuitest-driver/issues/2978</td></tr>
+    <tr><td>20 Sep 2026</td><td>PR #2980 (navin772), released as 12.13.1</td><td>n/a</td><td>adds <code>extraOptions: {ActivateSuspended: true}</code> to the DVT launch and bumps appium-ios-remotexpc to ^5.20.1</td><td>github.com/appium/appium-xcuitest-driver/pull/2980</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The correction in the middle matters more than the fix at the end. PR #2949 treated this as an
+iOS 27 problem and keyed the guard on the phone's OS version. Issue #2978 shows it on iOS 26 and iOS 18
+devices driven from an Xcode 27 host. The comment the 20 September patch adds to
+<code>lib/device/wda-host-ops.ts</code> says it directly: with the Xcode 27 DDI and XCTest stack, the
+synthesized Home press the runner uses to background itself "is ignored on older iOS versions". The
+variable is the host's developer disk image, not the phone.</p>
+
+<h2 id="mechanism">Why a foreground launch now dies at the 30 second mark</h2>
+
+<p>An XCTest UI-testing runner is an app that has to get out of the way before it can drive other
+apps. Launched in the foreground, it presses Home on itself and waits for the system to confirm it is
+in the background. Under the Xcode 27 stack on older iOS, per the patch comment, that press is
+ignored, the wait runs out at 30.0 seconds, and the process exits with code 1 before WebDriverAgent
+binds port 8100. <code>devicectl device process launch</code> always starts an app in the foreground
+and has no flag to change that. Xcode and DVT process control can start the runner already in the
+background, which skips the step that fails.</p>
+
+<figure>
+<svg viewBox="0 0 900 430" role="img" style="width:100%;height:auto"
+  aria-label="Diagram of the two ways to start the WebDriverAgent runner on an iPhone. The devicectl path launches the runner in the foreground; the runner synthesizes a Home press to background itself; under the Xcode 27 developer disk image on older iOS that press is ignored, XCTest waits 30.0 seconds, raises error 10300, Failed to background test runner, and the process exits before port 8100 opens, so Appium times out at 60000 milliseconds. The DVT process-control path passes ActivateSuspended true, the runner starts in the background, skips the Home press, and WebDriverAgent answers on port 8100. Appium added that option in appium-xcuitest-driver 12.13.1 on 20 September 2026; pymobiledevice3 11.8.0 already sends it for iOS 12 and later.">
+  <rect x="0" y="0" width="900" height="430" fill="#0f172a"/>
+  <text x="30" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">Same runner, two launch paths, one step that the Xcode 27 stack breaks</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <text x="30" y="72" fill="#fca5a5" font-size="14" font-weight="600">devicectl device process launch</text>
+    <rect x="30" y="86" width="160" height="62" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="42" y="110" fill="#e2e8f0">runner starts in</text>
+    <text x="42" y="130" fill="#e2e8f0">the FOREGROUND</text>
+    <rect x="215" y="86" width="175" height="62" rx="8" fill="#1e293b" stroke="#64748b"/>
+    <text x="227" y="110" fill="#e2e8f0">synthesized Home press</text>
+    <text x="227" y="130" fill="#e2e8f0">to background itself</text>
+    <rect x="415" y="86" width="190" height="62" rx="8" fill="#3b1d24" stroke="#f87171"/>
+    <text x="427" y="110" fill="#fecaca">ignored under the Xcode 27</text>
+    <text x="427" y="130" fill="#fecaca">DDI on older iOS</text>
+    <rect x="630" y="86" width="240" height="62" rx="8" fill="#3b1d24" stroke="#f87171"/>
+    <text x="642" y="110" fill="#fecaca">30.0 s wait, error 10300, exit 1</text>
+    <text x="642" y="130" fill="#fecaca">port 8100 never opens</text>
+    <line x1="190" y1="117" x2="213" y2="117" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="390" y1="117" x2="413" y2="117" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="605" y1="117" x2="628" y2="117" stroke="#94a3b8" stroke-width="2"/>
+    <text x="630" y="172" fill="#94a3b8">Appium gives up at 60000 ms;</text>
+    <text x="630" y="190" fill="#94a3b8">reporter saw the app for about 20 s</text>
+
+    <text x="30" y="242" fill="#7dd3fc" font-size="14" font-weight="600">DVT process control, ActivateSuspended: true</text>
+    <rect x="30" y="256" width="160" height="62" rx="8" fill="#16304a" stroke="#38bdf8"/>
+    <text x="42" y="280" fill="#e0f2fe">runner starts in</text>
+    <text x="42" y="300" fill="#e0f2fe">the BACKGROUND</text>
+    <rect x="215" y="256" width="175" height="62" rx="8" fill="#16304a" stroke="#38bdf8"/>
+    <text x="227" y="280" fill="#e0f2fe">no Home press needed,</text>
+    <text x="227" y="300" fill="#e0f2fe">the failing step is skipped</text>
+    <rect x="415" y="256" width="190" height="62" rx="8" fill="#16304a" stroke="#38bdf8"/>
+    <text x="427" y="280" fill="#e0f2fe">testmanagerd session</text>
+    <text x="427" y="300" fill="#e0f2fe">handshake, as Xcode does</text>
+    <rect x="630" y="256" width="240" height="62" rx="8" fill="#16304a" stroke="#38bdf8"/>
+    <text x="642" y="280" fill="#e0f2fe">WebDriverAgent answers</text>
+    <text x="642" y="300" fill="#e0f2fe">GET /status on 8100</text>
+    <line x1="190" y1="287" x2="213" y2="287" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="390" y1="287" x2="413" y2="287" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="605" y1="287" x2="628" y2="287" stroke="#94a3b8" stroke-width="2"/>
+
+    <text x="30" y="360" fill="#fbbf24">appium-xcuitest-driver 12.13.1, 20 Sep 2026: adds ActivateSuspended to the DVT launch</text>
+    <text x="30" y="382" fill="#fbbf24">pymobiledevice3 11.8.0 (our rig): sets ActivateSuspended for product major version 12 and up</text>
+    <text x="30" y="404" fill="#94a3b8">devicectl has no flag for a background launch, so its path cannot be patched from outside</text>
+  </g>
+</svg>
+<figcaption>The failing step exists only on the foreground path. Option names are from the PR #2980 diff and from pymobiledevice3's <code>services/dvt/testmanaged/xcuitest.py</code>.</figcaption>
+</figure>
+
+<p>The error text itself is old. appium/appium#11702, opened on 19 November 2018, carries the same
+"Failed to background test runner within 30.0s" from a real-device xcodebuild run. What is new in
+2026 is a named trigger that several reporters reproduce on demand.</p>
+
+<p>One caveat keeps this from being tidy. The 25 August data point reproduced 10300 on Xcode 26.6
+with an iPad on iPadOS 26.6, while the same host worked with an iPhone. So the Xcode 27 stack is the
+common trigger in the reports, not the only one. We have one iPhone and no iPad on the rig, so we
+cannot say what separates the iPad case.</p>
+
+<h2 id="ours">Where our own harness would break</h2>
+
+<p>phoneshell launches the runner the way Appium used to: devicectl first, with
+<code>--terminate-existing</code>, and a DVT session through <code>pymobiledevice3 developer dvt
+xcuitest</code> as the fallback. We read every call site on 21 September. Three of the four recover
+on an Xcode 27 host. The one that does not is the one an unattended benchmark depends on.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" role="img" style="width:100%;height:auto"
+  aria-label="Map of the four places phoneshell starts WebDriverAgent and whether each can reach the DVT fallback that passes ActivateSuspended. phoneshell up in auto mode tries devicectl, waits 40 seconds for status, then starts a tethered DVT session: recovers. The bridge connect path does the same with a further 45 second wait: recovers. The background supervisor relaunches through devicectl after two missed polls five seconds apart, and uses DVT only if a DVT session was already held: recovers only if the first launch had already fallen back. The benchmark heal step calls recycle_runner, which terminates the runner, relaunches through devicectl only and waits 40 seconds: no fallback, so on an Xcode 27 host the rig is declared unavailable and the task is not scored.">
+  <rect x="0" y="0" width="900" height="400" fill="#0f172a"/>
+  <text x="30" y="34" fill="#e2e8f0" font-family="Montserrat,sans-serif" font-size="18" font-weight="700">phoneshell's four launch sites against an Xcode 27 host</text>
+  <g font-family="Montserrat,sans-serif" font-size="12">
+    <text x="30" y="70" fill="#94a3b8">call site</text>
+    <text x="300" y="70" fill="#94a3b8">first try</text>
+    <text x="470" y="70" fill="#94a3b8">then</text>
+    <text x="760" y="70" fill="#94a3b8">outcome</text>
+    <line x1="30" y1="80" x2="870" y2="80" stroke="#334155"/>
+
+    <text x="30" y="110" fill="#e2e8f0">cli.py  phoneshell up (auto)</text>
+    <text x="300" y="110" fill="#e2e8f0">devicectl</text>
+    <text x="470" y="110" fill="#e2e8f0">40 s for /status, then DVT</text>
+    <rect x="750" y="94" width="110" height="24" rx="6" fill="#16304a" stroke="#38bdf8"/>
+    <text x="764" y="111" fill="#7dd3fc">recovers</text>
+
+    <text x="30" y="160" fill="#e2e8f0">bringup.py  Bridge.connect</text>
+    <text x="300" y="160" fill="#e2e8f0">devicectl</text>
+    <text x="470" y="160" fill="#e2e8f0">40 s, then DVT, then 45 s</text>
+    <rect x="750" y="144" width="110" height="24" rx="6" fill="#16304a" stroke="#38bdf8"/>
+    <text x="764" y="161" fill="#7dd3fc">recovers</text>
+
+    <text x="30" y="210" fill="#e2e8f0">bringup.py  supervisor loop</text>
+    <text x="300" y="210" fill="#e2e8f0">devicectl</text>
+    <text x="470" y="210" fill="#e2e8f0">DVT only if one was already held</text>
+    <rect x="750" y="194" width="110" height="24" rx="6" fill="#3a2f12" stroke="#f59e0b"/>
+    <text x="764" y="211" fill="#fbbf24">it depends</text>
+    <text x="470" y="230" fill="#94a3b8">2 misses, 5 s apart, max 2 relaunches</text>
+
+    <text x="30" y="270" fill="#e2e8f0">device.py  recycle_runner</text>
+    <text x="30" y="290" fill="#94a3b8">called by bench/runner.py heal()</text>
+    <text x="300" y="270" fill="#e2e8f0">devicectl</text>
+    <text x="470" y="270" fill="#e2e8f0">40 s, then gives up</text>
+    <rect x="750" y="254" width="110" height="24" rx="6" fill="#3b1d24" stroke="#f87171"/>
+    <text x="764" y="271" fill="#fca5a5">no fallback</text>
+
+    <line x1="30" y1="316" x2="870" y2="316" stroke="#334155"/>
+    <text x="30" y="344" fill="#fbbf24">A failed heal raises RigUnavailable: the task is not scored rather than failed,</text>
+    <text x="30" y="366" fill="#fbbf24">which is honest, but an overnight run on an upgraded Mac would score nothing after the first runner death.</text>
+  </g>
+</svg>
+<figcaption>Read from <code>phoneshell/cli.py</code>, <code>bringup.py</code>, <code>device.py</code> and <code>bench/runner.py</code> at commit cac38a6. The wait lengths are the loop bounds in that code.</figcaption>
+</figure>
+
+<p>Our code also carries the same mislabel Appium corrected. The fix hint in <code>launch_wda</code>
+reads "this is the iOS 27 failure mode for the devicectl launch path", and the docstrings on both
+fallbacks say the devicectl route is "reported broken on iOS 27". Anyone who reads that and checks
+the phone's version, sees 26.6.2, and moves on, is looking at the wrong machine.</p>
+
+<h2 id="decisions">What to do on a rig that has upgraded, or is about to</h2>
+
+<p>Treat the Xcode version as part of the instrument. Our rig runs Xcode 26.6 (17F113) against an
+iPhone 17 Pro Max on iOS 26.6.2 (build 23G90), checked on 21 September. No published phoneshell
+number was measured under Xcode 27. We have not reproduced the Xcode 27 failure because we have not upgraded, and this note
+does not claim we have. The reports are from other people's hardware.</p>
+
+<p>If you drive preinstalled WDA through Appium, 12.13.1 or later is the version that works on an
+Xcode 27 host with pre-27 phones, and it needs appium-ios-remotexpc ^5.20.1 underneath it plus a
+working RemoteXPC tunnel. Without the tunnel the driver has no DVT route, and PR #2949 means it will
+not quietly fall back to devicectl on iOS 27 devices.</p>
+
+<p>If you launch the runner yourself, make the DVT launch with <code>ActivateSuspended</code> the
+first try rather than the fallback. The cost is real: a DVT session is tethered, so the runner dies
+when the host process does, where a devicectl launch survives the terminal closing. That trade used to
+favour devicectl. On an Xcode 27 host it no longer exists, because the detached launch does not come up.
+Our judgement is that detached-first is now the wrong default for any harness that runs unattended.</p>
+
+<p>Watch the error you check for. devicectl exits 0 whether or not the runner survives its own
+bootstrap, which our <code>cli.py</code> already notes, so the 10300 text shows up in the device log,
+not in the launch result. A harness that waits for <code>/status</code> is the only reliable detector,
+and it costs the full timeout every time.</p>
+
+<h2 id="run">Check it yourself</h2>
+
+<pre><code># the fix and its rationale, in Appium's own words
+gh pr diff 2980 -R appium/appium-xcuitest-driver | sed -n '1,40p'
+gh issue view 2978 -R appium/appium-xcuitest-driver
+npm view appium-xcuitest-driver time --json | grep '"12.13'
+
+# what pymobiledevice3 sends on a DVT launch (look for ActivateSuspended)
+P=$(python3 -c "import pymobiledevice3,os;print(os.path.dirname(pymobiledevice3.__file__))")
+grep -n "ActivateSuspended\|StartSuspendedKey" $P/services/dvt/testmanaged/xcuitest.py
+
+# which toolchain your rig is actually on
+xcodebuild -version
+xcrun devicectl list devices
+
+# phoneshell's launch sites and the one without a fallback
+git clone https://github.com/Blomega/phoneshell &amp;&amp; cd phoneshell
+grep -n "launch_wda_dvt\|launch_wda(\|recycle_runner" phoneshell/*.py phoneshell/bench/*.py</code></pre>
+
+<h2>What would prove this wrong</h2>
+
+<p>The claim is that the host's Xcode 27 stack, not the phone's iOS version, decides whether a
+devicectl-launched runner survives, and that a background launch through DVT avoids it. Two
+observations would break it. If Xcode 27.1 (in beta since 18 September as 27A9269) restores the
+devicectl path on iOS 26 phones, the problem was a regression, not a design change, and detached
+launches are safe again. If an Xcode 27 host with appium-xcuitest-driver 12.13.1 and a working tunnel
+still logs 10300 against an iOS 26 iPhone, ActivateSuspended is not sufficient. We will upgrade a
+second Mac to Xcode 27 by 31 October 2026, run phoneshell's 80 tasks against the same iPhone through
+both launch paths, and publish the launch success counts for each.</p>
+
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>StevenWong12, <a href="https://github.com/appium/appium/issues/22636">usePreinstalledWDA fails on Xcode 27 because the devicectl-launched XCTest Runner cannot enter background</a>, appium/appium#22636, opened 16 August 2026, with comments by KazuCocoa, mykola-mokhnach and SunflowersLwtech (25 and 26 August).</li>
+      <li>mykola-mokhnach, <a href="https://github.com/appium/appium-xcuitest-driver/pull/2949">fix: disable devicectl launch fallback for preinstalled WDA on iOS/tvOS 27+</a>, appium-xcuitest-driver PR #2949, merged 20 August 2026.</li>
+      <li>SMasekoSTS, <a href="https://github.com/appium/appium-xcuitest-driver/issues/2978">Preinstalled WebDriverAgent terminates shortly after launch after upgrading to Xcode 27</a>, appium-xcuitest-driver#2978, opened 16 September 2026, closed 20 September 2026.</li>
+      <li>navin772, <a href="https://github.com/appium/appium-xcuitest-driver/pull/2980">fix(opts): pass ActivateSuspended: true to host opts for backgrounding WDA</a>, PR #2980, released as <a href="https://github.com/appium/appium-xcuitest-driver/releases/tag/v12.13.1">v12.13.1</a> on 20 September 2026.</li>
+      <li>app/, <a href="https://github.com/appium/appium/issues/11702">Failed to install WebDriverAgentRunner on Real Device</a>, appium/appium#11702, 19 November 2018: the same message nearly eight years earlier.</li>
+      <li>Apple, <a href="https://developer.apple.com/news/releases/">Developer releases</a>: Xcode 27 (27A266a) and iOS 27.0 (24A437) on 14 September 2026; iOS 26.6.2 (23G90) on 8 September 2026; Xcode 27.1 beta (27A9269) on 18 September 2026.</li>
+      <li>pymobiledevice3 11.8.0, <code>pymobiledevice3/services/dvt/testmanaged/xcuitest.py</code>, <code>_generate_launch_args</code>: <code>ActivateSuspended</code> set for product major version 12 and later. Read on our rig 21 September 2026.</li>
+      <li>Blomega/phoneshell at commit cac38a6: <code>phoneshell/device.py</code> (launch_wda, launch_wda_dvt, recycle_runner), <code>phoneshell/bringup.py</code>, <code>phoneshell/cli.py</code>, <code>phoneshell/bench/runner.py</code>. <a href="https://github.com/Blomega/phoneshell">github.com/Blomega/phoneshell</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
