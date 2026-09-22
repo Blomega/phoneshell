@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>133 of 12,255 swipes were the iOS back gesture, and one tap in ten was a miss | Blolabel</title>
+<meta name="description" content="Appendix K of arXiv:2606.09764 reports that only 133 of 12,255 frontier-model swipes were the left-edge back gesture, 1.1%, and that 1,669 of 16,267 vision-only taps were a miss retried within 60 px, a pooled 10.26%. The paper says identifier taps drop that to about zero but publishes no counts.">
+<link rel="canonical" href="https://blolabel.ai/blog/agents-do-not-swipe-back-on-ios/">
+<meta property="og:title" content="133 of 12,255 swipes were the iOS back gesture, and one tap in ten was a miss | Blolabel">
+<meta property="og:description" content="Appendix K of arXiv:2606.09764 reports that only 133 of 12,255 frontier-model swipes were the left-edge back gesture, 1.1%, and that 1,669 of 16,267 vision-only taps were a miss retried within 60 px, a pooled 10.26%. The paper says identifier taps drop that to about zero but publishes no counts.">
+<meta property="og:url" content="https://blolabel.ai/blog/agents-do-not-swipe-back-on-ios/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"133 of 12,255 swipes were the iOS back gesture, and one tap in ten was a miss","description":"Appendix K of arXiv:2606.09764 reports that only 133 of 12,255 frontier-model swipes were the left-edge back gesture, 1.1%, and that 1,669 of 16,267 vision-only taps were a miss retried within 60 px, a pooled 10.26%. The paper says identifier taps drop that to about zero but publishes no counts.",
+ "datePublished":"2026-09-22","dateModified":"2026-09-22",
+ "url":"https://blolabel.ai/blog/agents-do-not-swipe-back-on-ios/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/agents-do-not-swipe-back-on-ios/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How often do iOS agents use the back swipe?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Almost never. Across 12,255 frontier-model swipes on iOSWorld, 133 were the left-edge rightward swipe that is iOS's system back gesture, or 1.09%. GPT-5.4 used it most, 2.7% of its vision-only swipes, and GPT-5.4 Mini 2.1%; Claude and Gemini reached at most 1.6% vision-only and 1.2% with the accessibility tree. iOS has no hardware back button, so the alternative is an in-app chevron whose position varies by app."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How often does a vision-only agent miss a tap on iOS?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "1,669 of 16,267 taps, a pooled 10.26%, were a tap followed by another tap within 60 pixels on the next step, which the benchmark uses as a proxy for a miss and a retry. Per model: GPT-5.4 12.3%, GPT-5.4 Mini 10.3%, Sonnet 4.6 10.2%, Opus 4.6 10.1%, Gemini 3 Flash 5.3% over a shorter run of 1,753 taps."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Does tapping by accessibility identifier remove the miss rate?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "The paper states the rate drops to about 0% under XCUITest accessibility-ID taps, but publishes no counts for it, and its provider action-translation table maps every provider's native click to a coordinate tap with no native action mapping to the identifier tap. Treat the near-zero figure as the authors' claim rather than an audited measurement, and the 10.26% as the audited one."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Should a phone agent rig expose back as an action?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "On this evidence, yes. phoneshell resolves it in code: Actions.back scans the current accessibility tree for a Button or Link labelled back, cancel, done, close or a left chevron, taps it when present, and otherwise falls through to Gestures.back, which is an edge swipe starting at x=0 at the vertical midpoint because the system gesture lives in the few points iOS reserves at the screen edge. The model emits 'back' and never has to rediscover the gesture from a screenshot."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-22">22 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>133 of 12,255 swipes were the iOS back gesture, and one tap in ten was a miss</h1>
+  <p class="standfirst">iOSWorld's least-read appendix measures the two things iOS does differently from every other target, and both land on the rig rather than on the model.</p>
+
+  <p>Across 12,255 swipes by frontier models on an iOS agent benchmark, 133 were the left-edge
+rightward swipe that is iOS's only system-wide back gesture. That is 1.1%. On a platform with no
+hardware back button, the agents essentially never used the thing that replaces it. In the same trace,
+10.26% of all vision-only taps were a miss followed by a retry within 60 pixels, 1,669 out of 16,267,
+and the paper reports that rate falling to about zero when the same tap goes through an XCUITest
+accessibility identifier instead of estimated coordinates.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/agents-do-not-swipe-back-on-ios-hero.png" alt="Abstract technical illustration of a dense field of small directional arrows pointing up and down with a single thin band of left-edge horizontal arrows, beside two stacked target rings where one is struck slightly off centre and struck again" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="where-these-two-numbers-live">Where these two numbers live</h2>
+
+<p>Appendix K of iOSWorld, arXiv:2606.09764, posted 8 June 2026. The appendix is titled "iOS-Specific
+Interaction Patterns" and it quantifies two things straight from the action trace of 133 tasks per
+model, rather than from pass rates. It is two paragraphs and one table in a 30-page paper, and it is
+the most directly actionable part of it for anyone building a rig.</p>
+
+<p>The miss-rate proxy is stated precisely enough to re-implement: a <code>tap_xy</code> followed by
+another <code>tap_xy</code> within 60 px on the next step, computed over all 133 vision-only
+trajectories per model, taking the first tap in each step where a step emitted several. It is a proxy,
+not ground truth. A deliberate double-tap inside 60 px counts as a miss, and a miss that the model
+gave up on rather than retried does not count at all, so the number is neither a floor nor a ceiling.
+It is a consistent measure across models, which is what makes the comparison worth anything.</p>
+
+<h2 id="one-tap-in-ten-lands-wrong-and-gets-repeated">One tap in ten lands wrong and gets repeated</h2>
+
+<table>
+  <thead>
+    <tr><th>Model</th><th>Total taps</th><th>Near re-taps</th><th>Miss rate</th><th>Setting</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Claude Opus 4.6</td><td>3,102</td><td>314</td><td>10.1%</td><td>vision-only</td></tr>
+    <tr><td>Claude Sonnet 4.6</td><td>3,236</td><td>329</td><td>10.2%</td><td>vision-only</td></tr>
+    <tr><td>GPT-5.4</td><td>4,384</td><td>541</td><td>12.3%</td><td>vision-only</td></tr>
+    <tr><td>GPT-5.4 Mini</td><td>3,792</td><td>392</td><td>10.3%</td><td>vision-only</td></tr>
+    <tr><td>Gemini 3 Flash</td><td>1,753</td><td>93</td><td>5.3%</td><td>vision-only</td></tr>
+    <tr><td><strong>Pooled (our sum)</strong></td><td><strong>16,267</strong></td><td><strong>1,669</strong></td><td><strong>10.26%</strong></td><td>vision-only</td></tr>
+    <tr><td>Any of the above</td><td>not reported</td><td>not reported</td><td>about 0%</td><td>XCUITest accessibility-ID tap</td></tr>
+  </tbody>
+</table>
+
+<p>Per-model rows are Table 17 of arXiv:2606.09764. The pooled row is ours. Qwen3.5 35B-A3B is not in
+that table, so the pooled figure covers the five frontier runs only. Gemini's 5.3% comes with the
+paper's own caveat attached: its vision-only runs are shorter and leave 1,753 taps against 3,102 to
+4,384 for the others, 10.8% of the pooled tap count, so the lower rate may be a shorter exposure
+rather than better aim.</p>
+
+<svg viewBox="0 0 760 300" role="img" aria-label="Diagram of two tap paths on iOS: in the coordinate path the model reads a screenshot, estimates an x and y position in a 0 to 1000 space, and taps, producing a near re-tap rate between 5.3 and 12.3 percent by model with a pooled rate of 10.26 percent over 16,267 taps; in the identifier path the rig reads the accessibility tree, resolves an element identifier, and taps that element, producing a near re-tap rate of about zero percent." style="width:100%;height:auto;background:#12151c;border-radius:10px">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2">
+    <text x="20" y="26" font-size="14" font-weight="600">Two ways to reach the same button, and what each costs</text>
+
+    <rect x="20" y="52" width="130" height="52" rx="7" fill="#2b3240"/>
+    <text x="32" y="74" font-size="12">screenshot</text>
+    <text x="32" y="92" font-size="11" fill="#c4ccda">706 x 1536 px</text>
+    <path d="M150 78 L 186 78" stroke="#8a93a5" stroke-width="2"/>
+    <rect x="190" y="52" width="150" height="52" rx="7" fill="#2b3240"/>
+    <text x="202" y="74" font-size="12">model estimates</text>
+    <text x="202" y="92" font-size="11" fill="#c4ccda">x, y in 0 to 1000</text>
+    <path d="M340 78 L 376 78" stroke="#8a93a5" stroke-width="2"/>
+    <rect x="380" y="52" width="120" height="52" rx="7" fill="#2b3240"/>
+    <text x="392" y="82" font-size="12">tap_xy</text>
+    <path d="M500 78 L 536 78" stroke="#8a93a5" stroke-width="2"/>
+    <rect x="540" y="46" width="202" height="64" rx="7" fill="#1c2430" stroke="#e9ecf2"/>
+    <text x="552" y="70" font-size="13" font-weight="600">10.26% near re-tap</text>
+    <text x="552" y="90" font-size="11" fill="#c4ccda">1,669 of 16,267 taps</text>
+
+    <rect x="20" y="164" width="130" height="52" rx="7" fill="#2b3240"/>
+    <text x="32" y="186" font-size="12">a11y tree</text>
+    <text x="32" y="204" font-size="11" fill="#c4ccda">via XCUITest</text>
+    <path d="M150 190 L 186 190" stroke="#5ad1a0" stroke-width="2"/>
+    <rect x="190" y="164" width="150" height="52" rx="7" fill="#2b3240"/>
+    <text x="202" y="186" font-size="12">element identifier</text>
+    <text x="202" y="204" font-size="11" fill="#c4ccda">resolved by the rig</text>
+    <path d="M340 190 L 376 190" stroke="#5ad1a0" stroke-width="2"/>
+    <rect x="380" y="164" width="120" height="52" rx="7" fill="#16302a" stroke="#5ad1a0"/>
+    <text x="392" y="194" font-size="12" fill="#5ad1a0">tap element</text>
+    <path d="M500 190 L 536 190" stroke="#5ad1a0" stroke-width="2"/>
+    <rect x="540" y="158" width="202" height="64" rx="7" fill="#16302a" stroke="#5ad1a0"/>
+    <text x="552" y="182" font-size="13" font-weight="600" fill="#5ad1a0">about 0% near re-tap</text>
+    <text x="552" y="202" font-size="11" fill="#5ad1a0">reported, counts not given</text>
+
+    <text x="20" y="252" font-size="12">Per model, vision-only: GPT-5.4 12.3%, GPT-5.4 Mini 10.3%, Sonnet 4.6 10.2%, Opus 4.6 10.1%, Gemini 3 Flash 5.3%.</text>
+    <text x="20" y="274" font-size="11" fill="#8a93a5">A near re-tap is a tap_xy followed by another tap_xy within 60 px on the next step, over 133 tasks per model.</text>
+    <text x="20" y="292" font-size="11" fill="#8a93a5">Source: arXiv:2606.09764 Appendix K and Table 17. Pooled rate computed here.</text>
+  </g>
+</svg>
+
+<p>A 10% miss tax is not a rounding error on a long-horizon task. The multi-app category in the same
+benchmark runs to 40 steps and beyond. If a tenth of the taps in a 40-step trajectory are wasted on a
+retry, four of the model's steps go to aim correction before any of them go to the task, against a
+50-step budget.</p>
+
+<h2 id="the-back-gesture-is-the-one-ios-control-agents-will-not-lear">The back gesture is the one iOS control agents will not learn</h2>
+
+<p>iOS gives you two ways back: an in-app chevron, whose position and label vary by app, or a
+rightward swipe starting at the left edge of the screen. There is no third. Out of 12,255
+frontier-model swipes, 133 were that edge swipe, 1.09%.</p>
+
+<svg viewBox="0 0 760 270" role="img" aria-label="Chart of left-edge rightward back-swipe usage as a share of all swipes on iOSWorld: pooled across frontier models 133 of 12,255 swipes or 1.1 percent, with GPT-5.4 at 2.7 percent and GPT-5.4 Mini at 2.1 percent in vision-only mode, and Claude and Gemini at no more than 1.6 percent vision-only and 1.2 percent with the accessibility tree." style="width:100%;height:auto;background:#12151c;border-radius:10px">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2">
+    <text x="20" y="26" font-size="14" font-weight="600">Share of all swipes that were the iOS back gesture</text>
+    <rect x="20" y="48" width="720" height="34" rx="4" fill="#242a35"/>
+    <rect x="20" y="48" width="8" height="34" fill="#5ad1a0"/>
+    <text x="40" y="70" font-size="12" fill="#c4ccda">12,255 swipes total. The lit sliver on the left is 133 of them.</text>
+    <text x="20" y="102" font-size="12">1.09% pooled across frontier models, both observation modes.</text>
+
+    <line x1="150" y1="140" x2="150" y2="238" stroke="#8a93a5"/>
+    <line x1="150" y1="238" x2="720" y2="238" stroke="#8a93a5"/>
+    <g font-size="11" fill="#8a93a5">
+      <text x="118" y="242">0%</text><text x="118" y="196">1%</text><text x="118" y="150">2%</text>
+    </g>
+    <line x1="150" y1="192" x2="720" y2="192" stroke="#242a35"/>
+    <line x1="150" y1="146" x2="720" y2="146" stroke="#242a35"/>
+
+    <rect x="180" y="114" width="70" height="124" fill="#5ad1a0"/><text x="184" y="108" font-size="12" fill="#5ad1a0">2.7</text>
+    <text x="176" y="256" font-size="11" fill="#8a93a5">GPT-5.4</text>
+    <rect x="290" y="141" width="70" height="97" fill="#5ad1a0" opacity="0.8"/><text x="294" y="135" font-size="12" fill="#5ad1a0">2.1</text>
+    <text x="284" y="256" font-size="11" fill="#8a93a5">GPT-5.4 Mini</text>
+    <rect x="400" y="164" width="70" height="74" fill="#6f7b90"/><text x="404" y="158" font-size="12" fill="#c4ccda">1.6</text>
+    <text x="378" y="256" font-size="11" fill="#8a93a5">Claude / Gemini</text>
+    <text x="392" y="268" font-size="10" fill="#8a93a5">vision-only ceiling</text>
+    <rect x="510" y="183" width="70" height="55" fill="#6f7b90" opacity="0.7"/><text x="514" y="177" font-size="12" fill="#c4ccda">1.2</text>
+    <text x="490" y="256" font-size="11" fill="#8a93a5">Claude / Gemini</text>
+    <text x="496" y="268" font-size="10" fill="#8a93a5">vision+XML ceiling</text>
+    <text x="608" y="160" font-size="11" fill="#8a93a5">The GPT figures are</text>
+    <text x="608" y="176" font-size="11" fill="#8a93a5">vision-only. Every value</text>
+    <text x="608" y="192" font-size="11" fill="#8a93a5">is below 3%.</text>
+  </g>
+</svg>
+
+<p>The paper's reading, which we agree with, is that this is a gesture problem rather than a provider
+problem: the GPT models use it somewhat more, at 2.7% and 2.1% vision-only, but Claude and Gemini top
+out at 1.6% vision-only and 1.2% with the tree, and nothing is above 3%. Every family under-uses it
+by the same order of magnitude.</p>
+
+<h2 id="the-mechanism-is-in-the-action-translation-table-and-it-is-i">The mechanism is in the action translation table, and it is incomplete</h2>
+
+<p>iOSWorld's action space lists <code>tap</code> by accessibility identifier as a vision+XML action,
+alongside <code>launch_app</code> by bundle id, <code>terminate_app</code> and <code>open_url</code>.
+Its provider translation table then maps every provider's native click to <code>tap_xy</code>: Claude
+Computer Use <code>left_click</code>, OpenAI CUA <code>click</code>, Gemini CU <code>click_at</code>,
+Qwen <code>click</code>. No native action in that table maps to the identifier <code>tap</code>.
+<code>launch_app</code> appears only for Gemini, as <code>open_app</code>, and the action distribution
+bears that out: Gemini spends 18% of its actions on <code>launch_app</code> and every other model
+shows a dash.</p>
+
+<p>So in the vision+XML setting the agent is handed a structured tree and, for four of six models, a
+click vocabulary that can only express a pixel. It reads an identifier and has to convert it back
+into an x and a y before it can act on it. The action distribution under vision+XML is 62%
+<code>tap_xy</code> for Opus and Sonnet, 55% for GPT-5.4, 37% for GPT-5.4 Mini, 54% for Gemini and
+66% for Qwen3.5.</p>
+
+<p>We could not close this one. The same appendix says the miss rate drops to about 0% "under
+XCUITest accessibility-ID taps", which implies identifier taps did happen, yet the action
+distribution table has no row for them and the translation table lists no provider action that
+produces one. Either identifier taps are folded into the <code>tap_xy</code> row, or the near-zero
+figure comes from a run not otherwise reported. The counts behind "about 0%" are not published. Treat
+that specific number as the authors' claim rather than as a measurement you can audit, and treat the
+10.26% as the audited one.</p>
+
+<h2 id="what-a-rig-should-take-from-this">What a rig should take from this</h2>
+
+<p>Both findings point the same way: the actions an iOS agent needs most are the ones a general
+computer-use vocabulary expresses worst. A pixel is a bad way to name a button, and a swipe is a bad
+way to say "go back". Both are fixable in the rig rather than in the model.</p>
+
+<p>phoneshell resolves both as named operations. <code>Actions.back()</code> in
+<code>phoneshell/actions.py</code> opens with the comment "iOS has no back button", scans the current
+tree for a Button or Link whose text is one of back, cancel, done, close, the single left chevron or
+a bare less-than sign, taps it if present, and otherwise calls the gesture. The gesture,
+<code>Gestures.back()</code> in <code>phoneshell/gestures.py</code>, is
+<code>edge_swipe("left", distance=0.6)</code>, which starts at x=0 at the vertical midpoint because
+the system gesture lives in the few points iOS reserves at the very edge and a swipe starting even
+slightly inboard is delivered to the app instead. A model driving this never has to know any of that;
+it emits "back".</p>
+
+<p>The same applies to taps. <code>Actions.tap_element()</code> takes an element from the tree and
+taps it, so the coordinate is computed by the rig from the element's own frame rather than estimated
+by the model from an image. On the evidence above that is worth roughly a tenth of all taps, which is
+a larger effect than most prompt changes will buy.</p>
+
+<p>This is not an argument that the model should be given fewer capabilities. It is an argument that
+the iOS-specific ones should be verbs in the action space, not gestures the model has to rediscover
+from a screenshot. The distinction shows up in the numbers: the models did have a swipe action with
+an optional origin, and still produced 133 back swipes out of 12,255.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<p>The appendix and both tables come out of the paper's HTML without a PDF reader:</p>
+
+<pre><code>curl -sL https://arxiv.org/html/2606.09764 -o iosworld.html
+python3 - &lt;&lt;'PY'
+import re, html
+txt = html.unescape(re.sub(r'&lt;[^&gt;]+&gt;', ' ', open('iosworld.html', encoding='utf-8').read()))
+txt = re.sub(r'\s+', ' ', txt)
+i = txt.find('Appendix K')
+print(txt[i:i+2600])
+PY
+
+# the pooled rate
+python3 -c "
+t=[3102,3236,4384,3792,1753]; r=[314,329,541,392,93]
+print(sum(r), '/', sum(t), '=', round(sum(r)/sum(t)*100, 2), '%')"
+</code></pre>
+
+<p>On the rig side, the two back paths are in this repository:
+<code>grep -n "no back button" phoneshell/actions.py</code> finds the label-first path, and
+<code>grep -n "def back" phoneshell/gestures.py</code> finds the edge swipe with its 0.6 distance.
+The 60 px threshold in the miss-rate definition is worth reproducing against your own traces: it is
+one pass over a step log, no device needed.</p>
+
+<h2 id="what-would-prove-this-wrong">What would prove this wrong</h2>
+
+<p>The claim doing the work here is that the miss rate is about grounding rather than about the
+models being careless, and that identifier taps remove it. The paper asserts the second half without
+publishing counts, so it is the weak link.</p>
+
+<p>Run the same near re-tap detector over vision+XML trajectories for a model that does have an
+identifier tap available, count both tap kinds separately, and publish the two rates. If
+identifier-routed taps show a near re-tap rate materially above zero, say above 3%, then the tree's
+coordinates are themselves stale or wrong often enough to matter and the advice to route taps through
+elements is weaker than stated. If the rate on coordinate taps in the same runs stays near 10%, the
+grounding story holds and the gap is the whole argument.</p>
+
+<p>For the back gesture the falsifier is simpler and we will run it: give a model an explicit
+<code>back</code> action on the physical iPhone suite, count how often it is used against how often
+the trajectory needed to leave a screen, and report both. If a named back action goes unused at the
+same 1% rate, the problem is not the vocabulary and this note has the cause wrong. We will publish
+that count by 31 December 2026.</p>
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li><a href="https://arxiv.org/abs/2606.09764">Jang et al., iOSWorld: A Benchmark for Personally Intelligent Phone Agents, arXiv:2606.09764, 8 June 2026</a></li>
+      <li><a href="https://arxiv.org/html/2606.09764">iOSWorld HTML edition, Appendix K and Table 17 (coordinate-grounding miss rate, edge-swipe under-use), Table 1 (action space), Table 8 (action distribution), Table 9 (provider action translation), CC BY 4.0</a></li>
+      <li><a href="https://github.com/Blomega/phoneshell">phoneshell: actions.py Actions.back and Actions.tap_element, gestures.py Gestures.back and edge_swipe, read 22 September 2026</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
