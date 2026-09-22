@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Appium 4's first beta moves status text to stdout and drops three Node lines, including the one this Mac runs | Blolabel</title>
+<meta name="description" content="Appium 4.0.0-beta.0 (19 September 2026) moves human-readable CLI output from STDERR to STDOUT and tightens engines.node from ^20.19.0 || ^22.12.0 || >=24.0.0 to ^22.22.2 || ^24.15.0 || >=26.0.0, which excludes Node 20, 23 and 25. appium-xcuitest-driver PR #2984 is still open.">
+<link rel="canonical" href="https://blolabel.ai/blog/appium-4-beta-moves-status-to-stdout/">
+<meta property="og:title" content="Appium 4's first beta moves status text to stdout and drops three Node lines, including the one this Mac runs | Blolabel">
+<meta property="og:description" content="Appium 4.0.0-beta.0 (19 September 2026) moves human-readable CLI output from STDERR to STDOUT and tightens engines.node from ^20.19.0 || ^22.12.0 || >=24.0.0 to ^22.22.2 || ^24.15.0 || >=26.0.0, which excludes Node 20, 23 and 25. appium-xcuitest-driver PR #2984 is still open.">
+<meta property="og:url" content="https://blolabel.ai/blog/appium-4-beta-moves-status-to-stdout/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"Appium 4's first beta moves status text to stdout and drops three Node lines, including the one this Mac runs","description":"Appium 4.0.0-beta.0 (19 September 2026) moves human-readable CLI output from STDERR to STDOUT and tightens engines.node from ^20.19.0 || ^22.12.0 || >=24.0.0 to ^22.22.2 || ^24.15.0 || >=26.0.0, which excludes Node 20, 23 and 25. appium-xcuitest-driver PR #2984 is still open.",
+ "datePublished":"2026-09-22","dateModified":"2026-09-22",
+ "url":"https://blolabel.ai/blog/appium-4-beta-moves-status-to-stdout/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/appium-4-beta-moves-status-to-stdout/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "What broke in Appium 4.0.0-beta.0?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Two changes affect a test rig before any test runs. Human-readable CLI output (info, success and warning messages) moved from STDERR to STDOUT, with only genuine errors left on STDERR, so scripts that captured STDERR for status or discarded STDOUT to hide chatter both misbehave. And engines.node tightened from ^20.19.0 || ^22.12.0 || >=24.0.0 in 3.7.0 to ^22.22.2 || ^24.15.0 || >=26.0.0, which excludes Node 20, 21, 23 and 25 entirely. The package also became ESM-only, with \"type\": \"module\" set and default exports removed from @appium/base-driver, @appium/base-plugin and @appium/logger."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Which Node.js versions does Appium 4 beta support?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "The published range is ^22.22.2 || ^24.15.0 || >=26.0.0. Tested against the semver resolver, 22.22.2, 24.15.0, 24.20.0 and 26.0.0 pass, while 20.x, 21.x, 23.0.0, 25.0.0 and 25.8.2 are rejected. Appium 3.7.0 accepted Node 20 from 20.19.0, so upgrading from 3.7.0 on a Node 20 or Node 25 host requires a Node change first."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can an iOS rig move to Appium 4 today?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. appium-xcuitest-driver has not shipped a release targeting Appium 4. PR #2984, 'feat!: target Appium 4 beta', was opened on 20 September 2026 and was still open on 22 September 2026. It bumps the appium peer dependency from ^3.0.0-rc.2 to ^4.0.0-beta.0 and updates driver code for the API removals."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "When was Appium 4.0.0-beta.0 released?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "The GitHub tag was published at 20:35:49 UTC on 19 September 2026 and the package reached the npm registry at 20:39:59 UTC the same day. A patch, 4.0.0-beta.1, followed at 21:28:56 UTC with a single dependency fix. The npm latest tag still points at 3.7.0, published 24 August 2026."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind event">event</span>
+    <time datetime="2026-09-22">22 September 2026</time>
+    <span>6 min read</span>
+  </div>
+  <h1>Appium 4's first beta moves status text to stdout and drops three Node lines, including the one this Mac runs</h1>
+  <p class="standfirst">appium@4.0.0-beta.0 landed on npm at 20:39:59 UTC on 19 September 2026. Two changes break a rig before any test runs, and the iOS driver has not shipped against it yet.</p>
+
+  <p>Appium 4.0.0-beta.0 went to npm at 20:39:59 UTC on 19 September 2026 and changed two things
+that break a rig before a single test runs. Human-readable CLI output moved from STDERR to STDOUT,
+so a script that captured STDERR to log progress now captures nothing and a script that threw STDOUT
+away now throws the progress away instead. And the Node engine range tightened from
+<code>^20.19.0 || ^22.12.0 || &gt;=24.0.0</code> in 3.7.0 to
+<code>^22.22.2 || ^24.15.0 || &gt;=26.0.0</code>. That range excludes the whole of Node 20, 23 and 25.
+The Mac this note was written on runs Node v25.8.2, which 3.7.0 accepted and the beta does not.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/appium-4-beta-moves-status-to-stdout-hero.png" alt="Abstract technical illustration of two parallel output channels, one thin and one wide, with a bundle of message tokens crossing from the thin channel to the wide one, and a segmented number line beneath with three lit segments and three dark gaps" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-shipped-and-when">What shipped, and when</h2>
+
+<p>The 4.0.0-beta.0 tag was published on GitHub at 20:35:49 UTC on 19 September 2026 and reached the
+npm registry four minutes later. A patch, 4.0.0-beta.1, followed 49 minutes after that with a single
+fix: catch peerDependencies up to the published beta.0. The npm <code>beta</code> dist-tag now points
+at 4.0.0-beta.1; <code>latest</code> is still 3.7.0, published 24 August 2026.</p>
+
+<table>
+  <thead><tr><th>Field</th><th>appium 3.7.0</th><th>appium 4.0.0-beta.0</th><th>Source</th></tr></thead>
+  <tbody>
+    <tr><td>npm publish time</td><td>2026-08-24T20:52:07Z</td><td>2026-09-19T20:39:59Z</td><td>registry.npmjs.org/appium</td></tr>
+    <tr><td><code>engines.node</code></td><td><code>^20.19.0 || ^22.12.0 || &gt;=24.0.0</code></td><td><code>^22.22.2 || ^24.15.0 || &gt;=26.0.0</code></td><td>registry.npmjs.org/appium</td></tr>
+    <tr><td><code>engines.npm</code></td><td><code>&gt;=10</code></td><td><code>&gt;=10</code></td><td>registry.npmjs.org/appium</td></tr>
+    <tr><td>package <code>type</code></td><td>not set (CommonJS)</td><td><code>module</code></td><td>registry.npmjs.org/appium</td></tr>
+    <tr><td>Default log level</td><td>debug</td><td>info</td><td>4.0.0-beta.0 release notes</td></tr>
+    <tr><td>Status text stream</td><td>STDERR</td><td>STDOUT</td><td>4.0.0-beta.0 release notes</td></tr>
+    <tr><td>MJSONWP <code>GET /session/:id</code></td><td>present</td><td>removed</td><td>4.0.0-beta.0 release notes</td></tr>
+    <tr><td><code>--allow-cors</code></td><td>present</td><td>removed, use <code>--allow-insecure=*:cors</code></td><td>4.0.0-beta.0 release notes</td></tr>
+    <tr><td>appium-xcuitest-driver support</td><td>shipped</td><td>PR #2984, opened 2026-09-20, open</td><td>github.com/appium/appium-xcuitest-driver/pull/2984</td></tr>
+  </tbody>
+</table>
+
+<h2 id="where-the-status-text-goes-now">Where the status text goes now</h2>
+
+<p>The release notes state the change three times in three different framings, which is a fair signal
+of how much downstream code it touches. Before, non-JSON human-readable output (info, success and
+warning messages from <code>driver list</code>, <code>plugin install</code>, <code>doctor</code> and
+friends) was written to STDERR, and STDOUT was reserved almost exclusively for <code>--json</code>.
+Now that output goes to STDOUT and only genuine errors go to STDERR. <code>--json</code> is
+unaffected: it still writes clean JSON to STDOUT alone.</p>
+
+<svg viewBox="0 0 760 330" role="img" aria-label="Diagram comparing Appium 3.7.0 and Appium 4.0.0-beta.0 CLI output routing: in 3.7.0 info, success and warning messages plus errors all go to STDERR while only the --json payload goes to STDOUT, and in 4.0.0-beta.0 the info, success and warning messages move to STDOUT alongside the --json payload, leaving only errors on STDERR." style="width:100%;height:auto;background:#12151c;border-radius:10px">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2">
+    <text x="20" y="28" font-size="15" font-weight="600">appium 3.7.0</text>
+    <text x="410" y="28" font-size="15" font-weight="600" fill="#5ad1a0">appium 4.0.0-beta.0</text>
+    <line x1="385" y1="12" x2="385" y2="318" stroke="#39414f" stroke-width="1"/>
+
+    <rect x="20" y="48" width="150" height="34" rx="6" fill="#2b3240"/>
+    <text x="32" y="70" font-size="12">info / success / warn</text>
+    <rect x="20" y="92" width="150" height="34" rx="6" fill="#2b3240"/>
+    <text x="32" y="114" font-size="12">--json payload</text>
+    <rect x="20" y="136" width="150" height="34" rx="6" fill="#2b3240"/>
+    <text x="32" y="158" font-size="12">errors</text>
+
+    <rect x="240" y="48" width="120" height="44" rx="6" fill="#1c2430" stroke="#39414f"/>
+    <text x="252" y="76" font-size="13">STDOUT</text>
+    <rect x="240" y="120" width="120" height="44" rx="6" fill="#1c2430" stroke="#39414f"/>
+    <text x="252" y="148" font-size="13">STDERR</text>
+
+    <path d="M170 65 C 205 65 205 142 240 142" stroke="#8a93a5" stroke-width="2" fill="none"/>
+    <path d="M170 109 C 205 109 205 70 240 70" stroke="#8a93a5" stroke-width="2" fill="none"/>
+    <path d="M170 153 C 205 153 205 142 240 142" stroke="#8a93a5" stroke-width="2" fill="none"/>
+
+    <rect x="410" y="48" width="150" height="34" rx="6" fill="#2b3240"/>
+    <text x="422" y="70" font-size="12">info / success / warn</text>
+    <rect x="410" y="92" width="150" height="34" rx="6" fill="#2b3240"/>
+    <text x="422" y="114" font-size="12">--json payload</text>
+    <rect x="410" y="136" width="150" height="34" rx="6" fill="#2b3240"/>
+    <text x="422" y="158" font-size="12">errors</text>
+
+    <rect x="630" y="48" width="112" height="44" rx="6" fill="#16302a" stroke="#5ad1a0"/>
+    <text x="642" y="76" font-size="13" fill="#5ad1a0">STDOUT</text>
+    <rect x="630" y="120" width="112" height="44" rx="6" fill="#1c2430" stroke="#39414f"/>
+    <text x="642" y="148" font-size="13">STDERR</text>
+
+    <path d="M560 65 C 595 65 595 70 630 70" stroke="#5ad1a0" stroke-width="2.5" fill="none"/>
+    <path d="M560 109 C 595 109 595 70 630 70" stroke="#5ad1a0" stroke-width="2" fill="none"/>
+    <path d="M560 153 C 595 153 595 142 630 142" stroke="#8a93a5" stroke-width="2" fill="none"/>
+
+    <text x="20" y="208" font-size="13" font-weight="600" fill="#5ad1a0">Two failure modes named in the release notes</text>
+    <rect x="20" y="220" width="350" height="60" rx="6" fill="#1c2430" stroke="#39414f"/>
+    <text x="32" y="242" font-size="12">A script that ran `appium ... 1&gt;/dev/null`</text>
+    <text x="32" y="262" font-size="12">to hide chatter now hides the status text.</text>
+    <rect x="392" y="220" width="350" height="60" rx="6" fill="#1c2430" stroke="#39414f"/>
+    <text x="404" y="242" font-size="12">A script that captured STDERR to log</text>
+    <text x="404" y="262" font-size="12">success messages now sees only errors.</text>
+
+    <text x="20" y="308" font-size="11" fill="#8a93a5">Source: appium@4.0.0-beta.0 release notes, 19 September 2026. The default log level also moved from debug to info.</text>
+  </g>
+</svg>
+
+<p>The same release moved <code>@appium/logger</code>'s <code>Log</code> class default stream from
+STDERR to STDOUT for every level except error, and added an <code>errorStream</code> and
+<code>stderrLevel</code> pair. Code that set <code>.stream</code> on a <code>Log</code> instance
+expecting it to capture all levels has to set <code>.errorStream</code> to the same target now.</p>
+
+<h2 id="which-node-versions-the-beta-will-actually-start-on">Which Node versions the beta will actually start on</h2>
+
+<p>Three disjoint windows, and the gaps between them are not decoration. <code>^22.22.2</code> means
+at least 22.22.2 and below 23. <code>^24.15.0</code> means at least 24.15.0 and below 25.
+<code>&gt;=26.0.0</code> takes everything from 26 up. Node 20, which 3.7.0 accepted from 20.19.0,
+is gone entirely, and so are the odd-numbered current lines 23 and 25.</p>
+
+<svg viewBox="0 0 760 210" role="img" aria-label="Number line of Node.js major versions 20 through 26 showing which satisfy the Appium 4.0.0-beta.0 engine range: version 20 and 21 are excluded, 22.22.2 and above is allowed, 23 is excluded, 24.15.0 and above is allowed, 25 is excluded including the 25.8.2 installed on this machine, and 26.0.0 and above is allowed." style="width:100%;height:auto;background:#12151c;border-radius:10px">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2">
+    <text x="20" y="28" font-size="14" font-weight="600">engines.node = ^22.22.2 || ^24.15.0 || &gt;=26.0.0</text>
+    <line x1="40" y1="110" x2="730" y2="110" stroke="#39414f" stroke-width="2"/>
+    <g font-size="12" fill="#8a93a5">
+      <text x="52" y="136">20</text><text x="150" y="136">21</text><text x="248" y="136">22</text>
+      <text x="346" y="136">23</text><text x="444" y="136">24</text><text x="542" y="136">25</text>
+      <text x="640" y="136">26</text>
+    </g>
+    <rect x="40" y="96" width="196" height="28" fill="#242a35"/>
+    <rect x="236" y="96" width="98" height="28" fill="#5ad1a0" opacity="0.85"/>
+    <rect x="334" y="96" width="98" height="28" fill="#242a35"/>
+    <rect x="432" y="96" width="98" height="28" fill="#5ad1a0" opacity="0.85"/>
+    <rect x="530" y="96" width="98" height="28" fill="#242a35"/>
+    <rect x="628" y="96" width="102" height="28" fill="#5ad1a0" opacity="0.85"/>
+    <text x="240" y="86" font-size="11" fill="#5ad1a0">from 22.22.2</text>
+    <text x="436" y="86" font-size="11" fill="#5ad1a0">from 24.15.0</text>
+    <text x="632" y="86" font-size="11" fill="#5ad1a0">from 26.0.0</text>
+    <text x="52" y="86" font-size="11" fill="#8a93a5">3.7.0 allowed 20.19.0+</text>
+    <line x1="570" y1="110" x2="570" y2="164" stroke="#e9ecf2" stroke-width="1.5"/>
+    <circle cx="570" cy="110" r="5" fill="#e9ecf2"/>
+    <text x="500" y="182" font-size="12" fill="#e9ecf2">this Mac: v25.8.2</text>
+    <text x="500" y="198" font-size="11" fill="#8a93a5">excluded</text>
+    <text x="20" y="182" font-size="12">Allowed: 22.22.2, 24.15.0, 24.20.0, 26.0.0</text>
+    <text x="20" y="198" font-size="12" fill="#8a93a5">Rejected: 20.x, 21.x, 23.0.0, 25.0.0, 25.8.2</text>
+  </g>
+</svg>
+
+<p>Those eight version results are not read off the range by eye. They come from running the
+<code>semver</code> CLI against the published range, which is the same resolver npm uses, and the
+command is in the section below.</p>
+
+<h2 id="the-esm-change-is-the-one-that-will-surface-late">The ESM change is the one that will surface late</h2>
+
+<p>3.7.0's package manifest has no <code>type</code> field, so it is CommonJS.
+4.0.0-beta.0 sets <code>"type": "module"</code>. Along with it the release removes default exports
+from <code>@appium/base-driver</code>, <code>@appium/base-plugin</code> and
+<code>@appium/logger</code>, so <code>require('appium')</code> and
+<code>const BasePlugin = require('@appium/base-plugin')</code> both stop working. A team that
+consumes Appium only through the CLI will not see this. A team that wrote a plugin will, and will see
+it at import time rather than at test time.</p>
+
+<p>Two more removals matter for anything that talks to the server directly rather than through a
+client library. <code>BaseDriver.getSession</code> and the JSONWP
+<code>GET /session/:sessionId</code> route are gone; the replacements are
+<code>getAppiumSessionCapabilities</code> for capabilities and
+<code>EventCommands.getLogEvents</code> for event history. The
+<code>appium:eventTimings</code> capability went with them, because it only ever controlled whether
+<code>getSession</code>'s response carried event history that <code>getLogEvents</code> already
+returns unconditionally. Separately, SPDY and HTTP/2 negotiation are gone, leaving plain HTTP/1.1.</p>
+
+<h2 id="what-this-costs-a-team-driving-real-iphones">What this costs a team driving real iPhones</h2>
+
+<p>Nothing yet, and that is the point. appium-xcuitest-driver has not shipped against Appium 4:
+PR #2984, "feat!: target Appium 4 beta", was opened on 20 September 2026 and is still open as of
+22 September. Its own description says it bumps the <code>appium</code> peer dependency from
+<code>^3.0.0-rc.2</code> to <code>^4.0.0-beta.0</code> and updates driver code for the API removals.
+So an iOS rig cannot move to Appium 4 today even if it wants to, and that gap is the window to fix
+the plumbing.</p>
+
+<p>The ordering judgement, ours: fix the stream capture first, because it fails silently. A Node
+version mismatch stops the process with a message. A status line that has moved to the other stream
+produces a green build with an empty log, which is the failure mode that costs a day of debugging
+three weeks later. If you have a CI step that greps STDERR for "Driver installed" or similar, it
+will simply never match.</p>
+
+<p>Note also what did not change. <code>--json</code> still writes clean JSON to STDOUT only, and
+errors still go to STDERR. A script that already used <code>--json</code> and parsed STDOUT is
+unaffected by the whole stream rearrangement. That is an argument for using the machine-readable flag
+in a rig even when a human is watching.</p>
+
+<p>Adjacent, and worth knowing if you pin WebDriverAgent separately: WDA v16.12.9 shipped on
+19 September 2026 with one fix, "resolve real device udid to xcodebuild's own case before building
+<code>-destination id=</code>" (issue #1260, opened 18 September). That is the same case-sensitivity
+class of bug we measured across five tools last week, now fixed upstream at the point where the UDID
+reaches <code>xcodebuild</code>.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<p>Every number above comes from one of these three commands. None of them need a device.</p>
+
+<pre><code># engine ranges, publish times and the ESM flag, straight from the registry
+curl -s https://registry.npmjs.org/appium | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+print('dist-tags:', d['dist-tags'])
+for v in ['3.7.0','4.0.0-beta.0','4.0.0-beta.1']:
+    m=d['versions'][v]
+    print(v, m.get('engines'), 'type=', m.get('type'), d['time'][v])
+"
+
+# which Node versions satisfy the beta's range
+npx --yes semver@7 -r "^22.22.2 || ^24.15.0 || &gt;=26.0.0" \
+  22.22.2 23.0.0 24.15.0 24.20.0 25.0.0 25.8.2 26.0.0
+# prints only: 22.22.2 24.15.0 24.20.0 26.0.0
+
+# the breaking-change list, verbatim
+curl -s "https://api.github.com/repos/appium/appium/releases/tags/appium%404.0.0-beta.0" \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['published_at']); print(d['body'])"
+</code></pre>
+
+<p>To see the stream change on your own machine without upgrading anything, run any Appium CLI
+subcommand twice under 3.7.0, once with <code>1&gt;/dev/null</code> and once with
+<code>2&gt;/dev/null</code>, and note which one still prints. Under 4.0.0-beta.0 the answer flips.</p>
+
+<h2 id="what-would-prove-this-wrong">What would prove this wrong</h2>
+
+<p>Two claims here are dated predictions rather than measurements, and both are checkable before the
+end of 2026.</p>
+
+<p>First: that appium-xcuitest-driver's first release supporting Appium 4 carries
+<code>engines.node</code> identical to <code>^22.22.2 || ^24.15.0 || &gt;=26.0.0</code>. PR #2984 says
+it bumps <code>engines.node</code> to match Appium 4's minimum, so a published driver with a wider
+range would mean the constraint is negotiable and the Node 25 exclusion is not load-bearing.</p>
+
+<p>Second: that the STDOUT move survives to 4.0.0 stable. It is listed as a bug fix, not a feature,
+which is a mild signal that the maintainers consider the old layout the defect. If a later beta
+reverts it or adds a compatibility flag, the migration advice above is wasted work. Check
+<code>appium@4.0.0</code>'s release notes for a <code>--legacy-streams</code> style escape hatch when
+it lands.</p>
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li><a href="https://github.com/appium/appium/releases/tag/appium%404.0.0-beta.0">Appium, release notes for appium@4.0.0-beta.0, published 19 September 2026</a></li>
+      <li><a href="https://registry.npmjs.org/appium">npm registry metadata for the appium package: engines, type and publish times, read 22 September 2026</a></li>
+      <li><a href="https://github.com/appium/appium/releases/tag/appium%404.0.0-beta.1">Appium, release notes for appium@4.0.0-beta.1, published 19 September 2026</a></li>
+      <li><a href="https://github.com/appium/appium-xcuitest-driver/pull/2984">appium-xcuitest-driver PR #2984, 'feat!: target Appium 4 beta', opened 20 September 2026, open as of 22 September 2026</a></li>
+      <li><a href="https://github.com/appium/WebDriverAgent/releases/tag/v16.12.9">WebDriverAgent v16.12.9, published 19 September 2026, resolving real device UDID case for -destination id=</a></li>
+      <li><a href="https://github.com/appium/WebDriverAgent/issues/1260">WebDriverAgent issue #1260, opened 18 September 2026</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
