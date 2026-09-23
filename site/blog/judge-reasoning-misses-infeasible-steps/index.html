@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>More reasoning made OSWorld-Pro's judge worse at spotting steps that could not succeed | Blolabel</title>
+<meta name="description" content="OSWorld-Pro (arXiv:2609.24890, 21 September 2026) labels 2,814 subgoals over 305 desktop tasks with 67,264 human step labels. Its best judge, GPT-5.6-Sol at max effort, scores 61.9 feasibility macro-F1 versus 67.5 with reasoning off and 91.6 human agreement, and labels 5.1% of steps infeasible against a human 15.3%.">
+<link rel="canonical" href="https://blolabel.ai/blog/judge-reasoning-misses-infeasible-steps/">
+<meta property="og:title" content="More reasoning made OSWorld-Pro's judge worse at spotting steps that could not succeed | Blolabel">
+<meta property="og:description" content="OSWorld-Pro (arXiv:2609.24890, 21 September 2026) labels 2,814 subgoals over 305 desktop tasks with 67,264 human step labels. Its best judge, GPT-5.6-Sol at max effort, scores 61.9 feasibility macro-F1 versus 67.5 with reasoning off and 91.6 human agreement, and labels 5.1% of steps infeasible against a human 15.3%.">
+<meta property="og:url" content="https://blolabel.ai/blog/judge-reasoning-misses-infeasible-steps/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"More reasoning made OSWorld-Pro's judge worse at spotting steps that could not succeed","description":"OSWorld-Pro (arXiv:2609.24890, 21 September 2026) labels 2,814 subgoals over 305 desktop tasks with 67,264 human step labels. Its best judge, GPT-5.6-Sol at max effort, scores 61.9 feasibility macro-F1 versus 67.5 with reasoning off and 91.6 human agreement, and labels 5.1% of steps infeasible against a human 15.3%.",
+ "datePublished":"2026-09-23","dateModified":"2026-09-23",
+ "url":"https://blolabel.ai/blog/judge-reasoning-misses-infeasible-steps/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/judge-reasoning-misses-infeasible-steps/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How accurate are LLM judges on OSWorld-Pro?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Against 67,264 human step labels, the best judge, GPT-5.6-Sol at max reasoning, reaches 97.0 macro-F1 on which subgoal a step targets and 94.3 on completion, but 74.7 on progress and 61.9 on feasibility. Human-to-human agreement on feasibility is 91.6, Cohen's kappa 0.847."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Does more reasoning help an LLM judge?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "On most fields, yes. On feasibility, no: Sol falls from 67.5 with reasoning off to 61.9 at max, and Terra from a peak of 67.4 at medium to 62.0 at max. Sol labels 9.7% of steps infeasible with reasoning off and 5.1% at max, against a human rate of 15.3%."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why does feasibility matter for grading agents?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "A step toward something that does not exist is an environment failure. A judge that calls it feasible charges the failure to the agent. At a No rate one third of the human rate, the judge moves failures from the environment's account to the agent's."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How does phoneshell decide a task was never attempted?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "In code, before grading. A locked or unresponsive phone raises RigUnavailable and a rate-limited account raises UsageLimitReached; either way the task is reported as not scored. An early run without this rule recorded 12.5% when 27 of 32 tasks were never attempted."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-23">23 September 2026</time>
+    <span>5 min read</span>
+  </div>
+  <h1>More reasoning made OSWorld-Pro's judge worse at spotting steps that could not succeed</h1>
+  <p class="standfirst">GPT-5.6-Sol at maximum effort agrees with humans on feasibility at 61.9 macro-F1, against 91.6 between humans, and calls a step infeasible a third as often as they do.</p>
+
+  <p>The judge that scores OSWorld-Pro agrees with human annotators on whether a step was even possible
+at a macro-F1 of 61.9, against 91.6 between humans, and it gets worse the harder it thinks. GPT-5.6-Sol
+labelled 9.7% of steps infeasible with reasoning off and 5.1% at maximum effort; the humans labelled
+15.3%. OSWorld-Pro, arXiv:2609.24890, was posted on 21 September 2026 and uses the maximum-effort
+setting as its grader.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/judge-reasoning-misses-infeasible-steps-hero.png" alt="Abstract technical illustration of a row of doorways, a few of them sealed, with an inspecting beam that brightens from left to right while the sealed doorways it marks become fewer" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-osworld-pro-added">What OSWorld-Pro added</h2>
+
+<p>Zhilin Wang and 16 co-authors, Jan Kautz among them, annotated 305 desktop tasks broken into 2,814
+ordered subgoals, with 67,264 step-level human labels. For every step of an agent's trajectory the
+annotators record four things: which subgoal the step targets, whether that subgoal is feasible in the
+environment as it stands, whether the step makes progress, and whether it completes the subgoal. The
+guideline is strict about the order: if feasibility is No, progress and completion must be No as well.
+An independent reviewer relabelled the same steps to measure agreement: Cohen's kappa was 0.987 for
+target, 0.847 for feasibility, 0.869 for progression and 0.940 for completion.</p>
+
+<p>Hand-labelling 67,000 steps does not scale to new models, so the paper tests three GPT-5.6 judges at
+six reasoning efforts each, then scores the leaderboard with the best one. The headline results are
+Claude Opus 4.8 Max at 77.7% of tasks with every subgoal complete and Claude Opus 5 Max at 75.7%,
+against 83.4% for Opus 5 on the original OSWorld. The judge table underneath it matters more to anyone
+who grades agents with a model.</p>
+
+<table>
+  <thead>
+    <tr><th>Labeller</th><th>Target</th><th>Feasible</th><th>Progress</th><th>Complete</th><th>Step mean</th><th>Est. cost, full run</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Human annotators</td><td>98.4</td><td>91.6</td><td>94.1</td><td>97.6</td><td>95.4</td><td>not reported</td><td>Table 1</td></tr>
+    <tr><td>GPT-5.6-Sol, max</td><td>97.0</td><td>61.9</td><td>74.7</td><td>94.3</td><td>82.0</td><td>$249.60</td><td>Table 1</td></tr>
+    <tr><td>GPT-5.6-Sol, none</td><td>94.5</td><td>67.5</td><td>69.5</td><td>67.8</td><td>74.8</td><td>$188.99</td><td>Table 1</td></tr>
+    <tr><td>GPT-5.6-Terra, max</td><td>97.6</td><td>62.0</td><td>69.2</td><td>94.8</td><td>80.9</td><td>$155.04</td><td>Table 1</td></tr>
+    <tr><td>GPT-5.6-Terra, medium</td><td>94.9</td><td>67.4</td><td>59.6</td><td>82.9</td><td>76.2</td><td>$98.89</td><td>Table 1</td></tr>
+    <tr><td>GPT-5.6-Luna, max</td><td>97.7</td><td>58.9</td><td>52.8</td><td>93.3</td><td>75.7</td><td>$15.45</td><td>Table 1</td></tr>
+    <tr><td>GPT-5.6-Luna, low</td><td>94.9</td><td>54.0</td><td>46.4</td><td>87.0</td><td>70.6</td><td>$9.66</td><td>Table 1</td></tr>
+  </tbody>
+</table>
+
+<p>Macro-F1 against the human labels, from Table 1 of arXiv:2609.24890. Cost is the paper's estimate
+for judging the full benchmark once at list API prices without caching. Seven of the eighteen judge
+rows are shown; the chart below carries every feasibility value.</p>
+
+<h2 id="feasibility-is-the-one-column-that-reasoning-does-not-fix">Feasibility is the one column that reasoning does not fix</h2>
+
+<p>Going from no reasoning to maximum effort, Sol's completion F1 rises from 67.8 to 94.3. Its
+feasibility F1 falls from 67.5 to 61.9. Terra peaks on feasibility at medium effort, 67.4, and ends at
+62.0. The paper's diagnosis is in its own numbers: with more reasoning the judge says No less often,
+9.7% of steps at Sol none and 5.1% at Sol max, while the human ground truth is 15.3%. The judge talks
+itself into believing a step could have worked. Luna does not follow the pattern, ranging from 54.0 at
+low effort to 60.4 at xhigh, and the paper states the trend only for Terra and Sol.</p>
+
+<svg viewBox="0 0 760 320" style="width:100%;height:auto" role="img" aria-label="Line chart of subgoal feasibility agreement with human labels, macro-F1, for three GPT-5.6 judges across six reasoning efforts from none to max. Sol goes 67.5, 65.9, 64.1, 65.8, 65.3, 61.9. Terra goes 65.2, 66.0, 67.4, 63.8, 64.5, 62.0. Luna goes 58.9, 54.0, 57.3, 58.8, 60.4, 58.9. Human agreement is 91.6, far above every judge setting.">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2">
+    <text x="20" y="26" font-size="14" font-weight="600">Feasibility macro-F1 vs human labels, by reasoning effort</text>
+    <g stroke="#242a35">
+      <line x1="100" y1="260" x2="700" y2="260"/><line x1="100" y1="213.3" x2="700" y2="213.3"/>
+      <line x1="100" y1="166.7" x2="700" y2="166.7"/><line x1="100" y1="120" x2="700" y2="120"/>
+      <line x1="100" y1="73.3" x2="700" y2="73.3"/>
+    </g>
+    <g font-size="11" fill="#8a93a5">
+      <text x="72" y="264">50</text><text x="72" y="217">60</text><text x="72" y="171">70</text>
+      <text x="72" y="124">80</text><text x="72" y="77">90</text>
+      <text x="104" y="282">none</text><text x="218" y="282">low</text><text x="320" y="282">medium</text>
+      <text x="436" y="282">high</text><text x="546" y="282">xhigh</text><text x="658" y="282">max</text>
+      <text x="340" y="304">judge reasoning effort</text>
+    </g>
+    <line x1="100" y1="65.9" x2="700" y2="65.9" stroke="#c4ccda" stroke-dasharray="6 4"/>
+    <text x="104" y="58" font-size="12" fill="#c4ccda">human vs human 91.6</text>
+    <polyline points="120,178.3 230,185.8 340,194.2 450,186.3 560,188.6 670,204.5" fill="none" stroke="#5ad1a0" stroke-width="2.5"/>
+    <polyline points="120,189.1 230,185.3 340,178.8 450,195.6 560,192.3 670,204.0" fill="none" stroke="#8fb3ff" stroke-width="2"/>
+    <polyline points="120,218.5 230,241.3 340,225.9 450,218.9 560,211.5 670,218.5" fill="none" stroke="#6f7b90" stroke-width="2"/>
+    <g font-size="11">
+      <text x="126" y="172" fill="#5ad1a0">67.5</text><text x="340" y="208" fill="#5ad1a0">64.1</text>
+      <text x="340" y="172" fill="#8fb3ff">67.4</text><text x="230" y="254" fill="#8a93a5">54.0</text>
+      <text x="560" y="205" fill="#8a93a5">60.4</text>
+      <text x="680" y="196" fill="#8fb3ff">Terra 62.0</text>
+      <text x="680" y="212" fill="#5ad1a0">Sol 61.9</text>
+      <text x="680" y="228" fill="#8a93a5">Luna 58.9</text>
+    </g>
+  </g>
+</svg>
+
+<h2 id="a-judge-that-over-believes-feasibility-charges-the-environme">A judge that over-believes feasibility charges the environment's failures to the agent</h2>
+
+<p>The feasibility label decides which column a failure lands in. A step toward a menu option that
+does not exist in that distribution is, correctly labelled, infeasible, and the resulting miss belongs
+to the environment. Mislabelled as feasible, the same step becomes a subgoal the agent failed to
+progress. A judge that says No a third as often as humans (5.1% against 15.3%) moves failures from the
+environment's account to the agent's. The paper gives the reason it is hard: a menu option can look
+absent until a sub-menu is expanded, so feasibility is partly a claim about what the agent did not
+try.</p>
+
+<svg viewBox="0 0 760 300" style="width:100%;height:auto" role="img" aria-label="Diagram of where a failed step is charged. Human annotators label 15.3 percent of steps infeasible, GPT-5.6-Sol with no reasoning 9.7 percent and with maximum reasoning 5.1 percent. Each step the judge wrongly calls feasible is charged to the agent instead of the environment. Phoneshell makes that call in code: a locked phone or a rate-limited account raises RigUnavailable or UsageLimitReached and the task is reported as not scored before any grader runs.">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2" font-size="12">
+    <text x="20" y="26" font-size="14" font-weight="600">Share of steps labelled infeasible, and who pays for the rest</text>
+    <text x="20" y="62">Human labels</text>
+    <rect x="200" y="48" width="306" height="22" fill="#c4ccda"/><text x="514" y="64">15.3%</text>
+    <text x="20" y="98">Sol, reasoning none</text>
+    <rect x="200" y="84" width="194" height="22" fill="#8fb3ff"/><text x="402" y="100">9.7%</text>
+    <text x="20" y="134">Sol, reasoning max</text>
+    <rect x="200" y="120" width="102" height="22" fill="#5ad1a0"/><text x="310" y="136">5.1%</text>
+    <text x="200" y="164" fill="#8a93a5" font-size="11">scale: 20 px per percentage point</text>
+    <rect x="20" y="186" width="330" height="92" rx="6" fill="#242a35" stroke="#6f7b90"/>
+    <text x="32" y="208">LLM judge decides feasibility</text>
+    <text x="32" y="228" fill="#8a93a5">under-called step: an agent failure</text>
+    <text x="32" y="248" fill="#8a93a5">OSWorld-Pro scores with Sol max</text>
+    <text x="32" y="268" fill="#8a93a5">agreement 61.9 vs human 91.6</text>
+    <rect x="400" y="186" width="340" height="92" rx="6" fill="#1d3b31" stroke="#5ad1a0"/>
+    <text x="412" y="208" fill="#5ad1a0">phoneshell decides it in code</text>
+    <text x="412" y="228" fill="#c4ccda">RigUnavailable: phone locked, unresponsive</text>
+    <text x="412" y="248" fill="#c4ccda">UsageLimitReached: account rate limited</text>
+    <text x="412" y="268" fill="#c4ccda">either one: "not scored", never "failed"</text>
+  </g>
+</svg>
+
+<p>We have our own number for how large this effect can be. The docstring on
+<code>UsageLimitReached</code> in <code>phoneshell/bench/runner.py</code> records that an early run
+"recorded 12.5% when in truth 27 of 32 tasks were never attempted". Nothing about the model's
+capability produced that 12.5%. A judge asked "was this possible" would have seen 27 empty or truncated
+trajectories and had to guess; the runner instead sees the rate-limit message, raises, and the task is
+reported as not scored. Same for <code>RigUnavailable</code> on a locked or unresponsive phone.</p>
+
+<h2 id="what-to-do-with-this-if-you-grade-with-a-model">What to do with this if you grade with a model</h2>
+
+<p>Take feasibility away from the judge wherever the environment can answer it. On a phone that covers
+more than it sounds like: the app is installed or not, the account is signed in or not, the network
+answered or not, a permission sheet blocked the screen or not. Each is a fact the runner can check
+before or during the run. What is left for the judge is the ambiguous remainder, where the paper's
+menu example lives.</p>
+
+<p>Do not buy judge accuracy with reasoning effort on this column. Sol max costs $249.60 per full
+evaluation against $188.99 with reasoning off, and on feasibility it is 5.6 points worse. If you need a
+model to call feasibility, measure its No rate against a human sample first; a judge whose No rate is
+a third of the human rate will inflate agent failure in exactly the tasks where the environment is at
+fault.</p>
+
+<p>And report the No rate. OSWorld-Pro's paper is unusually good here because it published per-field
+agreement and the No-rate drift. Most agent papers publish one judge-agreement figure, which in this
+table would be the step mean of 82.0 and would hide the 61.9.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<pre><code>curl -sL https://arxiv.org/html/2609.24890 -o oswpro.html
+python3 - &lt;&lt;'PY'
+import re, html
+t = html.unescape(re.sub(r'&lt;[^&gt;]+&gt;', ' ', open('oswpro.html').read()))
+t = re.sub(r'\s+', ' ', t)
+for key in ('feasibility=No decreases', "Cohen", '61.9 vs. 91.6'):
+    i = t.find(key); print(t[max(0, i-200):i+400], '\n---')
+PY
+# In this repository:
+grep -n "27 of 32" phoneshell/bench/runner.py
+grep -n "class RigUnavailable\|class UsageLimitReached" phoneshell/bench/runner.py</code></pre>
+
+<p>Table 1 in the HTML edition comes out as one value per cell. Each judge row reads, in order:
+Target, Feasible, Progress, Complete, Step mean, Subgoal, Task (1-MAE), input tokens per task, output
+tokens per task, Total $.</p>
+
+<h2 id="what-would-prove-this-wrong">What would prove this wrong</h2>
+
+<p>The claim is that reasoning effort pushes LLM judges toward calling impossible steps possible, and
+that this charges environment failures to agents. It is wrong if the OSWorld-Pro judge prompt, rerun
+by anyone at Sol max with an explicit instruction to prefer No when an option cannot be found after
+exploring the relevant menus, reaches a feasibility F1 above 80 and a No rate within 3 points of the
+human 15.3%. It is also wrong for phones if we run a model judge over our own trajectories and it
+recovers every one of our code-decided not-scored tasks from the trajectory alone. We will run that
+second test on the physical-iPhone suite and publish the confusion matrix by 31 December 2026.</p>
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li><a href="https://arxiv.org/abs/2609.24890">Wang et al., OSWorld-Pro: Process-based Evaluation for Computer Use Agents, arXiv:2609.24890, 21 September 2026</a></li>
+      <li><a href="https://arxiv.org/html/2609.24890">OSWorld-Pro HTML edition, Table 1 (judge agreement and cost), Table 2 (task results), Section 4 (feasibility=No rates, inter-annotator kappa)</a></li>
+      <li><a href="https://arxiv.org/abs/2606.09764">Jang et al., iOSWorld, arXiv:2606.09764, 8 June 2026 (GPT-5.4 Mini judge, kappa 0.77)</a></li>
+      <li><a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Blolabel, phoneshell-bench: tasks never attempted are reported as not scored</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
