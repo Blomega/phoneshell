@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>iOSWorld's tool layer doubled Qwen3.5's score, and 102 of its 471 tools can write the app's data file directly | Blolabel</title>
+<meta name="description" content="Static audit of the iOSWorld MCP server (github.com/ljang0/iosworld, commit e91f4cb, 8 June 2026): of 471 default tools, 102 can write an app's JSON, SQLite or UserDefaults state directly, 65 read it, and send_zelle writes the payment itself because the app's Send button does not persist. Table 7 of arXiv:2606.09764 reports Qwen3.5 rising from 12.8% to 24.8% with these tools.">
+<link rel="canonical" href="https://blolabel.ai/blog/iosworld-mcp-tools-write-app-state/">
+<meta property="og:title" content="iOSWorld's tool layer doubled Qwen3.5's score, and 102 of its 471 tools can write the app's data file directly | Blolabel">
+<meta property="og:description" content="Static audit of the iOSWorld MCP server (github.com/ljang0/iosworld, commit e91f4cb, 8 June 2026): of 471 default tools, 102 can write an app's JSON, SQLite or UserDefaults state directly, 65 read it, and send_zelle writes the payment itself because the app's Send button does not persist. Table 7 of arXiv:2606.09764 reports Qwen3.5 rising from 12.8% to 24.8% with these tools.">
+<meta property="og:url" content="https://blolabel.ai/blog/iosworld-mcp-tools-write-app-state/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"iOSWorld's tool layer doubled Qwen3.5's score, and 102 of its 471 tools can write the app's data file directly","description":"Static audit of the iOSWorld MCP server (github.com/ljang0/iosworld, commit e91f4cb, 8 June 2026): of 471 default tools, 102 can write an app's JSON, SQLite or UserDefaults state directly, 65 read it, and send_zelle writes the payment itself because the app's Send button does not persist. Table 7 of arXiv:2606.09764 reports Qwen3.5 rising from 12.8% to 24.8% with these tools.",
+ "datePublished":"2026-09-23","dateModified":"2026-09-23",
+ "url":"https://blolabel.ai/blog/iosworld-mcp-tools-write-app-state/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/iosworld-mcp-tools-write-app-state/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How much did structured MCP tools help on iOSWorld?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Table 7 of arXiv:2606.09764 reports Qwen3.5 35B-A3B at 12.8% pass rate and 0.33 rubric score with the 7-action mobile_use tool, and 24.8% and 0.683 with structured per-app MCP tools, over the same 133 tasks with a 50-step budget. That is 17 tasks rising to 33. It was run on one model only."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Do the iOSWorld MCP tools drive the app's interface?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Not all of them. In the released code (commit e91f4cb), 278 of the 471 default tools act only through Appium taps and typing, 102 can write the app's JSON, SQLite or UserDefaults state file directly and then reload the app, and 65 read the state file without writing. 37 of the 102 writers never touch the interface at all."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "What does iOSWorld's send_zelle tool do?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "It fills the Zelle form and taps Send, then counts Zelle transactions in the store. Its comment says the app's Send button does not persist a transaction in that build, so when the count has not changed the tool debits checking by writing the state file directly, and returns 'Sent $50 via Zelle to Maya Patel.' That sentence is included in the action JSON the judge reads."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Does phoneshell use app-specific tools?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "No. phoneshell's MCP server has 23 tools and its benchmark runner allows 14, all generic phone actions such as tap, type, swipe, open app and back. None writes an app's storage, and its 153 checks read the accessibility tree after the run or the agent's answer, never the agent's narration."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-23">23 September 2026</time>
+    <span>7 min read</span>
+  </div>
+  <h1>iOSWorld's tool layer doubled Qwen3.5's score, and 102 of its 471 tools can write the app's data file directly</h1>
+  <p class="standfirst">We read all 26 modules of the MCP server released with iOSWorld. The +12.0-point ablation changes four things at once, and only one of them is the interface.</p>
+
+  <p>iOSWorld's structured-tools ablation doubled Qwen3.5's pass rate, 12.8% to 24.8% over 133 tasks,
+and the released tool server that produced it is not an interface over the app. We read all 26 of its
+per-app modules: 102 of the 471 tools a model sees by default can write the app's data file directly,
+65 more read the data file without touching the screen, and the Zelle tool says in its own docstring
+that the app's Send button does not save the payment, so the tool writes it instead.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/iosworld-mcp-tools-write-app-state-hero.png" alt="Abstract technical illustration of a layered interface panel with a thin bypass channel running underneath it straight into a data block, while a second path winds across the panel surface" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-was-published-and-when">What was published, and when</h2>
+
+<p>iOSWorld, arXiv:2606.09764, went up on 8 June 2026: 133 tasks over 26 purpose-built SwiftUI apps
+seeded for one fictional user. The code went up the same day as a single commit, e91f4cb at
+2026-06-08T19:12:47Z in github.com/ljang0/iosworld, and has not been pushed to since. Appendix E is the
+ablation. It holds Qwen3.5 35B-A3B, the task set, the judge and the 50-step budget fixed and swaps the
+7-action <code>mobile_use</code> tool for "a structured per-app tool layer" with operations such as
+<code>caltrack.log_food</code> and <code>mybank.send_zelle</code>. Table 7 reports the result:</p>
+
+<table>
+  <thead>
+    <tr><th>Qwen3.5 35B-A3B, 133 tasks</th><th>Pass rate</th><th>Tasks (ours)</th><th>Rubric score</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Cookbook <code>mobile_use</code> (7 actions)</td><td>12.8%</td><td>17</td><td>0.33</td><td>arXiv:2606.09764, Table 7</td></tr>
+    <tr><td>Structured per-app tools (MCP)</td><td>24.8%</td><td>33</td><td>0.683</td><td>arXiv:2606.09764, Table 7</td></tr>
+    <tr><td>Difference</td><td>+12.0 pp</td><td>+16</td><td>+0.353</td><td>arXiv:2606.09764, Table 7</td></tr>
+  </tbody>
+</table>
+
+<p>The task counts are our arithmetic: 17 of 133 is 12.78% and 33 of 133 is 24.81%, the only integers
+that round to the printed rates. The paper reads the result as evidence that much of the
+vision-versus-tree gap is "interface rather than reasoning". The appendix does not say what the tools
+do underneath. The repository does.</p>
+
+<h2 id="what-the-471-tools-actually-do">What the 471 tools actually do</h2>
+
+<p>The server lives in <code>mcps/</code>: one module per app, 537 functions decorated
+<code>@mcp.tool()</code>. The runner hides <code>prepare_*</code> tools and <code>confirm_*</code>
+tools whose only argument is <code>draft_id</code> unless <code>--with-confirmation-tools</code> is
+set, which removes 66 and leaves 471 on the default surface. We parsed every module with Python's
+<code>ast</code> and followed each tool through the module-level helpers it calls. A tool is counted as
+writing state if any reachable path calls <code>_data_layer.write_envelope</code>,
+<code>write_app_state</code>, <code>write_user_defaults</code> or
+<code>delete_user_defaults_key</code>. The data layer's own header describes its purpose: "When a UI
+flow can't be cleanly driven via accessibility IDs, MCP tools can mutate the underlying state file
+(JSON / SQLite / UserDefaults) and then trigger an app reload".</p>
+
+<svg viewBox="0 0 760 250" style="width:100%;height:auto" role="img" aria-label="Stacked bar of the 471 tools on the default iOSWorld MCP surface: 278 drive the app only through Appium taps and typing, 102 can write the app's data file directly, 65 read the data file without writing it, and 26 match neither pattern. Of the 102 writers, 37 never call the user interface at all and 49 swallow any interface exception before writing.">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2">
+    <text x="20" y="28" font-size="14" font-weight="600">iOSWorld default MCP surface, 471 tools, classified from the source</text>
+    <rect x="20" y="60" width="413" height="44" fill="#6f7b90"/>
+    <rect x="433" y="60" width="152" height="44" fill="#5ad1a0"/>
+    <rect x="585" y="60" width="97" height="44" fill="#3f8f73"/>
+    <rect x="682" y="60" width="38" height="44" fill="#39414f"/>
+    <text x="30" y="88" font-size="13">UI only  278</text>
+    <text x="441" y="88" font-size="13" fill="#0e1116" font-weight="600">writes state  102</text>
+    <text x="591" y="88" font-size="12">reads  65</text>
+    <text x="684" y="88" font-size="11">26</text>
+    <g font-size="12" fill="#c4ccda">
+      <text x="20" y="130">UI only: Appium taps, typing and swipes on the rendered app</text>
+      <text x="20" y="150">writes state: a reachable call to _data_layer.write_* on the app's JSON, SQLite or UserDefaults</text>
+      <text x="20" y="170">reads: loads the data file and returns records the screen never showed</text>
+      <text x="20" y="190">26: neither pattern (mostly launch helpers)</text>
+    </g>
+    <line x1="433" y1="206" x2="585" y2="206" stroke="#5ad1a0" stroke-width="2"/>
+    <text x="300" y="228" font-size="12" fill="#5ad1a0">of the 102 writers: 37 never touch the UI, 49 swallow UI errors first</text>
+  </g>
+</svg>
+
+<p>Split by app, the direct paths are concentrated where the tasks are. Notes is referenced by 41 of
+the 133 tasks and 12 of its 15 default tools can write the notes file. CloudDocs, referenced by 35,
+has 12 of 21. Ten apps have no data-layer tool at all, including QuickChat, the most referenced app at
+44 tasks, and Mail at 29.</p>
+
+<table>
+  <thead>
+    <tr><th>App module</th><th>Default tools</th><th>UI only</th><th>Reads data file</th><th>Can write data file</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>freshcart</td><td>25</td><td>4</td><td>6</td><td>14</td><td>mcps/freshcart.py</td></tr>
+    <tr><td>clouddocs</td><td>21</td><td>3</td><td>5</td><td>12</td><td>mcps/clouddocs.py</td></tr>
+    <tr><td>notes</td><td>15</td><td>2</td><td>0</td><td>12</td><td>mcps/notes.py</td></tr>
+    <tr><td>caltrack</td><td>19</td><td>7</td><td>1</td><td>10</td><td>mcps/caltrack.py</td></tr>
+    <tr><td>clouddrive</td><td>21</td><td>5</td><td>6</td><td>9</td><td>mcps/clouddrive.py</td></tr>
+    <tr><td>cloudslides</td><td>19</td><td>4</td><td>5</td><td>9</td><td>mcps/cloudslides.py</td></tr>
+    <tr><td>cloudsheets</td><td>17</td><td>1</td><td>8</td><td>7</td><td>mcps/cloudsheets.py</td></tr>
+    <tr><td>mybank</td><td>21</td><td>6</td><td>8</td><td>6</td><td>mcps/mybank.py</td></tr>
+    <tr><td>teamchat</td><td>22</td><td>6</td><td>9</td><td>6</td><td>mcps/teamchat.py</td></tr>
+    <tr><td>scorezone</td><td>20</td><td>13</td><td>1</td><td>5</td><td>mcps/scorezone.py</td></tr>
+    <tr><td>lockedin, megamart, splitpay, tasterank, cityride, skytrip</td><td>120</td><td>87</td><td>16</td><td>12</td><td>mcps/*.py</td></tr>
+    <tr><td>10 apps with no data-layer tool (cinephile, clock, dinespot, mail, quickbite, quickchat, stayfinder, ticketbox, trailblaze, weather)</td><td>151</td><td>140</td><td>0</td><td>0</td><td>mcps/*.py</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>471</strong></td><td><strong>278</strong></td><td><strong>65</strong></td><td><strong>102</strong></td><td>commit e91f4cb</td></tr>
+  </tbody>
+</table>
+
+<p>Rows do not sum across because 26 tools matched neither pattern. Task reference counts are from the
+paper's Section 3. Every count in the table is ours, from a static pass, and it measures what a tool
+can reach, not how often Qwen called it; the per-call log the runner writes to
+<code>artifacts/mcp_tool_calls.jsonl</code> was not released with the paper.</p>
+
+<h2 id="one-tool-end-to-end-send-zelle">One tool, end to end: send_zelle</h2>
+
+<p><code>mybank.send_zelle</code> is the example the paper names, and task <code>mybank-003</code> asks
+for exactly it: "Send $50 via Zelle to Maya Patel in MyBank and confirm the payment was sent", seven
+rubric criteria. The tool fills the form through Appium and taps <code>zelle_send_button</code>. Its
+comment then records a fact about the app: "The Send button closes the sheet but, in this build, does
+NOT persist a Zelle transaction (verified: state + shared ledger stay empty)." So it counts Zelle
+transactions before and after, and when the count has not moved it debits checking by writing the
+store directly. Its docstring adds that an unknown recipient "is still accepted and used verbatim".</p>
+
+<svg viewBox="0 0 760 330" style="width:100%;height:auto" role="img" aria-label="Flow of mybank.send_zelle in the released iOSWorld MCP server: fill the Zelle form through Appium, tap zelle_send_button, read the store back; because the app's Send button does not persist in that build the count is unchanged, so the tool writes the payment into the state file directly and returns the string Sent 50 dollars via Zelle to Maya Patel, which is placed inside the action JSON that the GPT-5.4 Mini judge reads.">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2" font-size="12">
+    <text x="20" y="26" font-size="14" font-weight="600">mcps/mybank.py send_zelle, as written at commit e91f4cb</text>
+    <rect x="20" y="50" width="170" height="54" rx="6" fill="#242a35" stroke="#6f7b90"/>
+    <text x="32" y="72">1. fill form via Appium</text><text x="32" y="92" fill="#8a93a5">recipient, $50, memo</text>
+    <rect x="215" y="50" width="170" height="54" rx="6" fill="#242a35" stroke="#6f7b90"/>
+    <text x="227" y="72">2. tap zelle_send_button</text><text x="227" y="92" fill="#8a93a5">sheet closes</text>
+    <rect x="410" y="50" width="160" height="54" rx="6" fill="#242a35" stroke="#6f7b90"/>
+    <text x="422" y="72">3. count Zelle txns</text><text x="422" y="92" fill="#8a93a5">before == after</text>
+    <rect x="595" y="50" width="150" height="54" rx="6" fill="#1d3b31" stroke="#5ad1a0"/>
+    <text x="607" y="72" fill="#5ad1a0">4. write state file</text><text x="607" y="92" fill="#5ad1a0">debit checking</text>
+    <line x1="190" y1="77" x2="215" y2="77" stroke="#8a93a5" stroke-width="2"/>
+    <line x1="385" y1="77" x2="410" y2="77" stroke="#8a93a5" stroke-width="2"/>
+    <line x1="570" y1="77" x2="595" y2="77" stroke="#5ad1a0" stroke-width="2"/>
+    <text x="215" y="130" fill="#c4ccda">"in this build, does NOT persist a Zelle transaction"</text>
+    <line x1="670" y1="104" x2="670" y2="170" stroke="#5ad1a0" stroke-width="2"/>
+    <rect x="410" y="170" width="335" height="54" rx="6" fill="#242a35" stroke="#5ad1a0"/>
+    <text x="422" y="192">5. return "Sent $50 via Zelle to Maya Patel."</text>
+    <text x="422" y="212" fill="#8a93a5">stored as the action's "result" in trajectory.json</text>
+    <line x1="410" y1="197" x2="330" y2="197" stroke="#5ad1a0" stroke-width="2"/>
+    <rect x="20" y="170" width="310" height="54" rx="6" fill="#242a35" stroke="#6f7b90"/>
+    <text x="32" y="192">6. judge prompt: json.dumps(actions)</text>
+    <text x="32" y="212" fill="#8a93a5">GPT-5.4 Mini, plus screenshots</text>
+    <text x="20" y="262" fill="#c4ccda">Pixel arms send the judge tap_xy / type actions with no outcome text.</text>
+    <text x="20" y="284" fill="#c4ccda">The MCP arm sends the tool's own success sentence alongside the screenshots.</text>
+    <text x="20" y="312" fill="#5ad1a0">102 of 471 default tools can reach step 4; 37 of them skip steps 1 and 2 entirely.</text>
+  </g>
+</svg>
+
+<p>The last box is the part that touches grading. <code>_load_mcp_judge_trajectory</code> in
+<code>scripts/appium_agent.py</code> hands the judge the MCP trace from <code>trajectory.json</code>,
+whose documented shape stores each call as <code>{"action": "mcp_tool_call", "tool": ...,
+"result": {...}}</code>, and the judge prompt builder in <code>llm_action_generator.py</code> writes
+<code>json.dumps(actions)</code> into every step line. In the pixel arms that string is a list of taps.
+In the MCP arm it contains the tool's own report of what it achieved. The screenshots still go in, and
+a data-file write followed by <code>reload_app</code> does change what the next screenshot shows, so the
+judge is not blind. It is reading the same evidence plus a sentence written by the thing being graded.</p>
+
+<p><code>cloudsheets.edit_cell</code> shows the other pattern. It taps the cell and the formula bar and
+types inside <code>try: ... except Exception: pass</code>, then sets the cell in the workspace envelope
+and reloads the app regardless of whether the typing landed. 49 of the 102 writers wrap their UI calls
+this way. For those tools a failed interaction and a successful one produce the same state and the
+same return value.</p>
+
+<h2 id="what-it-means-if-you-are-building-or-reading-a-phone-agent-b">What it means if you are building or reading a phone-agent benchmark</h2>
+
+<p>The Table 7 comparison changes four things at once: action granularity, direct reads that return
+records the screen never displayed, direct writes that bypass the app, and outcome text in the judge's
+input. The paper attributes the +12.0 points to the first. The code does not let anyone separate
+them, because the ablation was run once, on one model (the README states MCP mode is Qwen-only and the
+runner rejects other models), and the per-tool call log is not public.</p>
+
+<p>That does not make the gain fake. The paper's own showcase, Figure 7, is <code>dinespot-001</code>,
+17 steps and score 1.0 with tools against 50 steps and 0.25 without, and DineSpot is one of the ten
+apps with no data-layer tool. Typed actions over the UI do help a small model. The judgement we would
+make is narrower: 24.8% is an upper bound on what a tool layer over the interface buys, and the gap to
+it is unmeasured.</p>
+
+<p>For comparison, phoneshell's MCP server exposes 23 tools in <code>phoneshell/mcp_server.py</code>,
+and the benchmark runner allows 14 of them (<code>AGENT_TOOLS</code> in
+<code>phoneshell/bench/runner.py</code>). None is app-specific and none has a code path that writes an app's
+storage. Our 80 tasks carry 153
+checks, and every one reads either the accessibility tree after the run or the agent's answer text. The
+agent's narration never reaches the grader. That design costs us exactly what iOSWorld's tool layer
+buys: a small model has no shortcut, and our numbers for small models will look worse for it.</p>
+
+<p>If you want a tool-layer arm that means what it says, three changes are cheap. Remove the state-file
+fallbacks from any tool the model can call and let the call fail honestly. Strip <code>result</code>
+from the judge's copy of each action. Log every call and publish the log, so a reader can count how
+many of the 16 extra passes went through step 4.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<pre><code>git clone --depth 1 https://github.com/ljang0/iosworld && cd iosworld
+git log -1 --format='%h %aI'                      # e91f4cb 2026-06-08T19:12:47Z
+grep -h "^@mcp.tool" mcps/*.py | wc -l            # 537
+sed -n 1,10p mcps/_data_layer.py                   # "mutate the underlying state file"
+grep -n "does NOT persist" mcps/mybank.py          # the send_zelle comment
+grep -n "except Exception" -B8 mcps/cloudsheets.py | grep -n "tap_id\|type_text"
+grep -n "json.dumps(actions)" scripts/llm_action_generator.py
+python3 -c "import json;print([t for t in json.load(open('tasks.json')) if 'Zelle' in t['goal']][0]['name'])"</code></pre>
+
+<p>For the classification, walk each module's AST, collect functions whose decorator is
+<code>mcp.tool</code>, follow calls into module-level helpers, and flag any call on <code>dl</code>
+named <code>write_envelope</code>, <code>write_app_state</code>, <code>write_user_defaults</code> or
+<code>delete_user_defaults_key</code>. Drop names starting <code>prepare_</code>, and
+<code>confirm_</code> tools whose only parameter is <code>draft_id</code>, to get the 471. The whole
+pass is about 40 lines and needs no simulator.</p>
+
+<h2 id="what-would-prove-this-wrong">What would prove this wrong</h2>
+
+<p>The claim is that some of Table 7's +12.0 points is carried by paths that bypass the interface. It
+fails if a rerun with the state-file fallbacks disabled and <code>result</code> stripped from the
+judge input keeps Qwen3.5 at 24% or above on the 133 tasks. It also fails if the authors publish the
+call log and fewer than 3 of the 33 passing tasks invoked a state-writing tool. We will run the first
+version ourselves against the released code and publish the number, whichever way it lands, by 31
+December 2026.</p>
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li><a href="https://arxiv.org/abs/2606.09764">Jang et al., iOSWorld: A Benchmark for Personally Intelligent Phone Agents, arXiv:2606.09764, 8 June 2026</a></li>
+      <li><a href="https://arxiv.org/html/2606.09764">iOSWorld HTML edition, Appendix E and Table 7 (MCP tools ablation), Figure 7 (dinespot-001), Section 3 (app reference counts)</a></li>
+      <li><a href="https://github.com/ljang0/iosworld">iOSWorld code release, single commit e91f4cb, 2026-06-08T19:12:47Z, read 23 September 2026</a></li>
+      <li><a href="https://github.com/ljang0/iosworld/blob/main/mcps/_data_layer.py">iOSWorld mcps/_data_layer.py, direct seed-data manipulation helpers</a></li>
+      <li><a href="https://github.com/ljang0/iosworld/blob/main/mcps/mybank.py">iOSWorld mcps/mybank.py, send_zelle and its state-write fallback</a></li>
+      <li><a href="https://github.com/ljang0/iosworld/blob/main/mcps/README.md">iOSWorld mcps/README.md, MCP mode is Qwen-only; prepare/confirm surface off by default</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
