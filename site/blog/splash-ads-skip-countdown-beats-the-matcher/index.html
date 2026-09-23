@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>84% of drive-by splash ads fire on a shake, and our skip-button matcher misses 'Skip 5s' | Blolabel</title>
+<meta name="description" content="arXiv:2609.17316 (15 September 2026): 84.1% of 778 semi-drive-by splash ads in 31,823 Android apps are motion-triggered; 28 of 130 defence and app combinations prevented the redirect, and only Li Tiaotiao 2.2 worked on all 10 apps. Splash ads appeared more consistently on iOS in the authors' observations. phoneshell's exact-match close matcher rejects 'Skip 5s', 'Skip Ad' and 跳过.">
+<link rel="canonical" href="https://blolabel.ai/blog/splash-ads-skip-countdown-beats-the-matcher/">
+<meta property="og:title" content="84% of drive-by splash ads fire on a shake, and our skip-button matcher misses 'Skip 5s' | Blolabel">
+<meta property="og:description" content="arXiv:2609.17316 (15 September 2026): 84.1% of 778 semi-drive-by splash ads in 31,823 Android apps are motion-triggered; 28 of 130 defence and app combinations prevented the redirect, and only Li Tiaotiao 2.2 worked on all 10 apps. Splash ads appeared more consistently on iOS in the authors' observations. phoneshell's exact-match close matcher rejects 'Skip 5s', 'Skip Ad' and 跳过.">
+<meta property="og:url" content="https://blolabel.ai/blog/splash-ads-skip-countdown-beats-the-matcher/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"84% of drive-by splash ads fire on a shake, and our skip-button matcher misses 'Skip 5s'","description":"arXiv:2609.17316 (15 September 2026): 84.1% of 778 semi-drive-by splash ads in 31,823 Android apps are motion-triggered; 28 of 130 defence and app combinations prevented the redirect, and only Li Tiaotiao 2.2 worked on all 10 apps. Splash ads appeared more consistently on iOS in the authors' observations. phoneshell's exact-match close matcher rejects 'Skip 5s', 'Skip Ad' and 跳过.",
+ "datePublished":"2026-09-23","dateModified":"2026-09-23",
+ "url":"https://blolabel.ai/blog/splash-ads-skip-countdown-beats-the-matcher/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/splash-ads-skip-countdown-beats-the-matcher/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "How are splash ads triggered?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Per Wu et al. 2026 as reported in arXiv:2609.17316, 778 of 31,823 Android apps (2.44%) showed semi-drive-by splash ads, and 654 of those (84.1%) navigate on phone motion such as a shake or tilt rather than a touch. By market, motion share ranged from 36.7% at Xiaomi to 95.4% at VIVO."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Which splash ad defences work?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Of 130 tool and app combinations on a Pixel 6 and a Xiaomi MIX 2S, 28 (21.5%) prevented the ad-triggered navigation, 62 failed, 17 had no baseline ad, 3 broke the app and 20 were not validated. Only Li Tiaotiao 2.2, an accessibility auto-skipper, worked on all 10 apps, and ads stayed visible for about a second."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Do splash ads affect iOS?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "The paper's defence tests are Android only, but its authors report that in manual observation splash ads appeared more frequently and consistently on iOS, with Baidu Maps showing one on nearly every observed iOS launch. It also cites an ad network's shake interaction configuration for iOS."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Does phoneshell dismiss a countdown skip button?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Not by label. Its close matcher requires the joined label to equal one of 19 entries exactly, so 'Skip' matches but 'Skip 5', 'Skip 5s', '5s | Skip', 'Skip Ad', 'Close ad' and the Chinese \u8df3\u8fc7 and \u5173\u95ed do not. An unlabelled button matches only if it is 16 to 60 points on both sides. Whether a real ad SDK exposes these labels on iOS has not yet been measured."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-23">23 September 2026</time>
+    <span>6 min read</span>
+  </div>
+  <h1>84% of drive-by splash ads fire on a shake, and our skip-button matcher misses 'Skip 5s'</h1>
+  <p class="standfirst">A 15 September study found 28 of 130 defence and app combinations stopped a splash-ad redirect. The one tool that always worked taps the skip button, which is what a phone agent's overlay reflex does, and ours fails on a countdown label.</p>
+
+  <p>84.1% of the 778 semi-drive-by splash ads found in 31,823 Android apps open their advertiser when
+the phone moves, not when anything is tapped. A study posted on 15 September 2026 tested 13 defence
+configurations against 10 popular apps and 28 of the 130 combinations stopped the redirect. The one
+tool that worked on all 10 is an accessibility skipper that taps the skip button, and the ad still
+stayed on screen for about a second. We ran our own rig's close-control matcher against the labels a
+skip button carries, and it misses "Skip 5s".</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/splash-ads-skip-countdown-beats-the-matcher-hero.png" alt="Abstract technical illustration of a phone-shaped frame filled by a single opaque panel, with a small countdown ring in one corner and faint motion arcs around the frame suggesting the device being tilted" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-the-paper-measured">What the paper measured</h2>
+
+<p>"Can We Stop The Ads?", arXiv:2609.17316, is by Shuhao Zhang, Xinyu Liu, Ziyu Shao, Yuqing Yang,
+Yan Long and co-authors. A splash ad is the full-screen page an app shows before its first real screen.
+The semi-drive-by kind navigates to a third party (a shopping app, a mini-program) on a light touch
+anywhere in a hot area, or on a shake, twist or tilt. The prevalence figures come from Wu et al. 2026,
+which the paper reproduces as its Table 1.</p>
+
+<svg viewBox="0 0 760 300" style="width:100%;height:auto" role="img" aria-label="Bar chart of the share of detected semi-drive-by splash ads that are motion-triggered rather than touch-triggered, by Android app market, from Wu et al. 2026 as reported in arXiv:2609.17316: VIVO 95.4 percent of 261, Wandoujia 90.9 percent of 198, YingYongBao 88.0 percent of 191, Xiaomi 36.7 percent of 128, and 84.1 percent of all 778.">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2">
+    <text x="20" y="26" font-size="14" font-weight="600">Motion-triggered share of detected splash ads, by market</text>
+    <g stroke="#242a35">
+      <line x1="180" y1="44" x2="180" y2="250"/><line x1="315" y1="44" x2="315" y2="250"/>
+      <line x1="450" y1="44" x2="450" y2="250"/><line x1="585" y1="44" x2="585" y2="250"/>
+      <line x1="720" y1="44" x2="720" y2="250"/>
+    </g>
+    <g font-size="11" fill="#8a93a5">
+      <text x="176" y="268">0</text><text x="306" y="268">25%</text><text x="441" y="268">50%</text>
+      <text x="576" y="268">75%</text><text x="706" y="268">100%</text>
+      <text x="360" y="290">share of detected ads that fire on motion</text>
+    </g>
+    <g font-size="12">
+      <text x="20" y="70">VIVO (261)</text>
+      <rect x="180" y="56" width="515" height="22" fill="#5ad1a0"/><text x="700" y="72" fill="#0e1116" font-weight="600" text-anchor="end">95.4%</text>
+      <text x="20" y="108">Wandoujia (198)</text>
+      <rect x="180" y="94" width="491" height="22" fill="#5ad1a0"/><text x="666" y="110" fill="#0e1116" font-weight="600" text-anchor="end">90.9%</text>
+      <text x="20" y="146">YingYongBao (191)</text>
+      <rect x="180" y="132" width="475" height="22" fill="#5ad1a0"/><text x="650" y="148" fill="#0e1116" font-weight="600" text-anchor="end">88.0%</text>
+      <text x="20" y="184">Xiaomi (128)</text>
+      <rect x="180" y="170" width="198" height="22" fill="#6f7b90"/><text x="386" y="186">36.7%</text>
+      <text x="20" y="222" font-weight="600">All 778</text>
+      <rect x="180" y="208" width="454" height="22" fill="#c4ccda"/><text x="628" y="224" fill="#0e1116" font-weight="600" text-anchor="end">84.1%</text>
+    </g>
+  </g>
+</svg>
+
+<p>Across all four markets the detection rate is 2.44% of tested apps. The 10 popular apps the
+authors chose for the defence test, among them Baidu Maps, Weibo, Tencent Video and QQ Browser, each
+carry at least one touch or motion trigger (their Table 2). The defence test ran on a Pixel 6 and a
+Xiaomi MIX 2S.</p>
+
+<table>
+  <thead>
+    <tr><th>Configuration</th><th>Needs</th><th>Stopped</th><th>Failed</th><th>No baseline ad</th><th>App broke</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Li Tiaotiao 2.2</td><td>Accessibility</td><td>10</td><td>0</td><td>0</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>TrackerControl</td><td>VPN</td><td>5</td><td>5</td><td>0</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>Ad Skipper, no VLM</td><td>Accessibility, screen access</td><td>5</td><td>2</td><td>3</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>AdAway (VPN)</td><td>VPN</td><td>3</td><td>7</td><td>0</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>Fuck AD</td><td>Root, runtime injection</td><td>2</td><td>5</td><td>3</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>NoShakingAD</td><td>Accessibility, debugging</td><td>2</td><td>8</td><td>0</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>Fuck Shake</td><td>Root, runtime injection</td><td>1</td><td>6</td><td>3</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>AdAway (root)</td><td>Root</td><td>0</td><td>7</td><td>3</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>FuckAdJump</td><td>Root, runtime injection</td><td>0</td><td>7</td><td>3</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>AdClose 4.3.7</td><td>Root, runtime injection</td><td>0</td><td>5</td><td>2</td><td>3</td><td>Table 5</td></tr>
+    <tr><td>GKD + Lin-arm rules</td><td>Accessibility</td><td>0</td><td>10</td><td>0</td><td>0</td><td>Table 5</td></tr>
+    <tr><td>Ad Skipper with VLM, ShakeGuard</td><td>extra model; source build</td><td colspan="4">not validated (20 cells): the VLM configuration crashed loading InternVL3 2B or Qwen2.5-VL 3B; ShakeGuard was not deployed on device</td><td>Table 5, Section 4.2</td></tr>
+    <tr><td><strong>All 130 combinations</strong></td><td></td><td><strong>28</strong></td><td><strong>62</strong></td><td><strong>17</strong></td><td><strong>3</strong></td><td>Section 4.2</td></tr>
+  </tbody>
+</table>
+
+<p>Per-row counts are ours, tallied from the symbols in Table 5 of arXiv:2609.17316; the totals match
+the paper's own 28, 62, 17, 3 and 20. "No baseline ad" means the ad never appeared with the defence
+off, mostly Baidu, Baidu Maps and Baidu Input on the Pixel 6, and the paper does not count those as
+protection.</p>
+
+<h2 id="the-authors-saw-splash-ads-more-consistently-on-ios-than-on-">The authors saw splash ads more consistently on iOS than on Android</h2>
+
+<p>Every test above is Android. The paper's platform section is the part an iOS reader needs: "In our
+manual observations, splash ads appeared more frequently and consistently on iOS than on Android",
+with Baidu Maps showing one on nearly every observed iOS launch. Its references include an ad
+network's "Shake interaction configuration for iOS". And it quotes Wu et al. on an SDK that reads
+shake enablement and thresholds from a server response, so the installed app version does not decide
+whether a given launch can be redirected by motion.</p>
+
+<p>A phone agent's first observation after launching such an app is the ad, not the app. It has two
+ways to lose. It can tap the hot area, because a full-screen image with a large button looks like the
+app's first screen. Or it can do nothing wrong and still be redirected, because the motion channel is
+not in its observation or its action space. On a rig, the phone on a stand gets bumped. In our
+coexist mode, a person picks the phone up.</p>
+
+<svg viewBox="0 0 760 340" style="width:100%;height:auto" role="img" aria-label="Timeline from app launch comparing two dismissal paths against a splash ad whose shake trigger is live the whole time it is on screen. Li Tiaotiao, an accessibility auto-skipper, dismissed ads after about one second. Phoneshell's overlay reflex looks for an exact close label; a countdown label such as Skip 5s does not match, so the overlay is classified as an interstitial only if it has no text, then the reflex waits 3.0 seconds and looks again, leaving the trigger live for over three seconds.">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2" font-size="12">
+    <text x="20" y="26" font-size="14" font-weight="600">Seconds after launch while a splash ad is up</text>
+    <line x1="120" y1="290" x2="720" y2="290" stroke="#8a93a5"/>
+    <g font-size="11" fill="#8a93a5">
+      <text x="116" y="308">0</text><text x="236" y="308">1</text><text x="356" y="308">2</text>
+      <text x="476" y="308">3</text><text x="596" y="308">4</text><text x="716" y="308">5</text>
+    </g>
+    <rect x="120" y="50" width="600" height="26" fill="#3a2a2a" stroke="#c46b6b"/>
+    <text x="130" y="68" fill="#e8b4b4">shake / tilt listener live for as long as the ad is on screen</text>
+    <text x="20" y="116">Li Tiaotiao</text>
+    <rect x="120" y="100" width="120" height="24" fill="#5ad1a0"/>
+    <text x="250" y="116" fill="#5ad1a0">dismissed at about 1 s (paper, manual observation)</text>
+    <text x="20" y="162">phoneshell</text>
+    <rect x="120" y="146" width="60" height="24" fill="#6f7b90"/><text x="126" y="162" font-size="11">observe</text>
+    <rect x="180" y="146" width="70" height="24" fill="#6f7b90"/><text x="184" y="162" font-size="11">label pass</text>
+    <text x="180" y="190" fill="#c4ccda">"Skip 5s" is not in CLOSE_LABELS: no match</text>
+    <rect x="250" y="146" width="360" height="24" fill="#39414f" stroke="#6f7b90"/>
+    <text x="320" y="162" font-size="11">interstitial only if text is empty; then time.sleep(3.0)</text>
+    <rect x="610" y="146" width="60" height="24" fill="#6f7b90"/><text x="614" y="162" font-size="11">retry</text>
+    <text x="120" y="226" fill="#c4ccda">Timings for phoneshell are illustrative: the observe and label-pass widths are not measured.</text>
+    <text x="120" y="246" fill="#c4ccda">The 3.0 s wait is the constant in phoneshell/agent/overlays.py.</text>
+    <text x="120" y="270" fill="#5ad1a0">Any motion inside the red band can redirect with no agent action at all.</text>
+  </g>
+</svg>
+
+<h2 id="our-matcher-tested-today">Our matcher, tested today</h2>
+
+<p><code>_is_close_control</code> in <code>phoneshell/agent/overlays.py</code> decides whether an
+element is a close control. It accepts an identifier containing one of 14 known close identifiers, a
+joined label that equals one of 19 entries in <code>CLOSE_LABELS</code> exactly, or an unlabelled
+Button, Image or Icon between 16 and 60 points on both sides. We built elements with the labels below
+and called it on 23 September 2026.</p>
+
+<table>
+  <thead>
+    <tr><th>Label on a 72 x 32 pt Button</th><th>Treated as close?</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Skip</td><td>yes</td><td>overlays.py, run 23 Sep 2026</td></tr>
+    <tr><td>Skip 5</td><td>no</td><td>overlays.py, run 23 Sep 2026</td></tr>
+    <tr><td>Skip 5s</td><td>no</td><td>overlays.py, run 23 Sep 2026</td></tr>
+    <tr><td>5s | Skip</td><td>no</td><td>overlays.py, run 23 Sep 2026</td></tr>
+    <tr><td>Skip Ad</td><td>no</td><td>overlays.py, run 23 Sep 2026</td></tr>
+    <tr><td>Close ad</td><td>no</td><td>overlays.py, run 23 Sep 2026</td></tr>
+    <tr><td>跳过 (skip), 跳过 3, 关闭 (close)</td><td>no</td><td>overlays.py, run 23 Sep 2026</td></tr>
+    <tr><td>(empty label, 72 x 32 pt)</td><td>no</td><td>overlays.py, run 23 Sep 2026</td></tr>
+    <tr><td>(empty label, 40 x 40 pt)</td><td>yes</td><td>overlays.py, run 23 Sep 2026</td></tr>
+  </tbody>
+</table>
+
+<p>A countdown in the label defeats an exact-match list, and so does a pill-shaped skip button wider
+than 60 points. We have not yet captured a live splash ad's accessibility tree on our iPhone, so we do
+not know which of these forms a given ad SDK exposes. The test says the matcher fails on the common
+visible forms. It does not say a real ad would carry one of them as its label.</p>
+
+<h2 id="what-it-means-if-you-run-or-evaluate-phone-agents">What it means if you run or evaluate phone agents</h2>
+
+<p>No published iOS agent number includes splash ads, and not by choice. Our 80 tasks use 16 bundle
+ids, all Apple first-party. iOSWorld's 133 tasks run on 26 apps its authors built. Neither suite can
+show an ad, so both measure agents in a world where the first screen after launch is always the app.
+That is a fair benchmark and an unfair forecast.</p>
+
+<p>Three changes follow for us, and probably for anyone with a label-driven overlay reflex. Match close
+labels by token, not equality, so a leading or trailing countdown still hits. Add the Chinese skip and
+close words, since the apps the paper studies are Chinese. And treat a foreground change within the
+first seconds after launch, with no tap in between, as an environment event rather than an agent
+error; our 76 <code>foreground_app</code> checks currently cannot tell a motion redirect from an
+agent that opened the wrong app.</p>
+
+<p>For evaluation more broadly: the defence that worked everywhere was the simplest one, an
+accessibility service tapping the skip control. Network blocking and root-level hooks failed more
+often than they worked. An agent that reads the accessibility tree is already that kind of tool, and
+the only question is whether its matcher is good enough, which is a test anyone can write.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<pre><code># the paper's tables and the iOS observation
+curl -sL https://arxiv.org/html/2609.17316 -o splash.html
+python3 -c "
+import re,html
+t=re.sub(r'\s+',' ',html.unescape(re.sub(r'&lt;[^&gt;]+&gt;',' ',open('splash.html').read())))
+for k in ('Of the 130 combinations','appeared more frequently and consistently on iOS','approximately one second'):
+    i=t.find(k); print(t[i-100:i+300],'\n---')"
+
+# our matcher, from the repository root
+python3 -c "
+from phoneshell.perception.tree import Element
+from phoneshell.agent.overlays import _is_close_control
+for lab in ['Skip','Skip 5s','5s | Skip','跳过','Close ad']:
+    print(repr(lab), _is_close_control(Element(idx=0,type='Button',label=lab,x=300,y=60,w=72,h=32)))"
+grep -n "time.sleep(3.0)" phoneshell/agent/overlays.py</code></pre>
+
+<h2 id="what-would-prove-this-wrong">What would prove this wrong</h2>
+
+<p>The claim is that a label-matching overlay reflex misses splash-ad skip controls often enough to
+matter on iOS. We will install the iOS builds of Baidu Maps, Weibo and Tencent Video on the rig, cold
+launch each 20 times, and record whether a splash ad appears, the skip control's accessibility label,
+and whether the unmodified <code>overlays.py</code> dismisses it. If splash ads appear on fewer than 10
+of the 60 launches, the iOS exposure is too small for this to matter. If they appear and the current
+matcher dismisses at least 80% of them, the countdown forms we tested are not what the SDKs expose and
+this note is wrong about our rig. Results by 31 December 2026, before and after the token-match fix.</p>
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li><a href="https://arxiv.org/abs/2609.17316">Zhang, Liu, Shao, Yang, Long et al., Can We Stop The Ads? Taxonomy and Characterization of Smartphone Splash Ads and Existing Countermeasures, arXiv:2609.17316, 15 September 2026</a></li>
+      <li><a href="https://arxiv.org/html/2609.17316">HTML edition: Table 1 (prevalence, after Wu et al. 2026), Table 2 (trigger mechanisms), Table 5 (13 configurations x 10 apps), Section 3.2 (Android vs iOS), Section 4.2</a></li>
+      <li><a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Blolabel, phoneshell-bench: 80 tasks over 16 first-party bundle ids</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
