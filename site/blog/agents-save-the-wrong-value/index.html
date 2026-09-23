@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UI-TARS-7B pressed Save in 85% of ERPBench runs and stored the right record in 3% | Blolabel</title>
+<meta name="description" content="ERPBench (arXiv:2609.17885, 15 September 2026) grades 6 agents on 30 ERPNext tasks against stored database values. Commit-minus-database gaps computed from Table 3: UI-TARS-7B 59, 82 and 80 points on tiers 1 to 3, OpenCUA-32B 47 on tier 3, Claude Sonnet 4.6 at most 4. Stages are not a funnel: several models commit more often than they enter the right value.">
+<link rel="canonical" href="https://blolabel.ai/blog/agents-save-the-wrong-value/">
+<meta property="og:title" content="UI-TARS-7B pressed Save in 85% of ERPBench runs and stored the right record in 3% | Blolabel">
+<meta property="og:description" content="ERPBench (arXiv:2609.17885, 15 September 2026) grades 6 agents on 30 ERPNext tasks against stored database values. Commit-minus-database gaps computed from Table 3: UI-TARS-7B 59, 82 and 80 points on tiers 1 to 3, OpenCUA-32B 47 on tier 3, Claude Sonnet 4.6 at most 4. Stages are not a funnel: several models commit more often than they enter the right value.">
+<meta property="og:url" content="https://blolabel.ai/blog/agents-save-the-wrong-value/">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting",
+ "headline":"UI-TARS-7B pressed Save in 85% of ERPBench runs and stored the right record in 3%","description":"ERPBench (arXiv:2609.17885, 15 September 2026) grades 6 agents on 30 ERPNext tasks against stored database values. Commit-minus-database gaps computed from Table 3: UI-TARS-7B 59, 82 and 80 points on tiers 1 to 3, OpenCUA-32B 47 on tier 3, Claude Sonnet 4.6 at most 4. Stages are not a funnel: several models commit more often than they enter the right value.",
+ "datePublished":"2026-09-23","dateModified":"2026-09-23",
+ "url":"https://blolabel.ai/blog/agents-save-the-wrong-value/",
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://blolabel.ai/blog/agents-save-the-wrong-value/"},
+ "author":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "publisher":{"@type":"Organization","name":"Blolabel","url":"https://blolabel.ai"},
+ "isPartOf":{"@type":"Blog","@id":"https://blolabel.ai/blog/#blog"}}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "What is ERPBench?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "ERPBench (arXiv:2609.17885, 15 September 2026) is a benchmark of 30 tasks and 150 runs on a live ERPNext instance. Screenshot-only agents are graded against the values stored in the database, in four stages: navigation, interaction, commit and database."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How often do agents save a wrong value on ERPBench?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "From Table 3: UI-TARS-7B commits in 68%, 85% and 80% of runs on tiers 1 to 3 and leaves the correct record in 9%, 3% and 0%. OpenCUA-32B commits in 47% of tier 3 runs with 0% correct. Claude Sonnet 4.6's largest gap is 4 points, 98% committed against 94% correct on tier 1."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Do humans also show a commit-to-correct gap?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yes, smaller. Human #3 committed every tier 3 chain and left the correct records in 87%, a 13-point gap; the other two humans' gaps are 0 to 5 points. Some of what database grading catches is task ambiguity, so expect a nonzero floor."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Where does phoneshell's grading sit on ERPBench's stages?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "76 of its 153 checks confirm the foreground app, which is navigation level. 57 read the rendered accessibility tree after the run, which is closer to the store than a save event but not the store itself. 20 check the agent's answer text."
+   }
+  }
+ ]
+}
+</script>
+</head><body>
+<header><div class="wrap bar">
+  <a href="/" aria-label="Blolabel"><img src="data:image/png;base64,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" alt="Blolabel"></a>
+  <nav>
+    <a href="#finding">The result</a>
+    <a href="#method">Method</a>
+    <a href="#leaderboard">Leaderboard</a>
+     <a href="/blog/">Notes</a>
+     <a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Dataset</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#run">Run it</a>
+  </nav>
+</div></header>
+<div class="wrap">
+<article class="post">
+  <a class="backlink" href="/blog/">&larr; Notes</a>
+  <div class="kicker">
+    <span class="kind analysis">analysis</span>
+    <time datetime="2026-09-23">23 September 2026</time>
+    <span>5 min read</span>
+  </div>
+  <h1>UI-TARS-7B pressed Save in 85% of ERPBench runs and stored the right record in 3%</h1>
+  <p class="standfirst">ERPBench grades computer-use agents against the database they leave behind. Subtract its commit column from its database column and the gap is the whole story for open-weight models.</p>
+
+  <p>On ERPBench's multi-field tier, UI-TARS-7B pressed Save in 85% of runs and left the correct record in
+the database in 3%. The same model reached the target form in 95% of single-field runs and wrote the
+right value in 9%. The benchmark, arXiv:2609.17885, posted on 15 September 2026, is the cleanest
+published measurement of the gap between an agent committing and an agent being right.</p>
+
+<figure class="hero-image">
+  <img src="/images/blog/agents-save-the-wrong-value-hero.png" alt="Abstract technical illustration of four stacked filter stages where a wide stream of markers passes the first three almost intact and only a few markers reach a sealed storage block at the bottom" width="1600" height="900" loading="eager" style="width:100%;height:auto;border-radius:10px">
+</figure>
+
+<h2 id="what-erpbench-measures">What ERPBench measures</h2>
+
+<p>Kratika Bhagtani, Kusha Sridhar, Maziyar Baran Pouyan, Yuying Zhao and Eugene Siow built 30 tasks, 150 runs, on a live ERPNext instance
+and graded every run against the values in its database rather than against the final screenshot.
+Agents see pixels only and emit one action per turn: click, type, select, set date, scroll, key press
+or navigate, each tagged with a risk category (safe, commit or irreversible). The tiers are T1
+single-field edits, T2 multi-field record creation, and T3 chains of 2 to 4 dependent documents such as
+Lead to Opportunity. The grader scores four ordered stages: Navigation (the record or field is reached),
+Interaction (the correct value is entered, T1 only), Commit (save or submit is invoked) and Database
+(the stored fields match ground truth).</p>
+
+<p>The abstract's sentence, "some agents save in up to 85% of runs but write the correct value in as
+few as 3%", is one cell pair from Table 3. The rest of the table is more useful than the headline, so
+here it is with the subtraction done.</p>
+
+<table>
+  <thead>
+    <tr><th>Model</th><th>T1 commit</th><th>T1 database</th><th>T1 gap</th><th>T2 commit</th><th>T2 database</th><th>T2 gap</th><th>T3 commit</th><th>T3 database</th><th>T3 gap</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Claude Sonnet 4.6</td><td>98</td><td>94</td><td>4</td><td>100</td><td>100</td><td>0</td><td>100</td><td>100</td><td>0</td><td>Table 3</td></tr>
+    <tr><td>Holo3-35B-A3B</td><td>47</td><td>34</td><td>13</td><td>5</td><td>0</td><td>5</td><td>17</td><td>3</td><td>14</td><td>Table 3</td></tr>
+    <tr><td>Qwen3-VL-32B</td><td>42</td><td>32</td><td>10</td><td>15</td><td>5</td><td>10</td><td>23</td><td>3</td><td>20</td><td>Table 3</td></tr>
+    <tr><td>OpenCUA-32B</td><td>34</td><td>23</td><td>11</td><td>0</td><td>0</td><td>0</td><td>47</td><td>0</td><td>47</td><td>Table 3</td></tr>
+    <tr><td>UI-TARS-7B</td><td>68</td><td>9</td><td>59</td><td>85</td><td>3</td><td>82</td><td>80</td><td>0</td><td>80</td><td>Table 3</td></tr>
+    <tr><td>OpenCUA-7B</td><td>3</td><td>0</td><td>3</td><td>10</td><td>0</td><td>10</td><td>3</td><td>0</td><td>3</td><td>Table 3</td></tr>
+    <tr><td>Human #1</td><td>100</td><td>100</td><td>0</td><td>100</td><td>95</td><td>5</td><td>100</td><td>100</td><td>0</td><td>Table 3</td></tr>
+    <tr><td>Human #2</td><td>100</td><td>99</td><td>1</td><td>100</td><td>99</td><td>1</td><td>100</td><td>97</td><td>3</td><td>Table 3</td></tr>
+    <tr><td>Human #3</td><td>98</td><td>96</td><td>2</td><td>100</td><td>94</td><td>6</td><td>100</td><td>87</td><td>13</td><td>Table 3</td></tr>
+  </tbody>
+</table>
+
+<p>Values are the percentage of runs reaching each stage, from Table 3 of arXiv:2609.17885. The gap
+columns, commit minus database in percentage points, are ours. The paper does not publish per-tier
+run counts, so treat single-digit cells as a handful of runs.</p>
+
+<svg viewBox="0 0 760 330" style="width:100%;height:auto" role="img" aria-label="Dumbbell chart of ERPBench tier 2, multi-field record creation, comparing the share of runs that pressed save with the share that left the correct record in the database: UI-TARS-7B 85 versus 3, Qwen3-VL-32B 15 versus 5, OpenCUA-7B 10 versus 0, Holo3-35B-A3B 5 versus 0, OpenCUA-32B 0 versus 0, Claude Sonnet 4.6 100 versus 100.">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2">
+    <text x="20" y="26" font-size="14" font-weight="600">ERPBench T2: pressed Save vs correct record stored (% of runs)</text>
+    <g font-size="11" fill="#8a93a5">
+      <text x="196" y="306">0</text><text x="330" y="306">25</text><text x="466" y="306">50</text><text x="602" y="306">75</text><text x="734" y="306">100</text>
+    </g>
+    <g stroke="#242a35">
+      <line x1="200" y1="48" x2="200" y2="290"/><line x1="336" y1="48" x2="336" y2="290"/>
+      <line x1="472" y1="48" x2="472" y2="290"/><line x1="608" y1="48" x2="608" y2="290"/><line x1="744" y1="48" x2="744" y2="290"/>
+    </g>
+    <g font-size="12">
+      <text x="20" y="72">Claude Sonnet 4.6</text>
+      <circle cx="744" cy="68" r="6" fill="#5ad1a0"/><text x="690" y="60" font-size="11" fill="#5ad1a0">100 / 100</text>
+      <text x="20" y="112">UI-TARS-7B</text>
+      <line x1="216" y1="108" x2="662" y2="108" stroke="#6f7b90" stroke-width="3"/>
+      <circle cx="662" cy="108" r="6" fill="#c4ccda"/><circle cx="216" cy="108" r="6" fill="#5ad1a0"/>
+      <text x="672" y="112" fill="#c4ccda">85 saved</text><text x="226" y="100" fill="#5ad1a0">3 correct</text>
+      <text x="20" y="152">Qwen3-VL-32B</text>
+      <line x1="227" y1="148" x2="282" y2="148" stroke="#6f7b90" stroke-width="3"/>
+      <circle cx="282" cy="148" r="6" fill="#c4ccda"/><circle cx="227" cy="148" r="6" fill="#5ad1a0"/>
+      <text x="292" y="152" fill="#c4ccda">15 / 5</text>
+      <text x="20" y="192">OpenCUA-7B</text>
+      <line x1="200" y1="188" x2="254" y2="188" stroke="#6f7b90" stroke-width="3"/>
+      <circle cx="254" cy="188" r="6" fill="#c4ccda"/><circle cx="200" cy="188" r="6" fill="#5ad1a0"/>
+      <text x="264" y="192" fill="#c4ccda">10 / 0</text>
+      <text x="20" y="232">Holo3-35B-A3B</text>
+      <line x1="200" y1="228" x2="227" y2="228" stroke="#6f7b90" stroke-width="3"/>
+      <circle cx="227" cy="228" r="6" fill="#c4ccda"/><circle cx="200" cy="228" r="6" fill="#5ad1a0"/>
+      <text x="237" y="232" fill="#c4ccda">5 / 0</text>
+      <text x="20" y="272">OpenCUA-32B</text>
+      <circle cx="200" cy="268" r="6" fill="#5ad1a0"/><text x="212" y="272" fill="#c4ccda">0 / 0</text>
+    </g>
+  </g>
+</svg>
+
+<h2 id="the-stages-are-not-a-funnel">The stages are not a funnel</h2>
+
+<p>You would expect each stage to be a subset of the one before. It is not. On T1, Qwen3-VL-32B enters
+the correct value in 30% of runs and commits in 42%; Holo3 enters it in 53% and commits in 47%;
+UI-TARS enters it in 30% and commits in 68%. An agent that saves more often than it types the right
+thing is saving forms it has not finished or has filled wrong. The paper's failure taxonomy names the
+two silent cases: Perception (a wrong value is saved) and Save-step (a correct value is never saved).
+UI-TARS-7B's failed T1 runs are 59% Perception and 27% Grounding. Qwen3-VL-32B's are 59% Grounding,
+15% Planning, 15% Perception and 12% Save-step.</p>
+
+<svg viewBox="0 0 760 300" style="width:100%;height:auto" role="img" aria-label="Stage diagram of UI-TARS-7B on ERPBench tier 1 single-field edits: 95 percent of runs reach the target field, 30 percent enter the correct value, 68 percent press save, and 9 percent leave the correct value in the database. A screen-level grader sees the save; only the database check sees that most saves were wrong. Phoneshell's checks sit at the rendered-screen level between commit and database.">
+  <g font-family="Montserrat, system-ui, sans-serif" fill="#e9ecf2" font-size="12">
+    <text x="20" y="26" font-size="14" font-weight="600">UI-TARS-7B, ERPBench T1: share of runs reaching each stage</text>
+    <line x1="40" y1="220" x2="720" y2="220" stroke="#39414f"/>
+    <rect x="60" y="80" width="120" height="140" fill="#6f7b90"/><text x="100" y="72">95%</text>
+    <text x="72" y="240">Navigation</text><text x="72" y="256" fill="#8a93a5">field reached</text>
+    <rect x="230" y="176" width="120" height="44" fill="#6f7b90"/><text x="272" y="168">30%</text>
+    <text x="242" y="240">Interaction</text><text x="242" y="256" fill="#8a93a5">right value typed</text>
+    <rect x="400" y="119" width="120" height="101" fill="#c4ccda"/><text x="442" y="111">68%</text>
+    <text x="418" y="240">Commit</text><text x="418" y="256" fill="#8a93a5">Save pressed</text>
+    <rect x="570" y="207" width="120" height="13" fill="#5ad1a0"/><text x="616" y="199" fill="#5ad1a0">9%</text>
+    <text x="588" y="240">Database</text><text x="588" y="256" fill="#8a93a5">stored value correct</text>
+    <line x1="545" y1="50" x2="545" y2="280" stroke="#5ad1a0" stroke-dasharray="4 4"/>
+    <text x="552" y="56" fill="#5ad1a0">phoneshell checks read here:</text>
+    <text x="552" y="72" fill="#5ad1a0">the rendered tree after the run</text>
+    <text x="40" y="288" fill="#c4ccda">Commit (68) exceeds Interaction (30): most saves were of a form holding the wrong value.</text>
+  </g>
+</svg>
+
+<p>Humans are not immune either. Human #3 completed every T3 chain to the commit stage and left the
+correct records in 87% of them. That 13-point human gap is the useful calibration: some of what the
+database stage catches is task ambiguity rather than agent failure, and anyone copying this design
+should expect a nonzero floor.</p>
+
+<h2 id="what-it-means-for-a-phone-agent-grader">What it means for a phone-agent grader</h2>
+
+<p>ERPBench is desktop and web, not iOS, and ERPNext is a system you can query. The lesson transfers
+anyway, because most phone-agent graders stop at a stage that looks like Commit. A check that the right
+app is in front is Navigation. A check that the confirm button was tapped, or that a toast appeared,
+is Commit. Neither sees the value that was stored.</p>
+
+<p>Our own 80-task suite has 153 checks: 76 <code>foreground_app</code>, 31
+<code>element_exists</code>, 23 <code>regex_on_screen</code>, 20 <code>answer_contains</code> and 3
+<code>element_exists_anywhere</code>. The 76 are Navigation-level by construction. The 57 tree and
+regex checks read what the app renders after the run, which is one step closer to the store than a
+Save event and one step short of it: a list row can render a value the app failed to persist, and it
+would pass. We have already published that 7 of the 80 tasks assert only <code>foreground_app</code>.
+On a physical iPhone, first-party apps such as Clock give an external grader no database
+to query, so the rendered tree after a fresh relaunch is as close to the store as we can get without
+the app's cooperation. Relaunching before the read is the cheap step we do not take today, and this
+table is the argument for taking it.</p>
+
+<p>Two practical rules follow. Grade the stored value, or the closest rendering of it after a cold
+relaunch, never the act of saving. And report the commit-to-correct gap next to the pass rate; a model
+that saves 85% of the time and is right 3% of the time is more dangerous to deploy than one that saves
+5% of the time, and a single pass-rate column hides that.</p>
+
+<h2 id="check-it-yourself">Check it yourself</h2>
+
+<pre><code>curl -sL https://arxiv.org/html/2609.17885 -o erp.html
+python3 - &lt;&lt;'PY'
+import re, html
+x = open('erp.html').read()
+figs = re.findall(r'&lt;figure[^&gt;]*ltx_table[^&gt;]*&gt;(.*?)&lt;/figure&gt;', x, re.S)
+for tr in re.findall(r'&lt;tr.*?&gt;(.*?)&lt;/tr&gt;', figs[2], re.S):   # Table 3
+    print(' | '.join(html.unescape(' '.join(re.sub(r'&lt;[^&gt;]+&gt;', ' ', c).split()))
+                     for c in re.findall(r'&lt;t[dh].*?&gt;(.*?)&lt;/t[dh]&gt;', tr, re.S)))
+PY
+# gap = Commit minus Database, per tier; UI-TARS-7B T2 is 85 - 3 = 82
+
+# our check mix, from the repository root
+cat environments/*.yaml | grep -o "kind: *[a-z_]*" | sort | uniq -c | sort -rn</code></pre>
+
+<h2 id="what-would-prove-this-wrong">What would prove this wrong</h2>
+
+<p>The claim is that commit-level grading overstates agent success by a margin large enough to change
+rankings, and that the margin is concentrated in open-weight models. It is wrong if a rerun of the
+same six agents on ERPBench, or a second database-graded benchmark, shows commit-minus-database gaps
+under 10 points for every model on every tier. On our side, we will add a cold relaunch before every
+tree check on the 57 non-navigation checks and publish how many of the recorded passes flip. If none
+flip across a full three-model run, rendered-tree grading was already at database level for our task
+mix and this note overstates its relevance to phones. That count will be published by 31 December
+2026.</p>
+
+  <section class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li><a href="https://arxiv.org/abs/2609.17885">Bhagtani, Sridhar, Pouyan, Zhao and Siow, ERPBench: A State-Grounded Evaluation Paradigm for Computer-Use Agents in Enterprise Software, arXiv:2609.17885, 15 September 2026</a></li>
+      <li><a href="https://arxiv.org/html/2609.17885">ERPBench HTML edition, Table 2 (success), Table 3 (stage-wise localization), Figure 3 failure taxonomy text</a></li>
+      <li><a href="https://github.com/frappe/erpnext">ERPNext, the open-source ERP system ERPBench runs on</a></li>
+      <li><a href="https://huggingface.co/datasets/blolabel/phoneshell-bench">Blolabel, phoneshell-bench: 80 physical-iPhone tasks graded from device state</a></li>
+    </ol>
+  </section>
+</article>
+</div>
+<footer><div class="wrap">
+  Built on phoneshell, an open harness for driving a real iPhone from a Mac.
+  Results generated 09 September 2026 from run <code>v4</code>
+  on a physical iPhone 17 Pro Max running iOS 26.6: 55 of 58 scored tasks passed,
+  averaging 7.2 steps and 57 seconds each.
+  Tasks the model was never asked, because of a rate limit or because the app was not installed,
+  are shown as not scored rather than counted as failures.
+</div></footer>
+</body></html>
